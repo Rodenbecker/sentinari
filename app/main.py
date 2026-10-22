@@ -798,6 +798,38 @@ _LANDING_REFERENCE_REPORTS: dict[str, dict[str, str]] = {
         "subtitle": "Foundational Sovereign Epistemic Charter · Dr. Pierre C. Wepener",
         "description": "",
     },
+    "whitepaper": {
+        "slug": "whitepaper",
+        "title": "Sentinari Technical Whitepaper",
+        "filename": "Whitepaper.pdf",
+        "download_name": "Sentinari_Whitepaper.pdf",
+        "subtitle": "Autonomous Sovereign Epistemic Architecture · Dr. Pierre C. Wepener",
+        "description": "Comprehensive technical whitepaper on Sentinari's sovereign AI architecture, epistemic grounding, and cross-domain synthesis.",
+    },
+    "Whitepaper.pdf": {
+        "slug": "whitepaper",
+        "title": "Sentinari Technical Whitepaper",
+        "filename": "Whitepaper.pdf",
+        "download_name": "Sentinari_Whitepaper.pdf",
+        "subtitle": "Autonomous Sovereign Epistemic Architecture · Dr. Pierre C. Wepener",
+        "description": "",
+    },
+    "the-sentinari-4-hour-adversarial-rd-challenge": {
+        "slug": "the-sentinari-4-hour-adversarial-rd-challenge",
+        "title": "The Sentinari 4-Hour Adversarial R&D Challenge",
+        "filename": "The_Sentinari_4_Hour_adversarial_RD_challenge.pdf",
+        "download_name": "The_Sentinari_4_Hour_adversarial_RD_challenge.pdf",
+        "subtitle": "Adversarial Stress Test & Empirical Discovery Protocol · Dr. Pierre C. Wepener",
+        "description": "Rigorous 4-hour adversarial R&D benchmark testing epistemological robustness and automated scientific breakthrough generation.",
+    },
+    "4-hour-challenge": {
+        "slug": "the-sentinari-4-hour-adversarial-rd-challenge",
+        "title": "The Sentinari 4-Hour Adversarial R&D Challenge",
+        "filename": "The_Sentinari_4_Hour_adversarial_RD_challenge.pdf",
+        "download_name": "The_Sentinari_4_Hour_adversarial_RD_challenge.pdf",
+        "subtitle": "Adversarial Stress Test & Empirical Discovery Protocol · Dr. Pierre C. Wepener",
+        "description": "",
+    },
 }
 
 
@@ -822,6 +854,63 @@ def serve_constitution_direct(download: int = Query(default=0)) -> FileResponse:
         media_type="application/pdf",
         headers={
             "Content-Disposition": f'{disposition}; filename="Sentinari_Constitution.pdf"',
+            "Cache-Control": "public, max-age=3600",
+        },
+    )
+
+
+@app.get("/whitepaper", include_in_schema=False)
+@app.head("/whitepaper", include_in_schema=False)
+@app.get("/Whitepaper.pdf", include_in_schema=False)
+@app.head("/Whitepaper.pdf", include_in_schema=False)
+def serve_whitepaper_direct(download: int = Query(default=0)) -> FileResponse:
+    """Direct route for viewing or downloading the Sentinari Whitepaper PDF."""
+    root = get_project_root()
+    candidates = [
+        root / "static" / "reports" / "Whitepaper.pdf",
+        root / "constitution" / "Whitepaper.pdf",
+        root / "docs" / "Whitepaper.pdf",
+        Path("D:/Sentinari/constitution/Whitepaper.pdf"),
+    ]
+    target = next((p for p in candidates if p.exists()), None)
+    if not target:
+        raise HTTPException(status_code=404, detail="Whitepaper PDF file not found on disk.")
+    disposition = "attachment" if int(download or 0) == 1 else "inline"
+    return FileResponse(
+        path=str(target),
+        media_type="application/pdf",
+        headers={
+            "Content-Disposition": f'{disposition}; filename="Sentinari_Whitepaper.pdf"',
+            "Cache-Control": "public, max-age=3600",
+        },
+    )
+
+
+@app.get("/4-hour-challenge", include_in_schema=False)
+@app.head("/4-hour-challenge", include_in_schema=False)
+@app.get("/challenge", include_in_schema=False)
+@app.head("/challenge", include_in_schema=False)
+@app.get("/The_Sentinari_4_Hour_adversarial_RD_challenge.pdf", include_in_schema=False)
+@app.head("/The_Sentinari_4_Hour_adversarial_RD_challenge.pdf", include_in_schema=False)
+def serve_challenge_direct(download: int = Query(default=0)) -> FileResponse:
+    """Direct route for viewing or downloading The Sentinari 4-Hour Adversarial R&D Challenge PDF."""
+    root = get_project_root()
+    candidates = [
+        root / "static" / "reports" / "The_Sentinari_4_Hour_adversarial_RD_challenge.pdf",
+        root / "static" / "reports" / "The Sentinari 4 Hour adversarial R&D challenge.pdf",
+        root / "constitution" / "The Sentinari 4 Hour adversarial R&D challenge.pdf",
+        root / "docs" / "The_Sentinari_4_Hour_adversarial_RD_challenge.pdf",
+        Path("D:/Sentinari/constitution/The Sentinari 4 Hour adversarial R&D challenge.pdf"),
+    ]
+    target = next((p for p in candidates if p.exists()), None)
+    if not target:
+        raise HTTPException(status_code=404, detail="4-Hour Challenge PDF file not found on disk.")
+    disposition = "attachment" if int(download or 0) == 1 else "inline"
+    return FileResponse(
+        path=str(target),
+        media_type="application/pdf",
+        headers={
+            "Content-Disposition": f'{disposition}; filename="The_Sentinari_4_Hour_Adversarial_RD_Challenge.pdf"',
             "Cache-Control": "public, max-age=3600",
         },
     )

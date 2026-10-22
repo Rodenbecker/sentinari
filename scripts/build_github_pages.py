@@ -19,6 +19,10 @@ def main() -> None:
 
     # 2. Update relative URLs to Cloud Run production service
     html = html.replace('href="/reports/the-constitution"', 'href="./Constitution.pdf" target="_blank" rel="noopener"')
+    html = html.replace('href="/reports/whitepaper"', 'href="./Whitepaper.pdf"')
+    html = html.replace('href="/whitepaper?download=1"', 'href="./Whitepaper.pdf" download="Sentinari_Whitepaper.pdf"')
+    html = html.replace('href="/reports/the-sentinari-4-hour-adversarial-rd-challenge"', 'href="./The_Sentinari_4_Hour_adversarial_RD_challenge.pdf"')
+    html = html.replace('href="/4-hour-challenge?download=1"', 'href="./The_Sentinari_4_Hour_adversarial_RD_challenge.pdf" download="The_Sentinari_4_Hour_Adversarial_RD_Challenge.pdf"')
     html = html.replace('href="/schematic?download=1"', 'href="./sentinari_functional_schematic.png" download="Sentinari_Master_Functional_Schematic.png"')
     html = html.replace('href="/schematic"', 'href="./sentinari_functional_schematic.png" target="_blank" rel="noopener"')
     html = html.replace('src="/static/sentinari_functional_schematic.png"', 'src="./sentinari_functional_schematic.png"')

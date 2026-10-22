@@ -131,6 +131,90 @@
       box-shadow: 0 6px 20px rgba(99, 102, 241, 0.5);
     }
 
+    /* Sub-Ribbon for Foundational Publications */
+    .nav-sub-ribbon {
+      border-top: 1px solid rgba(255, 255, 255, 0.08);
+      margin-top: 10px;
+      padding-top: 8px;
+    }
+    .nav-sub-container {
+      max-width: 1200px;
+      margin: 0 auto;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+    .nav-sub-group {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+    .nav-sub-badge {
+      display: inline-flex;
+      align-items: center;
+      padding: 2px 7px;
+      border-radius: 4px;
+      background: rgba(99, 102, 241, 0.15);
+      border: 1px solid rgba(99, 102, 241, 0.35);
+      color: #a5b4fc;
+      font-size: 0.72rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+    .nav-sub-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      color: #cbd5e1;
+      text-decoration: none;
+      font-weight: 500;
+      font-size: 0.81rem;
+      padding: 3px 8px;
+      border-radius: 6px;
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid rgba(255, 255, 255, 0.07);
+      transition: all 0.2s ease;
+    }
+    .nav-sub-link:hover {
+      color: #ffffff;
+      background: rgba(99, 102, 241, 0.18);
+      border-color: rgba(99, 102, 241, 0.45);
+      transform: translateY(-1px);
+    }
+    .nav-sub-link strong {
+      color: #f1f5f9;
+      font-weight: 600;
+    }
+    .nav-sub-divider {
+      color: #475569;
+      font-size: 0.75rem;
+    }
+    .nav-sub-actions {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .nav-sub-action-btn {
+      color: #94a3b8;
+      text-decoration: none;
+      font-size: 0.74rem;
+      font-weight: 600;
+      padding: 3px 8px;
+      border-radius: 5px;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      background: rgba(0, 0, 0, 0.25);
+      transition: all 0.2s ease;
+    }
+    .nav-sub-action-btn:hover {
+      color: #38bdf8;
+      border-color: rgba(56, 189, 248, 0.4);
+      background: rgba(56, 189, 248, 0.08);
+    }
+
     /* Container */
     .container {
       max-width: 1200px;
@@ -550,6 +634,24 @@
         <a href="#architecture">Architecture</a>
         <a href="/ui/patterns">New Patterns (<span id="navPatternsCount">{{PATTERNS_COUNT}}</span>)</a>
         <a href="/ui/start" class="btn-launch">Launch Studio &rarr;</a>
+      </div>
+    </div>
+    <div class="nav-sub-ribbon">
+      <div class="nav-sub-container">
+        <div class="nav-sub-group">
+          <span class="nav-sub-badge">Featured Publications</span>
+          <a href="/reports/whitepaper" target="_blank" rel="noopener" class="nav-sub-link" onclick="if(window.previewReport){previewReport('/reports/whitepaper','Sentinari Technical Whitepaper');return false;}">
+            <span>&#x1F4C4;</span> <strong>Sentinari Whitepaper</strong>
+          </a>
+          <span class="nav-sub-divider">&bull;</span>
+          <a href="/reports/the-sentinari-4-hour-adversarial-rd-challenge" target="_blank" rel="noopener" class="nav-sub-link" onclick="if(window.previewReport){previewReport('/reports/the-sentinari-4-hour-adversarial-rd-challenge','The Sentinari 4-Hour Adversarial R&amp;D Challenge');return false;}">
+            <span>&#x26A1;</span> <strong>The Sentinari 4-Hour Adversarial R&amp;D Challenge</strong>
+          </a>
+        </div>
+        <div class="nav-sub-actions">
+          <a href="/whitepaper?download=1" class="nav-sub-action-btn" title="Download Sentinari Whitepaper PDF">&#x2B07; Whitepaper (PDF)</a>
+          <a href="/4-hour-challenge?download=1" class="nav-sub-action-btn" title="Download 4-Hour Challenge PDF">&#x2B07; 4-Hour Challenge (PDF)</a>
+        </div>
       </div>
     </div>
   </header>
