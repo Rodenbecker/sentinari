@@ -1,7 +1,12 @@
 # Sentinari by Inspirari
 
+[![License: Proprietary](https://img.shields.io/badge/License-Proprietary%20%26%20All%20Rights%20Reserved-red.svg?style=for-the-badge)](LICENSE.md)
 [![GitHub Pages Showroom](https://img.shields.io/badge/Showroom-GitHub%20Pages-6366f1?style=for-the-badge&logo=github)](https://ongalali.github.io/sentinari/)
 [![Google Cloud Run](https://img.shields.io/badge/Production%20Studio-Cloud%20Run-10b981?style=for-the-badge&logo=googlecloud)](https://sentinari-core-250830594433.us-central1.run.app)
+
+> ⚠️ **PROPRIETARY INTELLECTUAL PROPERTY & EVALUATION NOTICE**  
+> **Copyright © 2026 Dr. Pierre C. Wepener. All Rights Reserved.**  
+> This codebase is published **strictly for view-only inspection, academic peer review, and due diligence evaluation**. Downloading, cloning (`git clone`), copying, reproducing, distributing, modifying, or utilizing this codebase for software development, commercial applications, or training external AI/ML models is **strictly prohibited** without prior written authorization. See [LICENSE.md](LICENSE.md).
 
 > 🌐 **Live Public Showroom**: [https://ongalali.github.io/sentinari/](https://ongalali.github.io/sentinari/)  
 > ⚡ **Cloud Run Production Studio**: [https://sentinari-core-250830594433.us-central1.run.app](https://sentinari-core-250830594433.us-central1.run.app)
