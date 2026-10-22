@@ -1,9 +1,9 @@
 # Sentinari by Inspirari
 
-[![GitHub Pages Showroom](https://img.shields.io/badge/Showroom-GitHub%20Pages-6366f1?style=for-the-badge&logo=github)](https://rodenbecker.github.io/sentinari/)
+[![GitHub Pages Showroom](https://img.shields.io/badge/Showroom-GitHub%20Pages-6366f1?style=for-the-badge&logo=github)](https://ongalali.github.io/sentinari/)
 [![Google Cloud Run](https://img.shields.io/badge/Production%20Studio-Cloud%20Run-10b981?style=for-the-badge&logo=googlecloud)](https://sentinari-core-250830594433.us-central1.run.app)
 
-> 🌐 **Live Public Showroom**: [https://rodenbecker.github.io/sentinari/](https://rodenbecker.github.io/sentinari/)  
+> 🌐 **Live Public Showroom**: [https://ongalali.github.io/sentinari/](https://ongalali.github.io/sentinari/)  
 > ⚡ **Cloud Run Production Studio**: [https://sentinari-core-250830594433.us-central1.run.app](https://sentinari-core-250830594433.us-central1.run.app)
 
 A sovereign, zero-cloud AI research platform: a grounded knowledge library, a

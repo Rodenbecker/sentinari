@@ -3,7 +3,7 @@
 **Initiative:** Inspirari Research Initiative / Sentinari Sovereign Epistemic Platform  
 **Live Production URL:** https://sentinari-core-250830594433.us-central1.run.app  
 **GitHub Repository:** https://github.com/Rodenbecker/sentinari  
-**Interactive Showroom:** https://rodenbecker.github.io/sentinari/  
+**Interactive Showroom:** https://ongalali.github.io/sentinari/  
 **100-Year Constitution:** https://sentinari-core-250830594433.us-central1.run.app/constitution  
 **Master Video Walkthrough:** https://sentinari-core-250830594433.us-central1.run.app/api/video/walkthrough.mp4  
 
@@ -31,7 +31,7 @@
 - **Headquarters / Base:** South Africa / Global Remote
 - **Website / Production Endpoint:** `https://sentinari-core-250830594433.us-central1.run.app`
 - **GitHub Repository (Public Showroom):** `https://github.com/Rodenbecker/sentinari`
-- **Interactive Documentation & Video Tour:** `https://rodenbecker.github.io/sentinari/#walkthrough`
+- **Interactive Documentation & Video Tour:** `https://ongalali.github.io/sentinari/#walkthrough`
 - **Primary Contact Email:** `rodenbecker.za@gmail.com`
 - **Current Funding Stage:** 100% Self-Funded / Bootstrapped Personal Initiative (Zero debt, zero prior institutional capture)
 - **One-Sentence Tagline:**  

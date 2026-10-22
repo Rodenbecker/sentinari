@@ -216,7 +216,7 @@ def render_png(out_path: Path):
     # Footer
     draw.line([100, 1345, w - 100, 1345], fill=(30, 41, 59), width=1)
     foot_l = "Dr. Pierre C. Wepener • Sole Author & Chief Architect • Copyright © 2026 Inspirari Research Initiative • 100% Personal Initiative"
-    foot_r = "Live Production: https://sentinari-core-250830594433.us-central1.run.app • Showroom: https://rodenbecker.github.io/sentinari/"
+    foot_r = "Live Production: https://sentinari-core-250830594433.us-central1.run.app • Showroom: https://ongalali.github.io/sentinari/"
     draw.text((100, 1362), foot_l, font=f_foot, fill=(148, 163, 184))
     r_bbox = draw.textbbox((0, 0), foot_r, font=f_foot)
     rw = r_bbox[2] - r_bbox[0]
