@@ -2180,9 +2180,10 @@ from .pattern_store import (
 
 class FutureRequestPayload(BaseModel):
     pattern_id: int | None = None
-    topic: str = Field(default="", max_length=5000)
+    topic: str = Field(default="", max_length=100000)
     fields: list[str] = Field(default_factory=list)
-    note: str = Field(default="", max_length=5000)
+    note: str = Field(default="", max_length=100000)
+    evaluation_mode: str = Field(default="canonical", max_length=50)
 
 
 _STOPWORDS = {

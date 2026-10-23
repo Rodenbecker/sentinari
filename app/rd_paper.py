@@ -712,24 +712,31 @@ def _synthesize_llm_all_stages(
                 {
                     "role": "system",
                     "content": (
-                        "You are Gemma (Sentinel R&D Principal Investigator). "
+                        "You are Gemma (Sentinel R&D Principal Investigator, Mechanical & Systems Engineering Specialist, and Applied Mathematician).\n"
+                        "Your mission is to establish rigorous, first-principles technological architectures, governing physical laws, and mathematical formulations for custom research directives.\n\n"
+                        "CORE REASONING DIRECTIVES:\n"
+                        "1. FIRST-PRINCIPLES ENGINEERING: Reason from fundamental physical conservation laws (mass, energy, momentum), mechanical equilibrium (sum F = 0, sum M = 0), thermodynamics, fluid mechanics, kinematic linkages, and constitutive material stress/strain tensors. Do not merely summarize text—actively apply it to synthesize the custom physical/conceptual architecture.\n"
+                        "2. REAL KATEX MATHEMATICS: Express all governing equations, state variables, tensor equations, and equilibrium conditions using real display math ($$...$$ or \\[...\\]) and inline math (\\(...\\) or $...$). Make derivations mathematically complete and verifiable.\n"
+                        "3. STRUCTURAL & SYSTEM DIAGRAMS: In system_architecture and implementation_process, include clear structural diagrams using Mermaid flowchart/architecture syntax (```mermaid\\ngraph TD\\n...```) to visualize kinematic topologies, component interfaces, or force/energy flows.\n"
+                        "4. EPISTEMIC GAPS & DATA DEFICITS: In future_scope and technical_specifications, explicitly formulate unmeasured empirical parameters, boundary Reynolds numbers, fatigue S-N curves, or field testing datasets needed for physical prototyping.\n"
+                        "5. UNCONSTRAINED TECHNICAL RIGOR: Write extensive, publication-grade engineering prose without arbitrary sentence or brevity limits.\n\n"
                         "Return ONLY a valid JSON object (no markdown fences) with these exact keys:\n"
                         "- \"title\": concise descriptive R&D title reflecting the core technological development or research objective\n"
-                        "- \"abstract\": 150 to 250-word academic summary covering problem, proposed development, methodology, key findings, and practical impact\n"
-                        "- \"keywords\": array of 4 to 6 technical indexing terms\n"
-                        "- \"problem_statement\": 3-4 sentences describing the technical challenge, gap, or inefficiency solved\n"
-                        "- \"literature_review\": 3-5 sentences reviewing prior research/solutions and their limitations, including inline citations like [1], [2]\n"
-                        "- \"objectives\": array of 3 specific, measurable goals (e.g., quantitative targets, efficiency/accuracy gains)\n"
-                        "- \"system_architecture\": 3-4 sentences describing the high-level conceptual design and framework\n"
-                        "- \"architecture_nodes\": array of 4 short block-diagram stage labels\n"
-                        "- \"technical_specifications\": 3-4 sentences specifying exact tools, materials, software stacks, or compositions\n"
-                        "- \"implementation_process\": 3-4 step technical explanation of how the system/process is built or executed\n"
-                        "- \"experimental_setup\": 3-4 sentences describing the testbed environment, parameters, and boundary conditions\n"
-                        "- \"data_analysis_results\": 3-4 sentences analyzing the quantitative metrics and Assessment Matrix outcomes\n"
-                        "- \"discussion\": 3-4 sentences evaluating how results met objectives, anomalies, and benchmark comparisons\n"
-                        "- \"conclusion\": 2-3 sentences summarizing project success, technical contributions, and real-world viability\n"
-                        "- \"future_scope\": 2-3 sentences on next-generation improvements, scaling, and addressing remaining limitations\n"
-                        "- \"recommended_solutions\": 4-5 sentences analyzing the literature_review and discussion to propose concrete Possible Solutions to the problem_statement (with inline citations like [1], [2]). If the curated and contemporary sources available to date are insufficient to propose concrete solutions, set this exact sentence: "
+                        "- \"abstract\": comprehensive academic summary covering problem, governing physical mechanisms, proposed architecture, key findings, and practical impact\n"
+                        "- \"keywords\": array of 4 to 8 technical indexing terms\n"
+                        "- \"problem_statement\": detailed first-principles technical challenge, physical inefficiencies, and mathematical formulation of the problem\n"
+                        "- \"literature_review\": in-depth analysis of prior research/solutions and their physical/mathematical limitations, with inline citations like [1], [2]\n"
+                        "- \"objectives\": array of 3 to 5 specific, measurable engineering goals (quantitative benchmarks, efficiency/stress targets, error margins)\n"
+                        "- \"system_architecture\": comprehensive conceptual and mechanical architecture, including governing physics, state variables, and an embedded Mermaid structural diagram (```mermaid\\ngraph TD\\n...```)\n"
+                        "- \"architecture_nodes\": array of 4 to 6 block-diagram stage labels\n"
+                        "- \"technical_specifications\": detailed specifications of materials, kinematics, governing equations in display KaTeX ($$...$$), sensor/actuation requirements, and structural dimensions\n"
+                        "- \"implementation_process\": step-by-step engineering execution protocol from theoretical physics derivation to CAD/simulation, material selection, fabrication tolerances, and testbed assembly\n"
+                        "- \"experimental_setup\": rigorous experimental testbed setup, boundary conditions, ambient thermal gradients, load profiles, and instrumentation\n"
+                        "- \"data_analysis_results\": quantitative evaluation including KaTeX formulas for Net Sustainable Impact, dimension metrics, and mathematical equilibria\n"
+                        "- \"discussion\": thorough analytical discussion of structural stress distributions, thermodynamic trade-offs, stability margins, and failure modes\n"
+                        "- \"conclusion\": rigorous engineering conclusion summarizing the theoretical validity, physical viability, and architectural innovation\n"
+                        "- \"future_scope\": detailed Epistemic Deficit & Data Requirements Schedule: list of specific empirical experiments, material tests (e.g. S-N fatigue, high-temp yield curves), and external datasets needed to validate the physical prototype\n"
+                        "- \"recommended_solutions\": comprehensive synthesis detailing actionable engineering solutions and deployment pathways with inline citations like [1], [2]. If the curated and contemporary sources available to date are insufficient to propose concrete solutions, set this exact sentence: "
                         f"\"{RECOMMENDED_SOLUTIONS_FALLBACK}\""
                     ),
                 },
@@ -748,7 +755,7 @@ def _synthesize_llm_all_stages(
                     ),
                 },
             ],
-            max_tokens=2100,
+            max_tokens=8192,
         )
     except Exception:
         return {}
@@ -1133,13 +1140,50 @@ _CURVE_COLORS = ["#4f46e5", "#0891b2", "#b45309", "#be185d", "#15803d", "#7c3aed
 
 
 def _format_prose_with_inline_citations(text: str, max_cite: int) -> str:
-    """Escape HTML in prose and turn [1], [2], etc. into clickable anchor badges linking to #bib-item-N."""
-    escaped = _html.escape(str(text or ""))
+    """Format technical prose, preserving KaTeX math equations, Mermaid diagrams, and APA citations."""
+    raw = str(text or "")
+
+    # 1. Extract and preserve mermaid code blocks
+    mermaid_blocks: list[str] = []
+    def _save_mermaid(m: re.Match[str]) -> str:
+        idx = len(mermaid_blocks)
+        code = m.group(1).strip()
+        mermaid_blocks.append(
+            f'<div class="mermaid-diagram-wrap" style="margin:16px 0;background:#f8fafc;border:1px solid #cbd5e1;border-radius:10px;padding:16px;text-align:center;">'
+            f'<pre class="mermaid">{_html.escape(code)}</pre>'
+            f'</div>'
+        )
+        return f"__MERMAID_BLOCK_{idx}__"
+
+    raw = re.sub(r"```(?:mermaid)?\s*([\s\S]*?)```", _save_mermaid, raw)
+
+    # 2. Extract and preserve display and inline LaTeX math
+    math_blocks: list[str] = []
+    def _save_math(m: re.Match[str]) -> str:
+        idx = len(math_blocks)
+        math_content = m.group(0)
+        math_blocks.append(math_content)
+        return f"__MATH_BLOCK_{idx}__"
+
+    raw = re.sub(r"(\$\$[\s\S]*?\$\$|\\\[[\s\S]*?\\\]|\\\([\s\S]*?\\\)|\$(?:\\\$|[^\$\n])+\$)", _save_math, raw)
+
+    # 3. Escape HTML on prose
+    escaped = _html.escape(raw)
+
+    # 4. Turn [1], [2] into clickable citation anchors
     def _repl(m: re.Match[str]) -> str:
         num = int(m.group(1))
         target = f"#bib-item-{num}" if 1 <= num <= max(1, max_cite) else "#bib-section"
         return f"<a class='inline-cite' href='{target}' title='Jump to citation [{num}] in Comprehensive Bibliography'>[{num}]</a>"
-    return re.sub(r"\[(\d+)\]", _repl, escaped)
+    escaped = re.sub(r"\[(\d+)\]", _repl, escaped)
+
+    # 5. Restore math and mermaid blocks
+    for idx, mb in enumerate(math_blocks):
+        escaped = escaped.replace(f"__MATH_BLOCK_{idx}__", mb)
+    for idx, mm in enumerate(mermaid_blocks):
+        escaped = escaped.replace(f"__MERMAID_BLOCK_{idx}__", mm)
+
+    return escaped
 
 
 def _format_apa_ref_html(ref: str, source_url: str = "") -> str:
@@ -1323,6 +1367,7 @@ def render_rd_report_html(report: dict[str, Any]) -> str:
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
 <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
 <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
 <style>{_PAPER_CSS}</style></head><body>
 <div class="wrap">
   <!-- SECTION 1: FRONT MATTER -->

@@ -4,6 +4,10 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Scientific Patterns Discovery — Sentinari</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
 <style>
   :root { color-scheme: light; }
   * { box-sizing: border-box; }
@@ -237,17 +241,28 @@
         <div class="muted" style="margin-top:4px;">Select the primary discipline to anchor document retrieval and cross-functional evidence extraction (or choose All Domains).</div>
       </div>
 
-      <!-- Field 2: Replaced by 5,000-character textarea for stating the problem to be solved -->
+      <!-- Field 2: Unconstrained Textarea for Engineering & First-Principles Problem Solving -->
       <div style="margin-bottom:14px;">
-        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:5px;">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:5px;flex-wrap:wrap;gap:6px;">
           <label for="manualTopic" style="font-weight:800;font-size:13px;color:#17304f;">
-            2. Problem Statement &amp; Resolution Objective to be Solved
+            2. Problem Statement, Engineering Directives &amp; First-Principles Objectives
           </label>
-          <span id="manualCharCounter" style="font-size:12px;color:#5b6b7d;font-family:'JetBrains Mono',monospace;font-weight:600;background:#f0f4fa;padding:2px 8px;border-radius:6px;">
-            0 / 5,000 characters
+          <span id="manualCharCounter" style="font-size:12px;color:#2f6fb2;font-family:'JetBrains Mono',monospace;font-weight:700;background:#eef4fc;padding:2px 8px;border-radius:6px;border:1px solid #c8dcf5;">
+            0 characters (Unconstrained Space)
           </span>
         </div>
-        <textarea id="manualTopic" maxlength="5000" rows="8" placeholder="State the specific problem to be solved in detail (up to 5,000 characters). State your objectives, relevant constraints, and desired empirical solutions.&#10;&#10;Example: Provide possible solutions to end the Russia-Ukraine war by analyzing sovereign security guarantees, demilitarized transit corridors, sanctions relief milestones, and multi-lateral energy trade stabilization..." style="width:100%;box-sizing:border-box;padding:12px 14px;background:#fff;border:1px solid #ccd9ea;border-radius:10px;color:#17304f;font-family:inherit;font-size:13.5px;line-height:1.6;resize:vertical;"></textarea>
+        <textarea id="manualTopic" maxlength="100000" rows="8" placeholder="State your engineering problem, physical specifications, governing constraints, or custom mathematical request in complete detail (unconstrained space). Gemma will derive physical equilibrium, state variables, KaTeX formulas, structural diagrams, and identify missing empirical data...&#10;&#10;Example: Establish the mechanical architecture for a high-pressure regenerative heat exchanger operating at 650°C and 250 bar. Formulate governing Navier-Stokes boundary layers, stress-strain tensor equations, kinematic sealing linkages, and indicate missing empirical material fatigue curves..." style="width:100%;box-sizing:border-box;padding:12px 14px;background:#fff;border:1px solid #ccd9ea;border-radius:10px;color:#17304f;font-family:inherit;font-size:13.5px;line-height:1.6;resize:vertical;"></textarea>
+      </div>
+
+      <!-- Evaluation & Reasoning Mode Selector -->
+      <div style="display:flex;align-items:center;gap:12px;margin-bottom:14px;flex-wrap:wrap;background:#f8fafc;border:1px solid #dbe6f3;border-radius:10px;padding:10px 14px;">
+        <label for="evalModeSelect" style="font-weight:800;font-size:12.5px;color:#17304f;">Dimensional Reasoning Mode:</label>
+        <select id="evalModeSelect" style="padding:6px 12px;border:1px solid #ccd9ea;border-radius:8px;font-size:12.5px;background:#fff;color:#17304f;font-weight:700;">
+          <option value="engineering" selected>⚙️ First-Principles Mechanical &amp; Physical Systems Matrix</option>
+          <option value="unconstrained">⚡ Unconstrained Theoretical Exploration (Zero Limiting Constraints)</option>
+          <option value="canonical">Canonical 7-D Socio-Epistemic Matrix</option>
+        </select>
+        <span style="font-size:11.5px;color:#5b6b7d;">Prevents limiting Gemma's reasoning by evaluating real physical principles or unconstrained theory.</span>
       </div>
 
       <div class="row" style="margin-top:10px;align-items:center;gap:12px;">
@@ -1092,7 +1107,7 @@
   function updatePrioCharCount() {
     if (!prioProblemInput || !prioCharCount) return;
     const len = prioProblemInput.value.length;
-    prioCharCount.textContent = `${new Intl.NumberFormat().format(len)} / 5,000 characters`;
+    prioCharCount.textContent = `${new Intl.NumberFormat().format(len)} characters (Unconstrained Space)`;
     if (len >= 4900) {
       prioCharCount.style.color = '#8f3a45';
       prioCharCount.style.fontWeight = '800';
@@ -1253,7 +1268,7 @@
   function updateManualCharCount() {
     if (!manualTopicEl || !manualCounterEl) return;
     const len = manualTopicEl.value.length;
-    manualCounterEl.textContent = `${new Intl.NumberFormat().format(len)} / 5,000 characters`;
+    manualCounterEl.textContent = `${new Intl.NumberFormat().format(len)} characters (Unconstrained Space)`;
     if (len >= 4900) {
       manualCounterEl.style.color = '#8f3a45';
       manualCounterEl.style.fontWeight = '800';

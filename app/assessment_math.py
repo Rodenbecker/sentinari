@@ -68,6 +68,40 @@ WEIGHTS: dict[str, float] = {
 }
 assert abs(sum(WEIGHTS.values()) - 1.0) < 1e-9
 
+# ---------------------------------------------------------------------------
+# Physical & Mechanical Engineering Matrix (Custom Override Mode)
+# ---------------------------------------------------------------------------
+ENGINEERING_DIMENSIONS = [
+    "Structural Rigidity",
+    "Thermodynamic Efficiency",
+    "Kinematic Reliability",
+    "Thermal Dissipation",
+    "Material Fatigue Life",
+    "Mass & Power Density",
+    "Manufacturability",
+]
+
+ENGINEERING_BASELINES: dict[str, dict[str, float]] = {
+    "Structural Rigidity":      {"mu": 8.5, "sigma": 2.0, "A": 0.95},
+    "Thermodynamic Efficiency": {"mu": 8.0, "sigma": 2.2, "A": 0.90},
+    "Kinematic Reliability":    {"mu": 9.0, "sigma": 1.5, "A": 0.95},
+    "Thermal Dissipation":      {"mu": 7.5, "sigma": 2.0, "A": 0.85},
+    "Material Fatigue Life":    {"mu": 8.5, "sigma": 1.8, "A": 0.90},
+    "Mass & Power Density":     {"mu": 8.0, "sigma": 2.4, "A": 0.85},
+    "Manufacturability":        {"mu": 7.0, "sigma": 2.2, "A": 0.80},
+}
+
+ENGINEERING_WEIGHTS: dict[str, float] = {
+    "Structural Rigidity":      0.18,
+    "Thermodynamic Efficiency": 0.16,
+    "Kinematic Reliability":    0.16,
+    "Thermal Dissipation":      0.14,
+    "Material Fatigue Life":    0.14,
+    "Mass & Power Density":     0.12,
+    "Manufacturability":        0.10,
+}
+
+
 LEVEL_BANDS = [
     (33.33, "Low Impact (Level 1)"),
     (67.67, "Medium Impact (Level 2)"),
@@ -119,7 +153,7 @@ def _clamp10(v: float) -> float:
     return max(0.0, min(10.0, float(v)))
 
 
-def measure_dimension_levels(pattern: dict[str, Any], graph: dict[str, Any] | None = None) -> dict[str, dict[str, Any]]:
+def measure_dimension_levels(pattern: dict[str, Any], graph: dict[str, Any] | None = None, mode: str = "canonical") -> dict[str, dict[str, Any]]:
     """Derive each dimension's operational level x_i (0-10) from actual data.
 
     Every level is a transparent sum of measured contributions — the caller
@@ -159,6 +193,26 @@ def measure_dimension_levels(pattern: dict[str, Any], graph: dict[str, Any] | No
     def total(*terms: float) -> float:
         return _clamp10(sum(terms))
 
+
+    if str(mode).lower() == "engineering":
+        eng_contributions: dict[str, dict[str, float]] = {
+            "Structural Rigidity":      {"evidence_depth": depth, "graph_mass": graph_mass, "confidence": confidence_term},
+            "Thermodynamic Efficiency": {"evidence_depth": depth, "source_breadth": breadth, "confidence": confidence_term},
+            "Kinematic Reliability":    {"graph_mass": graph_mass, "confidence": confidence_term, "benefits": benefit_term},
+            "Thermal Dissipation":      {"field_span": span_term, "evidence_depth": depth, "confidence": confidence_term},
+            "Material Fatigue Life":    {"evidence_depth": depth, "confidence": confidence_term, "graph_mass": graph_mass},
+            "Mass & Power Density":     {"source_breadth": breadth, "field_span": span_term, "benefits": benefit_term},
+            "Manufacturability":        {"field_span": span_term, "source_breadth": breadth, "confidence": confidence_term},
+        }
+        eng_levels = {dim: total(*c.values()) for dim, c in eng_contributions.items()}
+        return {
+            dim: {
+                "level": round(eng_levels[dim], 2),
+                "contributions": {k: round(v, 2) for k, v in c.items() if v},
+            }
+            for dim, c in eng_contributions.items()
+        }
+
     contributions: dict[str, dict[str, float]] = {
         "Knowledge":     {"evidence_depth": depth, "source_breadth": breadth, "graph_mass": graph_mass, "confidence": confidence_term},
         "Intelligence":  {"evidence_depth": depth, "graph_mass": graph_mass, "confidence": confidence_term, "field_span": span_term},
@@ -182,45 +236,58 @@ def measure_dimension_levels(pattern: dict[str, Any], graph: dict[str, Any] | No
 # Full matrix evaluation for one pattern
 # ---------------------------------------------------------------------------
 
-def evaluate_pattern_matrix(pattern: dict[str, Any], graph: dict[str, Any] | None = None) -> dict[str, Any]:
+def evaluate_pattern_matrix(pattern: dict[str, Any], graph: dict[str, Any] | None = None, mode: str = "canonical") -> dict[str, Any]:
     """Compute SD_i(%), levels, curves and NSIS for a discovered pattern."""
-    measured = measure_dimension_levels(pattern, graph)
+    eval_mode = str(mode or "canonical").strip().lower()
+    is_eng = eval_mode == "engineering"
+    is_unconstrained = eval_mode == "unconstrained"
+
+    target_dims = ENGINEERING_DIMENSIONS if is_eng else DIMENSIONS
+    target_baselines = ENGINEERING_BASELINES if is_eng else BASELINES
+    target_weights = ENGINEERING_WEIGHTS if is_eng else WEIGHTS
+
+    measured = measure_dimension_levels(pattern, graph, mode=eval_mode)
     x = {dim: m["level"] for dim, m in measured.items()}
-    dyn = apply_coupling(BASELINES, x)
+    dyn = apply_coupling(target_baselines, x)
 
     # S_i(x) = G_i(x) / A_i — the standardised 0-1 sustainability score.
     s_scores: dict[str, float] = {}
     g_values: dict[str, float] = {}
-    for dim in DIMENSIONS:
+    for dim in target_dims:
         p = dyn[dim]
         g = gaussian(x[dim], p["mu"], p["sigma"], p["A"])
         g_values[dim] = g
-        s_scores[dim] = min(1.0, g / p["A"]) if p["A"] else 0.0
+        if is_unconstrained:
+            s_scores[dim] = 1.0  # Zero limiting constraint on frontier exploration
+        else:
+            s_scores[dim] = min(1.0, g / p["A"]) if p["A"] else 0.0
 
-    nsis = sum(WEIGHTS[d] * s_scores[d] for d in DIMENSIONS)
+    nsis = 1.0 if is_unconstrained else sum(target_weights[d] * s_scores[d] for d in target_dims)
     sd_percent: dict[str, float] = {}
-    for dim in DIMENSIONS:
-        raw = (WEIGHTS[dim] * s_scores[dim] / nsis * 100.0) if nsis > 0 else 0.0
+    for dim in target_dims:
+        raw = (target_weights[dim] * s_scores[dim] / nsis * 100.0) if nsis > 0 else 0.0
         sd_percent[dim] = round(raw, 2)
 
     # Net envelope curve across the 0-10 axis (document's chart data).
     xs = [round(i / 10, 1) for i in range(101)]
     curves: dict[str, list[float]] = {}
-    for dim in DIMENSIONS:
+    for dim in target_dims:
         p = dyn[dim]
         curves[dim] = [round(gaussian(v, p["mu"], p["sigma"], p["A"]), 4) for v in xs]
-    envelope = [round(sum(curves[d][i] for d in DIMENSIONS) / len(DIMENSIONS), 4) for i in range(len(xs))]
+    envelope = [round(sum(curves[d][i] for d in target_dims) / len(target_dims), 4) for i in range(len(xs))]
 
     return {
-        "x_levels": {d: round(x[d], 2) for d in DIMENSIONS},
+        "mode": eval_mode,
+        "dimensions": target_dims,
+        "x_levels": {d: round(x[d], 2) for d in target_dims},
         "measured": measured,
-        "dynamic_params": {d: {k: round(v, 3) for k, v in dyn[d].items()} for d in DIMENSIONS},
-        "s_scores": {d: round(s_scores[d], 4) for d in DIMENSIONS},
-        "g_values": {d: round(g_values[d], 4) for d in DIMENSIONS},
-        "weights": WEIGHTS,
+        "dynamic_params": {d: {k: round(v, 3) for k, v in dyn[d].items()} for d in target_dims},
+        "s_scores": {d: round(s_scores[d], 4) for d in target_dims},
+        "g_values": {d: round(g_values[d], 4) for d in target_dims},
+        "weights": target_weights,
         "nsis": round(nsis, 4),
         "sd_percent": sd_percent,
-        "level_bands": {d: _level_band(sd_percent[d]) for d in DIMENSIONS},
+        "level_bands": {d: _level_band(sd_percent[d]) for d in target_dims},
         "curve_x": xs,
         "curves": curves,
         "envelope": envelope,

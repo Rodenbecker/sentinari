@@ -698,9 +698,9 @@ def record_future_request(
             (
                 str(kind or "").strip() or "unspecified",
                 int(pattern_id) if pattern_id else None,
-                str(topic or "")[:5000],
+                str(topic or "")[:100000],
                 json.dumps(list(fields or [])),
-                str(note or "")[:5000],
+                str(note or "")[:100000],
                 str(status or "logged")[:80],
                 _utc_now(),
             ),
@@ -723,7 +723,7 @@ def update_future_request(
         if row is None:
             return None
         new_status = str(status if status is not None else row["status"])[:80]
-        new_note = str(note if note is not None else row["note"])[:5000]
+        new_note = str(note if note is not None else row["note"])[:100000]
         new_pid = int(pattern_id) if pattern_id is not None else row["pattern_id"]
         conn.execute(
             """
@@ -1032,7 +1032,7 @@ def seed_priority_queue_items(
                 """,
                 (
                     rank,
-                    t[:5000],
+                    t[:100000],
                     str(scientific_field or "").strip()[:120],
                     str(secondary_field or "").strip()[:120],
                     str(tertiary_field or "").strip()[:120],
