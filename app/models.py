@@ -267,10 +267,17 @@ class PlaygroundVideoPlanRequest(BaseModel):
 
 
 class PlaygroundVideoSceneRequest(BaseModel):
-    duration: float = Field(default=4.0, ge=0.5, le=20.0)
+    duration: float = Field(default=4.0, ge=0.5, le=120.0)
     action: str = Field(default="march_forward", max_length=64)
     camera: str = Field(default="static", max_length=64)
-    narration: str | None = Field(default=None, max_length=600)
+    narration: str | None = Field(default=None, max_length=1200)
+    title: str | None = Field(default=None, max_length=200)
+    subtitle: str | None = Field(default=None, max_length=300)
+    badge: str | None = Field(default=None, max_length=120)
+    cards: list[dict[str, Any]] | None = Field(default=None)
+    zoom_target: str = Field(default="none", max_length=40)
+    audio_url: str | None = Field(default=None, max_length=500)
+    words: list[dict[str, Any]] | None = Field(default=None)
 
 
 class PlaygroundVideoRenderRequest(BaseModel):
@@ -278,6 +285,25 @@ class PlaygroundVideoRenderRequest(BaseModel):
     fps: int = Field(default=24, ge=8, le=32)
     scenes: list[PlaygroundVideoSceneRequest] = Field(default_factory=list)
     filename_hint: str = Field(default="ttv", max_length=40)
+    include_ambient_music: bool = Field(default=True)
+    ambient_music_volume: float = Field(default=0.12, ge=0.0, le=1.0)
+    include_intro: bool = Field(default=True)
+    intro_title: str = Field(default="SENTINARI: SOVEREIGN EPISTEMIC INTELLIGENCE", max_length=200)
+    intro_presenter: str = Field(default="Dr. Pierre C. Wepener • Founder & Chief Architect", max_length=200)
+    intro_subtitle: str = Field(default="Complete Workspace Master Walkthrough", max_length=300)
+
+
+class PlaygroundGemmaScriptRequest(BaseModel):
+    workspace_id: str = Field(default="patterns", max_length=60)
+    custom_context: str | None = Field(default=None, max_length=2000)
+    include_outcomes: bool = Field(default=True)
+    include_daemons: bool = Field(default=True)
+
+
+class PlaygroundTtsRequest(BaseModel):
+    text: str = Field(min_length=1, max_length=2000)
+    voice: str = Field(default="en-US-AndrewNeural", max_length=60)
+    scene_id: str | None = Field(default=None, max_length=60)
 
 
 class PlaygroundVideoStitchRequest(BaseModel):

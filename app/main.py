@@ -75,6 +75,8 @@ from .models import (
     PlaygroundVideoRenderRequest,
     PlaygroundVideoStitchRequest,
     PlaygroundVideoWanRequest,
+    PlaygroundGemmaScriptRequest,
+    PlaygroundTtsRequest,
     PersonalityUpdateRequest,
     SafetyUpdateRequest,
     SearchRequest,
@@ -174,12 +176,15 @@ from .unsupervised import (
 )
 from .video_lab import (
     build_plan_from_prompt,
+    generate_gemma_workspace_script,
     get_video_lab_status,
     get_wan_video_status,
+    get_workspaces_metadata,
     render_stitched_images,
     render_text_plan,
     render_wan_text_video,
     resolve_output_file,
+    synthesize_narration_audio,
 )
 from .video_jobs import create_video_job, get_video_job, list_video_jobs, update_video_job
 
@@ -1995,6 +2000,7 @@ def _render_authed_ui_template(
     return HTMLResponse(html)
 
 
+@app.get("/ui/video", response_class=HTMLResponse)
 @app.get("/ui/playground/wan", response_class=HTMLResponse)
 def ui_playground_wan(request: Request) -> HTMLResponse:
     return _render_authed_ui_template(
@@ -3273,13 +3279,45 @@ def api_qualia_forensic_report_html(
 
 
 @app.get("/api/playground/video/status")
-def api_playground_video_status(_: None = Depends(_admin_auth_dependency)) -> dict[str, Any]:
+def api_playground_video_status() -> dict[str, Any]:
     return get_video_lab_status()
 
 
 @app.get("/api/playground/video/wan-status")
-def api_playground_video_wan_status(_: None = Depends(_admin_auth_dependency)) -> dict[str, Any]:
+def api_playground_video_wan_status() -> dict[str, Any]:
     return get_wan_video_status()
+
+
+@app.get("/api/playground/video/workspaces")
+def api_playground_video_workspaces() -> dict[str, Any]:
+    return {"ok": True, "workspaces": get_workspaces_metadata()}
+
+
+@app.post("/api/playground/video/gemma-script")
+def api_playground_video_gemma_script(
+    payload: PlaygroundGemmaScriptRequest,
+) -> dict[str, Any]:
+    try:
+        return generate_gemma_workspace_script(
+            workspace_id=payload.workspace_id,
+            custom_context=payload.custom_context,
+        )
+    except Exception as ex:
+        raise HTTPException(status_code=400, detail=str(ex))
+
+
+@app.post("/api/playground/video/tts")
+def api_playground_video_tts(
+    payload: PlaygroundTtsRequest,
+) -> dict[str, Any]:
+    try:
+        return synthesize_narration_audio(
+            text=payload.text,
+            voice=payload.voice,
+            scene_id=payload.scene_id,
+        )
+    except Exception as ex:
+        raise HTTPException(status_code=400, detail=str(ex))
 
 
 @app.post("/api/playground/video/plan")
@@ -3311,6 +3349,12 @@ def api_playground_video_render(
             "language": payload.language,
             "fps": payload.fps,
             "scenes": [scene.model_dump() for scene in payload.scenes],
+            "include_ambient_music": payload.include_ambient_music,
+            "ambient_music_volume": payload.ambient_music_volume,
+            "include_intro": payload.include_intro,
+            "intro_title": payload.intro_title,
+            "intro_presenter": payload.intro_presenter,
+            "intro_subtitle": payload.intro_subtitle,
         }
         return render_text_plan(plan, filename_hint=payload.filename_hint)
     except RuntimeError as ex:
@@ -3321,15 +3365,21 @@ def api_playground_video_render(
 
 def _run_video_render_job(job_id: str, payload: PlaygroundVideoRenderRequest) -> None:
     try:
-        update_video_job(job_id, status="processing", progress=10, message="Preparing scene plan.")
+        update_video_job(job_id, status="processing", progress=10, message="Preparing scene plan & neural narration.")
         plan = {
             "language": payload.language,
             "fps": payload.fps,
             "scenes": [scene.model_dump() for scene in payload.scenes],
+            "include_ambient_music": payload.include_ambient_music,
+            "ambient_music_volume": payload.ambient_music_volume,
+            "include_intro": payload.include_intro,
+            "intro_title": payload.intro_title,
+            "intro_presenter": payload.intro_presenter,
+            "intro_subtitle": payload.intro_subtitle,
         }
-        update_video_job(job_id, status="processing", progress=35, message="Rendering CPU frames with FFmpeg.")
+        update_video_job(job_id, status="processing", progress=35, message="Synthesizing audio & rendering 1080p slide frames with zoom.")
         result = render_text_plan(plan, filename_hint=payload.filename_hint)
-        update_video_job(job_id, status="done", progress=100, message="CPU MP4 ready.", result=result)
+        update_video_job(job_id, status="done", progress=100, message="CPU MP4 ready with neural narration & ambient music.", result=result)
     except Exception as ex:
         update_video_job(job_id, status="error", progress=0, message="CPU render failed.", error=str(ex))
 
@@ -3449,12 +3499,25 @@ def api_playground_video_jobs(
 @app.get("/api/playground/video/file/{file_name}")
 def api_playground_video_file(
     file_name: str,
-    _: None = Depends(_admin_auth_dependency),
 ) -> FileResponse:
     file_path = resolve_output_file(file_name)
     if file_path is None:
         raise HTTPException(status_code=404, detail="File not found.")
-    media_type = "video/mp4" if file_path.suffix.lower() == ".mp4" else "text/plain; charset=utf-8"
+    ext = file_path.suffix.lower()
+    if ext == ".mp4":
+        media_type = "video/mp4"
+    elif ext in {".mp3", ".mpeg"}:
+        media_type = "audio/mpeg"
+    elif ext == ".wav":
+        media_type = "audio/wav"
+    elif ext == ".png":
+        media_type = "image/png"
+    elif ext in {".jpg", ".jpeg"}:
+        media_type = "image/jpeg"
+    elif ext == ".srt":
+        media_type = "text/plain; charset=utf-8"
+    else:
+        media_type = "application/octet-stream"
     return FileResponse(path=file_path, filename=file_path.name, media_type=media_type)
 
 
