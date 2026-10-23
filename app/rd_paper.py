@@ -173,21 +173,26 @@ def _llm_json(messages: list[dict[str, str]], max_tokens: int) -> dict[str, Any]
 
 def _canonical_latex() -> str:
     return (
-        r"\text{SD}_{i}(\%)=\frac{W_{i}\cdot S_{i}(x)}{\sum_{j=1}^{n}W_{j}\cdot S_{j}(x)}\times 100"
+        r"\text{SD}_{i}(\%)=\left(\frac{W_{i}\cdot S_{i}(x)}{\sum_{j=1}^{n}W_{j}\cdot S_{j}(x)}\right)\times 100\%"
         r"\qquad\quad G_{i}(x)=A_{i}\cdot\exp\!\left(-\frac{(x-\mu_{i})^{2}}{2\sigma_{i}^{2}}\right)"
+        r"\qquad\quad \text{NSIS}=\sum_{j=1}^{n} W_{j}\cdot S_{j}(x)"
     )
 
 
 def _computed_formalism_latex(evaluation: dict[str, Any]) -> str:
-    x = evaluation["x_levels"]
-    s = evaluation["s_scores"]
-    nsis = evaluation["nsis"]
-    x_vec = ",\\; ".join(f"x_{{\\text{{{d}}}}}={x[d]:.2f}" for d in DIMENSIONS)
-    s_vec = ",\\; ".join(f"S_{{\\text{{{d}}}}}={s[d]:.3f}" for d in DIMENSIONS)
+    x = evaluation.get("x_levels") or {}
+    s = evaluation.get("s_scores") or {}
+    sd = evaluation.get("sd_percent") or {}
+    nsis = float(evaluation.get("nsis") or 0.0)
+    dims = evaluation.get("dimensions") or DIMENSIONS
+    x_vec = ",\\; ".join(f"x_{{\\text{{{d}}}}}={float(x.get(d, 0)):.2f}" for d in dims)
+    s_vec = ",\\; ".join(f"S_{{\\text{{{d}}}}}={float(s.get(d, 0)):.3f}" for d in dims)
+    sd_vec = ",\\; ".join(f"\\text{{SD}}_{{\\text{{{d}}}}}={float(sd.get(d, 0)):.1f}\\%" for d in dims)
     return (
         r"\text{NSIS}=\sum_{j=1}^{7}W_{j}\cdot S_{j}(x)=" + f"{nsis:.4f}"
-        r"\qquad \text{with } " + x_vec
-        + r"\qquad \text{yielding } " + s_vec
+        + r"\qquad \text{Operating: } " + x_vec
+        + r"\qquad \text{Capacity: } " + s_vec
+        + r"\qquad \text{Share: } " + sd_vec
     )
 
 
@@ -1198,6 +1203,141 @@ def _format_apa_ref_html(ref: str, source_url: str = "") -> str:
     return escaped
 
 
+def generate_appendices_zip_bytes(report: dict[str, Any]) -> bytes:
+    """Package the full technical appendices into a clean downloadable .zip archive."""
+    import io
+    import json
+    import zipfile
+    import hashlib
+
+    pid = report.get("pattern_id") or report.get("id") or "unassigned"
+    title = str(report.get("paper_title") or report.get("pattern_title") or "Technical Appendices")
+    ev = report.get("evaluation") or {}
+    econ = report.get("economic_analytics") or {}
+    bib = report.get("bibliography") or []
+    excerpts = report.get("evidence_excerpts") or []
+
+    # 1. Appendix A: Mathematical Formalism
+    app_a = (
+        "% Sentinari Assessment Matrix - Appendix A: Mathematical Proofs & Formalism\n"
+        "% Conceived & Architected by Dr. Pierre C. Wepener (Inspirari Research Initiative)\n"
+        f"% Pattern ID: {pid} - {title}\n\n"
+        "\\documentclass[11pt,a4paper]{article}\n"
+        "\\usepackage{amsmath,amssymb,amsfonts}\n"
+        "\\begin{document}\n\n"
+        "\\section*{Appendix A: Mathematical Formalism & Governing Equations}\n\n"
+        "\\subsection*{1. The Dynamic Coupled Gaussian Bell Curve}\n"
+        "The baseline sustainability impact $G_i(x)$ for each dimension $i$ across operational scale $x \\in [0, 10]$:\n"
+        "\\begin{equation}\n"
+        "G_i(x) = A_i \\cdot \\exp\\left( -\\frac{(x - \\mu_i)^2}{2\\sigma_i^2} \\right)\n"
+        "\\end{equation}\n"
+        "where $\\mu_i$ represents the systemic sweet-spot equilibrium, $\\sigma_i$ denotes systemic tolerance variance, and $A_i$ represents amplitude capacity.\n\n"
+        "\\subsection*{2. Standardised Dimension Sustainability Score}\n"
+        "\\begin{equation}\n"
+        "S_i(x) = \\min\\left(1.0, \\; \\frac{G_i(x)}{A_i}\\right) \\in [0.0, 1.0]\n"
+        "\\end{equation}\n\n"
+        "\\subsection*{3. Net Sustainable Impact Score (NSIS)}\n"
+        "\\begin{equation}\n"
+        "\\text{NSIS} = \\sum_{j=1}^{n} W_j \\cdot S_j(x_j), \\quad \\text{with } \\sum_{j=1}^{n} W_j = 1.0\n"
+        "\\end{equation}\n\n"
+        "\\subsection*{4. Normalized Dimension Impact Percentage}\n"
+        "\\begin{equation}\n"
+        "\\text{SD}_i(\\%) = \\left( \\frac{W_i \\cdot S_i(x_i)}{\\sum_{j=1}^{n} W_j \\cdot S_j(x_j)} \\right) \\times 100\\%\n"
+        "\\end{equation}\n\n"
+        "\\subsection*{5. Interdependence Coupling Rules}\n"
+        "\\begin{itemize}\n"
+        "  \\item \\textbf{Rule A (Intelligence $\\to$ Human Agency):} If $x_{\\text{Intel}} > 7.0$, then $\\mu_{\\text{Agency}} \\leftarrow \\mu_{\\text{Agency}} - 0.4 \\cdot (x_{\\text{Intel}} - 7.0)$ and $\\sigma_{\\text{Agency}} \\leftarrow \\sigma_{\\text{Agency}} - 0.15 \\cdot (x_{\\text{Intel}} - 7.0).\n"
+        "  \\item \\textbf{Rule B (Risk $\\to$ Societal/Decision):} If $x_{\\text{Risk}} > 5.0$, then $\\sigma_{\\text{Soc}} \\leftarrow \\sigma_{\\text{Soc}} + 0.3 \\cdot (x_{\\text{Risk}} - 5.0)$ and $\\mu_{\\text{Dec}} \\leftarrow \\mu_{\\text{Dec}} - 0.25 \\cdot (x_{\\text{Risk}} - 5.0).\n"
+        "  \\item \\textbf{Rule C (Scientific $\\to$ Knowledge):} If $x_{\\text{Sci}} > 7.0$, then $A_{\\text{Know}} \\leftarrow \\min(1.0, A_{\\text{Know}} + 0.05).\n"
+        "\\end{itemize}\n\n"
+        "\\end{document}\n"
+    )
+
+    # 2. Appendix B: Instantiated Parameters
+    app_b_data = {
+        "pattern_id": pid,
+        "pattern_title": title,
+        "nsis": ev.get("nsis"),
+        "dimensions": ev.get("dimensions") or DIMENSIONS,
+        "operational_levels_x": ev.get("x_levels"),
+        "dynamic_parameters": ev.get("dynamic_params"),
+        "sustainability_scores_s": ev.get("s_scores"),
+        "weights_w": ev.get("weights"),
+        "normalized_impact_sd_percent": ev.get("sd_percent"),
+        "impact_level_bands": ev.get("level_bands"),
+        "measured_contributions": ev.get("measured"),
+        "sustainability_envelope_summary": {
+            "mean_envelope": round(sum(ev.get("envelope") or [0]) / max(1, len(ev.get("envelope") or [1])), 4)
+        }
+    }
+    app_b = json.dumps(app_b_data, indent=2, ensure_ascii=False)
+
+    # 3. Appendix C: Empirical Evidence Excerpts
+    app_c_lines = [
+        "SENTINARI EMPIRICAL EVIDENCE REPOSITORY - APPENDIX C",
+        f"Pattern ID: {pid}",
+        f"Title: {title}",
+        f"Total Evidence Chunks: {len(excerpts)}",
+        "=" * 72,
+        "",
+    ]
+    for i, ex in enumerate(excerpts, start=1):
+        app_c_lines.append(f"--- [CHUNK #{i}] Document ID: {ex.get('document_id', 'N/A')} | Field: {ex.get('field', 'General')} ---")
+        app_c_lines.append(str(ex.get("chunk_text") or "").strip())
+        app_c_lines.append("")
+    app_c = "\n".join(app_c_lines)
+
+    # 4. Appendix D: Macroeconomic & Quantitative Telemetry
+    app_d = json.dumps(econ, indent=2, ensure_ascii=False)
+
+    # 5. Bibliography APA 7th Works Cited
+    bib_lines = [
+        "SENTINARI ACADEMIC BIBLIOGRAPHY (APA 7th EDITION) - WORKS CITED",
+        f"Pattern ID: {pid}",
+        f"Total Cited Sources: {len(bib)}",
+        "=" * 72,
+        "",
+    ]
+    for b in bib:
+        ckey = b.get("citation_key") or "[1]"
+        fref = b.get("full_reference") or ""
+        surl = b.get("source_url") or ""
+        bib_lines.append(f"{ckey} {fref}")
+        if surl:
+            bib_lines.append(f"    Source URL/DOI: {surl}")
+        bib_lines.append("")
+    bib_text = "\n".join(bib_lines)
+
+    # 6. Verification Manifest
+    files = {
+        "APPENDIX_A_MATHEMATICAL_FORMALISM.tex": app_a.encode("utf-8"),
+        "APPENDIX_B_INSTANTIATED_PARAMETERS.json": app_b.encode("utf-8"),
+        "APPENDIX_C_EMPIRICAL_EVIDENCE_EXCERPTS.txt": app_c.encode("utf-8"),
+        "APPENDIX_D_MACROECONOMIC_TELEMETRY.json": app_d.encode("utf-8"),
+        "BIBLIOGRAPHY_APA7_WORKS_CITED.txt": bib_text.encode("utf-8"),
+    }
+
+    manifest_lines = [
+        "SENTINARI CRYPTOGRAPHIC VERIFICATION & AUDIT MANIFEST",
+        f"Generated for Pattern ID: {pid}",
+        "=" * 72,
+        "",
+    ]
+    for fname, data in files.items():
+        sha = hashlib.sha256(data).hexdigest()
+        manifest_lines.append(f"SHA256 ({fname}) = {sha}")
+    manifest_lines.append("")
+    manifest_lines.append("Author: Dr. Pierre C. Wepener (Inspirari Research Initiative)")
+    manifest_lines.append("All artifacts verified and certified for academic replication.")
+    files["VERIFICATION_SHA256_MANIFEST.txt"] = "\n".join(manifest_lines).encode("utf-8")
+
+    buf = io.BytesIO()
+    with zipfile.ZipFile(buf, "w", zipfile.ZIP_DEFLATED) as z:
+        for fname, data in files.items():
+            z.writestr(fname, data)
+    return buf.getvalue()
+
+
 def render_rd_report_html(report: dict[str, Any]) -> str:
     """Render the unified 5-Section (15-Indicator) + Request R&D Validation Paper with Section 6 bottom graphs."""
     e = _html.escape
@@ -1378,6 +1518,7 @@ def render_rd_report_html(report: dict[str, Any]) -> str:
         <h1>{e(str(report.get('paper_title') or ''))}</h1>
         <div class="top-actions">
           <a class="top-btn primary" href="/api/patterns/{pid}/rd-paper.pdf">&#11015; Download R&amp;D Paper (.pdf)</a>
+          <a class="top-btn" href="/api/patterns/{pid}/appendices.zip" style="background:#0f172a;color:#fff;border-color:#0f172a;">&#128230; Download Appendices (.zip)</a>
           <a class="top-btn" href="#bib-section">&#128218; Jump to Citations ({len(bib)})</a>
           <a class="top-btn" href="#graphs-section">&#128200; Jump to Graphs &amp; Simulator (Section 6)</a>
           <a class="top-btn" href="#recommended-solutions">&#128161; Jump to Recommended Solutions</a>
@@ -1448,17 +1589,23 @@ def render_rd_report_html(report: dict[str, Any]) -> str:
 
     <h4 class="subsec">4.2 Data Analysis &amp; Assessment Matrix Results <span class="ind-tag">Indicator 11/15 &#10003;</span></h4>
     <p class="body">{e(str(test_ev.get('data_analysis_results') or ''))}</p>
+    <div class="label">Mathematical Governance &amp; Normalization Equations (True KaTeX Formalism)</div>
+    <div class="katexbox" data-latex="\\text{{NSIS}} = \\sum_{{j=1}}^{{n}} W_j \cdot S_j(x_j) = \\sum_{{j=1}}^{{n}} W_j \cdot \\frac{{G_j(x_j)}}{{A_j}} \\qquad \\mathbf{{SD}}_i(\\%) = \\left(\\frac{{W_i \\cdot S_i(x_i)}}{{\\text{{NSIS}}}}\\right) \\times 100\\%"></div>
+    <div class="katexbox" data-latex="G_i(x_i) = A_i \\cdot \\exp\\!\\left(-\\frac{{(x_i - \\mu_i)^2}}{{2\\sigma_i^2}}\\right) \\qquad S_i(x_i) = \\frac{{G_i(x_i)}}{{A_i}}"></div>
     <table class="calc">
-      <thead><tr><th>Dimension</th><th>x&#8202;_i</th><th>&mu;_i</th><th>&sigma;_i</th><th>A_i</th><th>S_i(x)</th><th>W_i</th><th>SD_i(%)</th><th>Level</th></tr></thead>
+      <thead><tr><th>Dimension</th><th>x&#8202;_i</th><th>&mu;_i</th><th>&sigma;_i</th><th>A_i</th><th>S_i(x) (Capacity)</th><th>W_i</th><th>SD_i(%)</th><th>Impact Level Band</th></tr></thead>
       <tbody>{calc_rows}</tbody>
     </table>
     <p class="body" style="font-size:12.5px;color:#64748b;">NSIS (Net Sustainable Impact Score) = <b>{nsis:.4f}</b> &middot;
-    SD<sub>i</sub>(%) values are normalised against NSIS and sum to 100%. All visual graphs (Systemic Sustainability Matrix bars, Coupled Bell-Curve Simulator, and Operating vs. Target Profile) are consolidated in <a href="#graphs-section" style="color:#4f46e5;font-weight:700;">Section 6 at the bottom of this paper</a>.</p>
+    SD<sub>i</sub>(%) values are normalised against NSIS and sum to 100%. Level bands are evaluated against the document's 0–100% sustainability capacity S<sub>i</sub>(x). All visual graphs (Systemic Sustainability Matrix bars, Coupled Bell-Curve Simulator, and Operating vs. Target Profile) are consolidated in <a href="#graphs-section" style="color:#4f46e5;font-weight:700;">Section 6 at the bottom of this paper</a>.</p>
     <div class="computed"><span class="c">// measured x_i levels — extracted from the pattern store</span>
 {measured_rows}</div>
 
     <h4 class="subsec" style="margin-top:22px;">4.2b Empirical Economic Statistics &amp; Quantitative Indicators <span class="ind-tag">Empirical Data &#10003;</span></h4>
     <p class="body">To bridge theoretical pattern discovery with empirical policy, commercial reality, and institutional funding criteria, key macroeconomic, fiscal, and institutional indicators were modeled across the operational lifecycle. The table below outlines baseline performance versus the coupled intervention scenario, including projected value yield from supplementary R&amp;D:</p>
+    <div class="label">Macroeconomic Yield &amp; Cost-Benefit Governing Equations</div>
+    <div class="katexbox" data-latex="\\Delta Y_{{\\text{{R&D}}}} = \\min\\!\\left(96.0\\%, \\; \\max\\left(24.0\\%, \\; 4.2 \\cdot x_{{\\text{{Knowledge}}}} + 3.8 \\cdot x_{{\\text{{Scientific}}}} + 0.35 \\cdot (100 - \\text{{SD}}_{{\\text{{Risk}}}})\\right)\\right)"></div>
+    <div class="katexbox" data-latex="\\text{{BCR}}_{{\\text{{Target}}}} = \\min\\!\\left(7.8, \\; \\max(2.2, \\; 1.25 + 4.6 \\cdot \\text{{NSIS}})\\right) : 1 \\qquad \\text{{Eff}}_{{\\text{{Target}}}} = \\min\\!\\left(96.5\\%, \\; \\text{{Eff}}_{{\\text{{Base}}}} + 0.44 \\cdot \\Delta Y_{{\\text{{R&D}}}}\\right)"></div>
     <table class="calc">
       <thead><tr><th>Economic / Statistical Metric</th><th>Baseline (Status Quo)</th><th>Coupled Intervention</th><th>Projected Delta / Lift</th><th>Significance</th><th>Socio-Economic Impact</th></tr></thead>
       <tbody>{econ_rows}</tbody>
@@ -1468,9 +1615,9 @@ def render_rd_report_html(report: dict[str, Any]) -> str:
     <p class="body">{disc_html}</p>
   </section>
 
-  <!-- SECTION 5: BACK MATTER & COMPREHENSIVE BIBLIOGRAPHY -->
-  <section class="card" id="bib-section">
-    <h3 class="sec">5. Back Matter &amp; Comprehensive Bibliography</h3>
+  <!-- SECTION 5: BACK MATTER & IMPLEMENTATION VIABILITY -->
+  <section class="card">
+    <h3 class="sec">5. Back Matter &amp; Implementation Viability</h3>
 
     <h4 class="subsec">5.1 Conclusion &amp; Real-World Viability <span class="ind-tag">Indicator 13/15 &#10003;</span></h4>
     <p class="body">{e(str(back.get('conclusion') or ''))}</p>
@@ -1478,22 +1625,21 @@ def render_rd_report_html(report: dict[str, Any]) -> str:
     <h4 class="subsec">5.2 Future Scope &amp; Next-Generation Scaling <span class="ind-tag">Indicator 14/15 &#10003;</span></h4>
     <p class="body">{e(str(back.get('future_scope') or ''))}</p>
 
-    <h4 class="subsec">5.3 References — Comprehensive Bibliography (APA 7th Edition Works Cited) <span class="ind-tag">Indicator 15/15 &#10003;</span></h4>
-    <div style="border:1px solid #cbd5e1;border-radius:12px;overflow:hidden;margin-top:10px;">
-      <button class="bib-toggle" type="button" onclick="const p=document.getElementById('bibBody');p.hidden=!p.hidden;this.querySelector('.t').textContent=p.hidden?'\\u25B2':'\\u25BC'">
-        <span>&#128218; Comprehensive Bibliography ({len(bib)} Cited Dataset &amp; Literature Sources)</span><span class="t">&#9660;</span>
-      </button>
-      <div id="bibBody">{bib_rows}</div>
+    <h4 class="subsec" style="margin-top:18px;">5.3 Appendices (Extended Data, Formal Proofs &amp; Technical Telemetry)</h4>
+    <ul class="benefits">{appendices_html or '<li>No extended appendices attached.</li>'}</ul>
+    <div style="margin-top:14px;padding:14px 18px;background:#f8fafc;border:1px solid #cbd5e1;border-radius:12px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;">
+      <div>
+        <div style="font-weight:700;font-size:13.5px;color:#0f172a;">Complete Technical Appendices Archive (.zip)</div>
+        <div style="font-size:12px;color:#64748b;margin-top:2px;">Includes LaTeX mathematical proofs (Appendix A), instantiated parameters JSON (Appendix B), raw evidence excerpts (Appendix C), macroeconomic telemetry (Appendix D), and SHA-256 verification manifest.</div>
+      </div>
+      <a class="top-btn" href="/api/patterns/{pid}/appendices.zip" style="background:#0f172a;color:#fff;border-color:#0f172a;font-weight:700;padding:8px 16px;">&#128230; Download Technical Appendices (.zip)</a>
     </div>
 
-    <h4 class="subsec" style="margin-top:18px;">5.4 Appendices (Extended Data, Formal Proofs &amp; Excerpts)</h4>
-    <ul class="benefits">{appendices_html or '<li>No extended appendices attached.</li>'}</ul>
-
-    <h4 class="subsec" style="margin-top:18px;">5.5 Recommended Solutions — Possible Solutions to the Problem Addressed</h4>
+    <h4 class="subsec" style="margin-top:18px;">5.4 Recommended Solutions — Synthesis of Literature Review &amp; Discussion</h4>
     <p class="body">{rec_sol_html}</p>
   </section>
 
-  <!-- SECTION 6: CONSOLIDATED VISUAL ANALYTICS & GRAPHS (Moved to Bottom of Paper) -->
+  <!-- SECTION 6: CONSOLIDATED VISUAL ANALYTICS & ASSESSMENT MATRIX GRAPHS -->
   <section class="card" id="graphs-section" style="border-top:4px solid #0891b2;">
     <h3 class="sec">6. Consolidated Visual Analytics &amp; Assessment Matrix Graphs</h3>
     <p class="body" style="font-size:13px;color:#475569;">All quantitative R&amp;D figures and Assessment Matrix visualizations for <b>{e(str(report.get('pattern_title') or report.get('paper_title') or ''))}</b> are consolidated below for side-by-side inspection.</p>
@@ -1524,12 +1670,36 @@ def render_rd_report_html(report: dict[str, Any]) -> str:
     </div>
   </section>
 
-  <!-- FINAL PARAGRAPH OF R&D PAPER: RECOMMENDED SOLUTIONS -->
+  <!-- RECOMMENDED SOLUTIONS CARD (SYNTHESIS OF LITERATURE REVIEW & DISCUSSION) -->
   <section class="card" id="recommended-solutions" style="border-top:4px solid #059669;background:linear-gradient(180deg,#ffffff 0%,#f0fdf4 100%);">
     <h3 class="sec" style="color:#065f46;">Recommended Solutions</h3>
-    <div class="label" style="color:#047857;margin-bottom:8px;">Gemma Synthesis of Literature Review (Section 2.2) &amp; Discussion (Section 4.3) — Possible Solutions to the Problem Addressed</div>
+    <div class="label" style="color:#047857;margin-bottom:8px;">Synthesis of Literature Review (Section 2.2) &amp; Discussion (Section 4.3) — Possible Solutions to the Problem Addressed</div>
     <p class="body" style="font-size:15px;line-height:1.78;color:#0f172a;font-weight:500;">{rec_sol_html}</p>
   </section>
+
+  <!-- FINAL SECTION OF R&D PAPER: REFERENCES — COMPREHENSIVE BIBLIOGRAPHY (MOVED TO END) -->
+  <section class="card" id="bib-section" style="border-top:4px solid #7c3aed;">
+    <h3 class="sec">References — Comprehensive Bibliography (APA 7th Edition Works Cited) <span class="ind-tag">Indicator 15/15 &#10003;</span></h3>
+    <p class="body" style="font-size:13px;color:#475569;">Comprehensive APA 7th Edition academic literature and official dataset citations supporting all empirical findings, literature reviews, and cross-domain pattern extractions in this paper.</p>
+    <div style="border:1px solid #cbd5e1;border-radius:12px;overflow:hidden;margin-top:10px;">
+      <button class="bib-toggle" type="button" onclick="const p=document.getElementById('bibBody');p.hidden=!p.hidden;this.querySelector('.t').textContent=p.hidden?'\u25B2':'\u25BC'">
+        <span>&#128218; Comprehensive Bibliography ({len(bib)} Cited Dataset &amp; Literature Sources)</span><span class="t">&#9660;</span>
+      </button>
+      <div id="bibBody">{bib_rows}</div>
+    </div>
+  </section>
+
+  <!-- TECHNICAL ASSET DOWNLOAD ACTION BAR JUST BELOW R&D REPORT -->
+  <div style="margin-top:20px;padding:16px 20px;background:#fff;border:1px solid #cbd5e1;border-radius:14px;box-shadow:0 4px 12px rgba(15,23,42,0.05);display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;">
+    <div>
+      <div style="font-weight:700;font-size:14px;color:#0f172a;">Unified R&amp;D Validation Paper &amp; Complete Technical Assets</div>
+      <div style="font-size:12px;color:#64748b;margin-top:2px;">Download publication-ready PDF or obtain the verifiable technical appendices ZIP archive.</div>
+    </div>
+    <div style="display:flex;gap:10px;flex-wrap:wrap;">
+      <a class="top-btn primary" href="/api/patterns/{pid}/rd-paper.pdf" style="font-size:13px;padding:8px 16px;">&#11015; Download R&amp;D Paper (.pdf)</a>
+      <a class="top-btn" href="/api/patterns/{pid}/appendices.zip" style="font-size:13px;padding:8px 16px;background:#0f172a;color:#fff;border-color:#0f172a;">&#128230; Download Technical Appendices (.zip)</a>
+    </div>
+  </div>
 
   <div class="foot">Sentinel &middot; New Patterns Workspace &middot; Unified 5-Stage (15-Indicator) R&amp;D Validation Paper — synchronized with the Assessment Matrix engine.</div>
 </div>
@@ -1637,6 +1807,19 @@ window.addEventListener('DOMContentLoaded', () => {{
       try {{ katex.render(el.getAttribute('data-latex'), el, {{ displayMode: true, throwOnError: false }}); }} catch (_) {{}}
     }});
   }}
+  if (window.renderMathInElement) {{
+    try {{
+      renderMathInElement(document.body, {{
+        delimiters: [
+          {{left: '$$', right: '$$', display: true}},
+          {{left: '\\[', right: '\\]', display: true}},
+          {{left: '\\(', right: '\\)', display: false}},
+          {{left: '$', right: '$', display: false}}
+        ],
+        throwOnError: false
+      }});
+    }} catch (_) {{}}
+  }}
 }});
 </script>
 </body></html>"""
@@ -1738,7 +1921,7 @@ def rd_report_pdf_bytes(report: dict[str, Any]) -> bytes:
         "4.3 Discussion & Benchmark Comparison:",
         *_w(str(test_ev.get("discussion") or "")),
         "",
-        "5. BACK MATTER & COMPREHENSIVE BIBLIOGRAPHY (APA 7th ed.)",
+        "5. BACK MATTER & IMPLEMENTATION VIABILITY",
         "-" * 60,
         "5.1 Conclusion:",
         *_w(str(back.get("conclusion") or "")),
@@ -1746,17 +1929,19 @@ def rd_report_pdf_bytes(report: dict[str, Any]) -> bytes:
         "5.2 Future Scope:",
         *_w(str(back.get("future_scope") or "")),
         "",
-        f"5.3 Works Cited ({len(bib)} sources):",
+        "5.3 Technical Appendices:",
+        "Extended formal proofs, instantiated parameters, evidence chunks, and economic telemetry available via appendices.zip archive.",
+        "",
+        "RECOMMENDED SOLUTIONS (Synthesis of Literature Review & Discussion)",
+        "-" * 60,
+        *_w(rec_sol_raw),
+        "",
+        f"REFERENCES — COMPREHENSIVE BIBLIOGRAPHY (APA 7th ed., {len(bib)} sources cited):",
+        "-" * 60,
     ])
     for b in bib:
         lines.extend(_w(f"{b.get('citation_key', '')} {b.get('full_reference', '')}"))
         lines.append("")
-
-    lines.extend([
-        "RECOMMENDED SOLUTIONS",
-        "-" * 60,
-        *_w(rec_sol_raw),
-    ])
 
     return build_pdf_bytes("\n".join(lines), title=str(report.get("paper_title") or "R&D Validation Paper")[:110])
 

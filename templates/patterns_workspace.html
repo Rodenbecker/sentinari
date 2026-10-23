@@ -518,6 +518,7 @@
       <div class="report-actions">
         <a class="btn-link" href="/api/patterns/rd-paper/${encodeURIComponent(p.id)}/report" target="_blank" rel="noopener">&#128196; Open Unified R&amp;D Paper (${indDone}/${indTotal})</a>
         <a class="btn-link secondary" href="/api/patterns/${encodeURIComponent(p.id)}/rd-paper.pdf">&#11015; R&amp;D Paper PDF</a>
+        <a class="btn-link secondary" href="/api/patterns/${encodeURIComponent(p.id)}/appendices.zip" style="background:#f1f5f9;color:#0f172a;border-color:#cbd5e1;">&#128230; Appendices (.zip)</a>
         <button type="button" data-role="pattern-report" data-id="${p.id}">Container Report (HTML)</button>
         <button type="button" class="pdf" data-role="pattern-report" data-id="${p.id}" data-format="pdf">Container PDF</button>
         ${indDone < indTotal ? `<button type="button" data-role="advance-indicators" data-id="${p.id}">Develop R&amp;D Indicators</button>` : ''}

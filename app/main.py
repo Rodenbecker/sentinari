@@ -1798,6 +1798,20 @@ def api_runtime_profile() -> dict[str, Any]:
     }
 
 
+@app.get("/api/system/self-healing")
+def api_system_self_healing() -> dict[str, Any]:
+    """Execute systemic health checks and return the autonomous self-healing diagnosis."""
+    from .self_healing import run_self_healing_diagnosis
+    return run_self_healing_diagnosis(auto_patch=False)
+
+
+@app.post("/api/system/self-healing/repair")
+def api_system_self_healing_repair() -> dict[str, Any]:
+    """Trigger an active self-healing diagnostic and automated repair pass."""
+    from .self_healing import run_self_healing_diagnosis
+    return run_self_healing_diagnosis(auto_patch=True)
+
+
 @app.get("/ui/login", response_class=HTMLResponse)
 def ui_login(next: str | None = Query(default="/ui/admin")) -> HTMLResponse:
     auth = get_admin_auth_settings(get_settings())

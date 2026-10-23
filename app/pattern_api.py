@@ -2028,7 +2028,12 @@ def run_synthesis(max_pairs: int = Query(default=6, ge=1, le=20)) -> dict[str, A
 # app/assessment_math.py from the pattern's real extraction record)
 # ---------------------------------------------------------------------------
 
-from .rd_paper import get_or_generate_rd_report, rd_report_pdf_bytes, render_rd_report_html
+from .rd_paper import (
+    generate_appendices_zip_bytes,
+    get_or_generate_rd_report,
+    rd_report_pdf_bytes,
+    render_rd_report_html,
+)
 
 
 # ---------------------------------------------------------------------------
@@ -2087,6 +2092,24 @@ def rd_paper_pdf_endpoint(pattern_id: int, regenerate: int = Query(default=0)) -
     return Response(
         content=pdf_bytes,
         media_type="application/pdf",
+        headers={"Content-Disposition": f'attachment; filename="{fname}"'},
+    )
+
+
+@router.get("/{pattern_id}/appendices.zip")
+@router.get("/rd-paper/{pattern_id}/appendices.zip")
+def rd_paper_appendices_zip_endpoint(pattern_id: int, regenerate: int = Query(default=0)) -> Response:
+    """Download the complete technical appendices archive (.zip) containing LaTeX proofs,
+    instantiated telemetry JSON, empirical evidence excerpts, and SHA-256 verification manifest."""
+    try:
+        report = get_or_generate_rd_report(int(pattern_id), force=bool(regenerate))
+    except ValueError as ex:
+        raise HTTPException(status_code=404, detail=str(ex))
+    zip_bytes = generate_appendices_zip_bytes(report)
+    fname = f"sentinari_pattern_{int(pattern_id)}_appendices.zip"
+    return Response(
+        content=zip_bytes,
+        media_type="application/zip",
         headers={"Content-Disposition": f'attachment; filename="{fname}"'},
     )
 
