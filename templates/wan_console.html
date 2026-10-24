@@ -366,6 +366,81 @@
       text-shadow: 0 0 14px var(--yellow-glow), 0 2px 4px #000;
       opacity: 1 !important;
     }
+    /* Annotation Toolbar */
+    .annotation-bar {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      background: var(--panel);
+      border: 1px solid var(--card-border);
+      border-radius: 10px;
+      padding: 8px 12px;
+      margin-bottom: 10px;
+      flex-wrap: wrap;
+    }
+    .tool-group {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .tool-label {
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+    .tool-divider {
+      width: 1px;
+      height: 20px;
+      background: var(--card-border);
+      margin: 0 4px;
+    }
+    .btn-tool {
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid var(--card-border);
+      color: var(--text);
+      font-size: 12px;
+      font-weight: 600;
+      padding: 5px 10px;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: all 0.15s;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+    }
+    .btn-tool:hover {
+      background: rgba(255, 255, 255, 0.09);
+      border-color: rgba(99, 102, 241, 0.4);
+    }
+    .btn-tool.active {
+      background: rgba(99, 102, 241, 0.25);
+      border-color: #6366f1;
+      color: #fff;
+    }
+    .btn-tool.secondary {
+      background: transparent;
+      color: var(--text-muted);
+    }
+    .color-dot {
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      border: 2px solid transparent;
+      cursor: pointer;
+      padding: 0;
+      transition: transform 0.15s, border-color 0.15s;
+    }
+    .color-dot:hover {
+      transform: scale(1.2);
+    }
+    .color-dot.active {
+      border-color: #fff;
+      transform: scale(1.25);
+      box-shadow: 0 0 8px rgba(255, 255, 255, 0.6);
+    }
+
     /* Player Controls Bar */
     .player-controls {
       display: flex;
@@ -667,6 +742,38 @@
 
           <!-- RIGHT COLUMN: Interactive Canvas Player & Timeline -->
           <div class="player-col">
+            <!-- Annotation & Drawing Toolbar (Auto-pauses on click) -->
+            <div class="annotation-bar">
+              <div class="tool-group">
+                <span class="tool-label">View:</span>
+                <button type="button" id="btnViewWorkspace" class="btn-tool active" title="Show authentic 21-discipline Playground Workspace UI">🖥️ Live Playground UI</button>
+                <button type="button" id="btnViewSlide" class="btn-tool" title="Show 3-cards presentation summary">📊 Slide Cards</button>
+              </div>
+              <div class="tool-divider"></div>
+              <div class="tool-group">
+                <span class="tool-label">Annotate:</span>
+                <button type="button" id="toolBox" class="btn-tool" title="Click & drag to draw a box over any element (Auto-pauses video)">🔲 Box</button>
+                <button type="button" id="toolLine" class="btn-tool" title="Click & drag to draw an arrow/line (Auto-pauses video)">↗ Line</button>
+                <button type="button" id="toolTick" class="btn-tool" title="Click anywhere on canvas to stamp a Bright Yellow Tick Mark">✔ Yellow Tick</button>
+                <button type="button" id="toolPen" class="btn-tool" title="Freehand drawing pen (Auto-pauses video)">✏️ Pen</button>
+              </div>
+              <div class="tool-divider"></div>
+              <div class="tool-group">
+                <span class="tool-label">Color:</span>
+                <button type="button" class="color-dot active" data-color="#fde047" style="background:#fde047;" title="Bright Golden Yellow"></button>
+                <button type="button" class="color-dot" data-color="#38bdf8" style="background:#38bdf8;" title="Neon Cyan"></button>
+                <button type="button" class="color-dot" data-color="#10b981" style="background:#10b981;" title="Emerald Green"></button>
+                <button type="button" class="color-dot" data-color="#ef4444" style="background:#ef4444;" title="Crimson Red"></button>
+              </div>
+              <div class="tool-divider"></div>
+              <div class="tool-group">
+                <button type="button" id="btnClearDrawings" class="btn-tool secondary" title="Clear all drawn annotations">🧹 Clear</button>
+                <label style="display:flex;align-items:center;gap:6px;font-size:11px;color:#fbbf24;cursor:pointer;font-weight:600;" title="Automatically animate a bright yellow tick mark on the topic when the focal zoom finishes">
+                  <input type="checkbox" id="chkAutoTick" checked style="width:auto;"> Auto-Yellow Tick on Zoom
+                </label>
+              </div>
+            </div>
+
             <!-- 1. The Interactive Stage -->
             <div class="player-stage">
               <canvas id="stageCanvas" width="1920" height="1080"></canvas>
@@ -749,6 +856,16 @@
     let mediaRecorder = null;
     let recordedChunks = [];
     let pollTimer = null;
+
+    // View & Annotation State
+    let currentViewMode = 'workspace_ui'; // 'workspace_ui' (authentic 21-domain playground) or 'slide'
+    let activeTool = 'none'; // 'none', 'box', 'line', 'tick', 'pen'
+    let currentColor = '#fde047'; // Bright Golden Yellow default
+    let isDrawing = false;
+    let startX = 0, startY = 0;
+    let currentShape = null;
+    let userAnnotations = []; // [{type, x0, y0, x1, y1, color, points, x, y}]
+    let autoTickMarks = [];   // [{sceneIdx, x, y, label, pulse, time}]
 
     // Default intro slide
     const introScene = {
@@ -883,15 +1000,16 @@
     // ------------------------------------------------------------------------
     function initDefaultScenes() {
       scenes = [
-        { ...introScene },
+        { ...WORKSPACES_META.playground, duration: 24.0, words: [] },
         { ...WORKSPACES_META.patterns, duration: 24.0, words: [] },
-        { ...WORKSPACES_META.qualia, duration: 22.0, words: [] }
+        { ...WORKSPACES_META.qualia, duration: 22.0, words: [] },
+        { ...introScene }
       ];
-      currentSceneIdx = 1;
+      currentSceneIdx = 0; // Starts directly on Playground Workspace
       recalcTimeline();
       loadActiveSceneIntoForm();
       renderScenesTimeline();
-      drawSlideOnCanvas(scenes[currentSceneIdx]);
+      drawCurrentScene(scenes[currentSceneIdx]);
     }
 
     function recalcTimeline() {
@@ -1108,6 +1226,364 @@
 
     // ------------------------------------------------------------------------
     // 60 FPS CANVAS RENDERING & CINEMATIC FOCAL ZOOM
+    // ------------------------------------------------------------------------
+    function drawTickMark(ctx, x, y, size = 26, label = "VERIFIED", pulse = 1.0) {
+      ctx.save();
+      ctx.translate(x, y);
+      ctx.scale(pulse, pulse);
+
+      // Radiant Golden Yellow Halo
+      ctx.shadowColor = "#fde047";
+      ctx.shadowBlur = 20;
+
+      // Circular Background Badge
+      ctx.fillStyle = "rgba(10, 15, 28, 0.95)";
+      ctx.strokeStyle = "#fde047";
+      ctx.lineWidth = 3;
+      ctx.beginPath();
+      ctx.arc(0, 0, size, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.stroke();
+
+      // Sharp Yellow Tick Path
+      ctx.strokeStyle = "#fde047";
+      ctx.lineWidth = 4.5;
+      ctx.lineCap = "round";
+      ctx.lineJoin = "round";
+      ctx.beginPath();
+      ctx.moveTo(-size * 0.44, -size * 0.02);
+      ctx.lineTo(-size * 0.1, size * 0.38);
+      ctx.lineTo(size * 0.46, -size * 0.38);
+      ctx.stroke();
+
+      // Verified Label Pill
+      if (label) {
+        ctx.font = "bold 11px Segoe UI, sans-serif";
+        const lm = ctx.measureText(label);
+        ctx.fillStyle = "rgba(253, 224, 71, 0.22)";
+        ctx.strokeStyle = "#fde047";
+        ctx.lineWidth = 1.2;
+        roundRect(ctx, size + 8, -12, lm.width + 14, 24, 6, true, true);
+        ctx.fillStyle = "#fde047";
+        ctx.fillText(label, size + 15, 4);
+      }
+      ctx.restore();
+    }
+
+    function drawAnnotations(ctx) {
+      // User drawn annotations
+      userAnnotations.forEach(a => {
+        ctx.save();
+        ctx.strokeStyle = a.color || currentColor;
+        ctx.fillStyle = (a.color || currentColor) + "26";
+        ctx.lineWidth = 3.5;
+        ctx.shadowColor = a.color || currentColor;
+        ctx.shadowBlur = 14;
+
+        if (a.type === 'box') {
+          const minX = Math.min(a.x0, a.x1);
+          const minY = Math.min(a.y0, a.y1);
+          const bw = Math.abs(a.x1 - a.x0);
+          const bh = Math.abs(a.y1 - a.y0);
+          roundRect(ctx, minX, minY, bw, bh, 8, true, true);
+        } else if (a.type === 'line') {
+          ctx.beginPath();
+          ctx.moveTo(a.x0, a.y0);
+          ctx.lineTo(a.x1, a.y1);
+          ctx.stroke();
+          const angle = Math.atan2(a.y1 - a.y0, a.x1 - a.x0);
+          ctx.beginPath();
+          ctx.moveTo(a.x1, a.y1);
+          ctx.lineTo(a.x1 - 18 * Math.cos(angle - Math.PI / 6), a.y1 - 18 * Math.sin(angle - Math.PI / 6));
+          ctx.lineTo(a.x1 - 18 * Math.cos(angle + Math.PI / 6), a.y1 - 18 * Math.sin(angle + Math.PI / 6));
+          ctx.closePath();
+          ctx.fillStyle = a.color || currentColor;
+          ctx.fill();
+        } else if (a.type === 'tick') {
+          drawTickMark(ctx, a.x, a.y, 26, "VERIFIED", a.pulse || 1.0);
+        } else if (a.type === 'pen' && a.points && a.points.length > 1) {
+          ctx.beginPath();
+          ctx.moveTo(a.points[0].x, a.points[0].y);
+          for (let i = 1; i < a.points.length; i++) {
+            ctx.lineTo(a.points[i].x, a.points[i].y);
+          }
+          ctx.stroke();
+        }
+        ctx.restore();
+      });
+
+      // Drag preview
+      if (isDrawing && currentShape) {
+        ctx.save();
+        ctx.strokeStyle = currentShape.color || currentColor;
+        ctx.fillStyle = (currentShape.color || currentColor) + "22";
+        ctx.lineWidth = 3;
+        ctx.shadowColor = currentShape.color || currentColor;
+        ctx.shadowBlur = 10;
+
+        if (currentShape.type === 'box') {
+          const minX = Math.min(currentShape.x0, currentShape.x1);
+          const minY = Math.min(currentShape.y0, currentShape.y1);
+          const bw = Math.abs(currentShape.x1 - currentShape.x0);
+          const bh = Math.abs(currentShape.y1 - currentShape.y0);
+          roundRect(ctx, minX, minY, bw, bh, 8, true, true);
+        } else if (currentShape.type === 'line') {
+          ctx.beginPath();
+          ctx.moveTo(currentShape.x0, currentShape.y0);
+          ctx.lineTo(currentShape.x1, currentShape.y1);
+          ctx.stroke();
+        } else if (currentShape.type === 'pen' && currentShape.points && currentShape.points.length > 1) {
+          ctx.beginPath();
+          ctx.moveTo(currentShape.points[0].x, currentShape.points[0].y);
+          for (let i = 1; i < currentShape.points.length; i++) {
+            ctx.lineTo(currentShape.points[i].x, currentShape.points[i].y);
+          }
+          ctx.stroke();
+        }
+        ctx.restore();
+      }
+
+      // Automated yellow tick marks placed during focal zoom
+      autoTickMarks.forEach(t => {
+        drawTickMark(ctx, t.x, t.y, 26, t.label || "VERIFIED TOPIC", t.pulse || 1.0);
+      });
+    }
+
+    function drawPlaygroundWorkspaceUI(slide, zoomFactor = 1.0, focusX = 960, focusY = 540, localTime = 0) {
+      const w = canvas.width;
+      const h = canvas.height;
+
+      ctx.save();
+      ctx.clearRect(0, 0, w, h);
+
+      if (zoomFactor !== 1.0) {
+        ctx.translate(focusX, focusY);
+        ctx.scale(zoomFactor, zoomFactor);
+        ctx.translate(-focusX, -focusY);
+      }
+
+      ctx.fillStyle = "#070c17";
+      ctx.fillRect(0, 0, w, h);
+
+      // Background grid lines
+      ctx.strokeStyle = "rgba(255, 255, 255, 0.02)";
+      ctx.lineWidth = 1;
+      for (let x = 0; x < w; x += 60) { ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, h); ctx.stroke(); }
+      for (let y = 0; y < h; y += 60) { ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(w, y); ctx.stroke(); }
+
+      const radL = ctx.createRadialGradient(400, 300, 50, 400, 300, 700);
+      radL.addColorStop(0, "rgba(99, 102, 241, 0.12)"); radL.addColorStop(1, "rgba(99, 102, 241, 0)");
+      ctx.fillStyle = radL; ctx.fillRect(0, 0, w, h);
+
+      const radR = ctx.createRadialGradient(1500, 400, 50, 1500, 400, 600);
+      radR.addColorStop(0, "rgba(56, 189, 248, 0.09)"); radR.addColorStop(1, "rgba(56, 189, 248, 0)");
+      ctx.fillStyle = radR; ctx.fillRect(0, 0, w, h);
+
+      // 1. LEFT SIDEBAR SIMULATION
+      const sideW = 230;
+      ctx.fillStyle = "#0a1120";
+      ctx.fillRect(0, 0, sideW, h);
+      ctx.strokeStyle = "#16233b"; ctx.lineWidth = 1;
+      ctx.beginPath(); ctx.moveTo(sideW, 0); ctx.lineTo(sideW, h); ctx.stroke();
+
+      ctx.fillStyle = "#ffffff";
+      ctx.font = "bold 24px Segoe UI, sans-serif";
+      ctx.fillText("SENTINARI", 24, 52);
+      ctx.font = "bold 11px Segoe UI, sans-serif";
+      ctx.fillStyle = "#6366f1";
+      ctx.fillText("SOVEREIGN AI • 100-YR CONSTITUTION", 24, 72);
+
+      const navItems = [
+        { label: "Dashboard Home", icon: "🔬", active: true },
+        { label: "Ingestion Watchdog", icon: "📡", active: false },
+        { label: "New Patterns 7-D", icon: "⚡", active: false },
+        { label: "Qualia Lab", icon: "⚖️", active: false },
+        { label: "Learning Index", icon: "🎯", active: false },
+        { label: "Sovereign Chat", icon: "💬", active: false },
+        { label: "Video Studio", icon: "🎥", active: false }
+      ];
+      let navY = 110;
+      navItems.forEach(item => {
+        if (item.active) {
+          ctx.fillStyle = "rgba(99, 102, 241, 0.22)";
+          ctx.strokeStyle = "rgba(99, 102, 241, 0.5)"; ctx.lineWidth = 1;
+          roundRect(ctx, 14, navY - 20, sideW - 28, 38, 8, true, true);
+          ctx.fillStyle = "#a5b4fc";
+          ctx.font = "bold 14px Segoe UI, sans-serif";
+        } else {
+          ctx.fillStyle = "#94a3b8";
+          ctx.font = "14px Segoe UI, sans-serif";
+        }
+        ctx.fillText(`${item.icon}  ${item.label}`, 24, navY + 4);
+        navY += 46;
+      });
+
+      // 2. MAIN HEADER & COCKPIT BAR
+      const mainX = sideW + 28;
+      const mainW = w - mainX - 30;
+
+      ctx.fillStyle = "#ffffff";
+      ctx.font = "bold 32px Segoe UI, sans-serif";
+      ctx.fillText("WORKSPACE 1: THE PLAYGROUND — SCIENTIFIC CURATED DOMAINS", mainX, 50);
+
+      ctx.fillStyle = "#94a3b8";
+      ctx.font = "16px Segoe UI, sans-serif";
+      ctx.fillText("Primary Laboratory for 21 Sentinel Disciplines • Inviolable Academic Provenance • Zero Black-Box Capture", mainX, 78);
+
+      // Server Health Banner
+      const healthX = mainX; const healthY = 100; const healthW = mainW;
+      ctx.fillStyle = "rgba(16, 24, 40, 0.85)"; ctx.strokeStyle = "#1e293b"; ctx.lineWidth = 1;
+      roundRect(ctx, healthX, healthY, healthW, 46, 8, true, true);
+
+      ctx.fillStyle = "#10b981";
+      ctx.shadowColor = "#10b981"; ctx.shadowBlur = 8;
+      ctx.beginPath(); ctx.arc(healthX + 22, healthY + 23, 6, 0, Math.PI * 2); ctx.fill();
+      ctx.shadowBlur = 0;
+
+      ctx.fillStyle = "#e2e8f0"; ctx.font = "bold 13px Segoe UI, sans-serif";
+      ctx.fillText("SERVER HEALTH: 100% OPERATIONAL", healthX + 38, healthY + 28);
+
+      ctx.fillStyle = "#64748b"; ctx.font = "13px Segoe UI, sans-serif";
+      ctx.fillText("•  SQLite WAL: STREAMING ACTIVE  •  LOCAL ONNX / OLLAMA: OPTIMAL (1.6ms)  •  EXTERNAL EGRESS: 0%", healthX + 310, healthY + 28);
+
+      // 3. FOUR TELEMETRY METRIC CARDS
+      const metricY = 162; const cardGap = 16; const numMetric = 4;
+      const metricCardW = Math.floor((mainW - (numMetric - 1) * cardGap) / numMetric);
+      const metricData = [
+        { val: "15,041+", lbl: "Curated Scholarly Works", sub: "Indexed in SQLite WAL", col: "#38bdf8" },
+        { val: "1,280+", lbl: "Empirical Datasets", sub: "Ground-truth verified", col: "#818cf8" },
+        { val: "445,000", lbl: "Atomic Semantic Vectors", sub: "Zero cloud leakage", col: "#10b981" },
+        { val: "21", lbl: "Sentinel Disciplines", sub: "Interdisciplinary matrix", col: "#f59e0b" }
+      ];
+
+      metricData.forEach((m, idx) => {
+        const cx = mainX + idx * (metricCardW + cardGap);
+        ctx.fillStyle = "rgba(14, 22, 38, 0.9)"; ctx.strokeStyle = "#1b2844"; ctx.lineWidth = 1;
+        roundRect(ctx, cx, metricY, metricCardW, 88, 10, true, true);
+
+        ctx.fillStyle = m.col;
+        roundRect(ctx, cx, metricY, metricCardW, 4, 2, true, false);
+
+        ctx.fillStyle = "#ffffff"; ctx.font = "bold 26px Segoe UI, sans-serif";
+        ctx.fillText(m.val, cx + 18, metricY + 38);
+
+        ctx.fillStyle = "#cbd5e1"; ctx.font = "bold 13px Segoe UI, sans-serif";
+        ctx.fillText(m.lbl, cx + 18, metricY + 60);
+
+        ctx.fillStyle = "#64748b"; ctx.font = "11px Segoe UI, sans-serif";
+        ctx.fillText(m.sub, cx + 18, metricY + 76);
+      });
+
+      // 4. MAIN WORKSPACE CONTENT: 21 SENTINEL DISCIPLINES GRID & INGESTION WATCHDOG
+      const gridY = 268;
+      const gridW = Math.floor(mainW * 0.68);
+      const watchX = mainX + gridW + 20;
+      const watchW = mainW - gridW - 20;
+      const contentH = 680;
+
+      // Disciplines Container
+      ctx.fillStyle = "rgba(12, 19, 34, 0.85)"; ctx.strokeStyle = "#1b2844"; ctx.lineWidth = 1;
+      roundRect(ctx, mainX, gridY, gridW, contentH, 12, true, true);
+
+      ctx.fillStyle = "#ffffff"; ctx.font = "bold 16px Segoe UI, sans-serif";
+      ctx.fillText("21 SENTINEL SCIENTIFIC DISCIPLINES", mainX + 22, gridY + 32);
+
+      ctx.fillStyle = "#64748b"; ctx.font = "12px Segoe UI, sans-serif";
+      ctx.fillText("Active cross-domain knowledge corpora feeding the reasoning engine", mainX + 320, gridY + 32);
+
+      const dCols = 3; const dRows = 4;
+      const dTileW = Math.floor((gridW - 44 - (dCols - 1) * 12) / dCols);
+      const dTileH = 135;
+      const domainsList = [
+        { name: "Physics", icon: "⚡", works: "1,420 Works", stat: "Active" },
+        { name: "Biochemistry", icon: "🔬", works: "980 Works", stat: "Active" },
+        { name: "Constitutional Law", icon: "⚖️", works: "640 Works", stat: "Active" },
+        { name: "Macroeconomics", icon: "📈", works: "1,150 Works", stat: "Active" },
+        { name: "Earth & Climate", icon: "🌋", works: "890 Works", stat: "Active" },
+        { name: "Cybersecurity", icon: "🛡️", works: "780 Works", stat: "Active" },
+        { name: "Molecular Genetics", icon: "🧬", works: "1,020 Works", stat: "Active" },
+        { name: "Mechanical Eng.", icon: "⚙️", works: "950 Works", stat: "Active" },
+        { name: "Quantum Computing", icon: "⚛️", works: "620 Works", stat: "Active" },
+        { name: "Pure Mathematics", icon: "🧮", works: "1,310 Works", stat: "Active" },
+        { name: "Philosophy of Sci.", icon: "🏛️", works: "810 Works", stat: "Active" },
+        { name: "Materials Science", icon: "🧪", works: "930 Works", stat: "Active" },
+      ];
+
+      domainsList.forEach((d, idx) => {
+        const col = idx % dCols; const row = Math.floor(idx / dCols);
+        const tx = mainX + 22 + col * (dTileW + 12);
+        const ty = gridY + 54 + row * (dTileH + 12);
+
+        ctx.fillStyle = "rgba(18, 28, 48, 0.9)"; ctx.strokeStyle = "#253758"; ctx.lineWidth = 1;
+        roundRect(ctx, tx, ty, dTileW, dTileH, 8, true, true);
+
+        ctx.font = "24px Segoe UI, sans-serif";
+        ctx.fillText(d.icon, tx + 16, ty + 36);
+
+        ctx.fillStyle = "#ffffff"; ctx.font = "bold 15px Segoe UI, sans-serif";
+        ctx.fillText(d.name, tx + 52, ty + 34);
+
+        ctx.fillStyle = "#94a3b8"; ctx.font = "12px Segoe UI, sans-serif";
+        ctx.fillText(d.works, tx + 16, ty + 68);
+
+        ctx.fillStyle = "rgba(16, 185, 129, 0.15)"; ctx.strokeStyle = "rgba(16, 185, 129, 0.35)"; ctx.lineWidth = 1;
+        roundRect(ctx, tx + 16, ty + 88, 90, 22, 6, true, true);
+        ctx.fillStyle = "#10b981"; ctx.font = "bold 10px Segoe UI, sans-serif";
+        ctx.fillText(`●  ${d.stat}`, tx + 28, ty + 103);
+      });
+
+      // Watchdog Console Container
+      ctx.fillStyle = "rgba(12, 19, 34, 0.85)"; ctx.strokeStyle = "#1b2844"; ctx.lineWidth = 1;
+      roundRect(ctx, watchX, gridY, watchW, contentH, 12, true, true);
+
+      ctx.fillStyle = "#ffffff"; ctx.font = "bold 16px Segoe UI, sans-serif";
+      ctx.fillText("📡 INGESTION WATCHDOG STREAM", watchX + 20, gridY + 32);
+
+      const termY = gridY + 54; const termH = contentH - 74;
+      ctx.fillStyle = "#050912"; ctx.strokeStyle = "#152033"; ctx.lineWidth = 1;
+      roundRect(ctx, watchX + 16, termY, watchW - 32, termH, 8, true, true);
+
+      const logs = [
+        { t: "15:30:10", msg: "WATCHDOG: Initializing WAL synchronization loop", c: "#38bdf8" },
+        { t: "15:30:12", msg: "INGESTION: 15,041 curated documents verified", c: "#10b981" },
+        { t: "15:30:14", msg: "CRYPTO: SHA-256 Merkle root validated (0 drift)", c: "#10b981" },
+        { t: "15:30:16", msg: "VECTOR: 445k chunks indexed across 21 disciplines", c: "#818cf8" },
+        { t: "15:30:18", msg: "GOVERNANCE: 100-Year Constitution bound", c: "#fbbf24" },
+        { t: "15:30:20", msg: "SECURITY: Zero cloud leak • Fail-closed enabled", c: "#38bdf8" },
+        { t: "15:30:22", msg: "MEMORY: WAL checkpoint OK • RAM usage: 1.4%", c: "#94a3b8" },
+        { t: "15:30:24", msg: "STATUS: System ready for dialectic discovery", c: "#10b981" },
+      ];
+
+      let logY = termY + 32;
+      logs.forEach(l => {
+        ctx.fillStyle = "#64748b"; ctx.font = "ui-monospace, monospace";
+        ctx.fillText(`[${l.t}]`, watchX + 28, logY);
+        ctx.fillStyle = l.c; ctx.font = "12px ui-monospace, monospace";
+        ctx.fillText(l.msg, watchX + 115, logY);
+        logY += 28;
+      });
+
+      // Footer
+      ctx.strokeStyle = "#16233b"; ctx.lineWidth = 1;
+      ctx.beginPath(); ctx.moveTo(mainX, h - 36); ctx.lineTo(w - 30, h - 36); ctx.stroke();
+
+      ctx.fillStyle = "#94a3b8"; ctx.font = "13px Segoe UI, sans-serif";
+      ctx.fillText("Dr. Pierre C. Wepener • Founder & Chief Architect • Sentinari Studio", mainX, h - 16);
+
+      ctx.fillStyle = "#64748b"; ctx.font = "12px Segoe UI, sans-serif";
+      ctx.fillText("Sovereign Epistemic Intelligence • 21 Sentinel Disciplines • 100% Self-Funded", w - 480, h - 16);
+
+      ctx.restore();
+    }
+
+    function drawCurrentScene(slide, zoomFactor = 1.0, focusX = 960, focusY = 540, localTime = 0) {
+      if (currentViewMode === 'workspace_ui') {
+        drawPlaygroundWorkspaceUI(slide, zoomFactor, focusX, focusY, localTime);
+      } else {
+        drawSlideOnCanvas(slide, zoomFactor, focusX, focusY);
+      }
+      drawAnnotations(ctx);
+    }
     // ------------------------------------------------------------------------
     function drawSlideOnCanvas(slide, zoomFactor = 1.0, focusX = 960, focusY = 540) {
       const w = canvas.width;
@@ -1368,7 +1844,7 @@
         }
 
         // Render Canvas Frame
-        drawSlideOnCanvas(sc, zoom, fx, fy);
+        drawCurrentScene(sc, zoom, fx, fy, localTime);
 
         // Update Karaoke Word Highlighting
         updateKaraokeHighlight(localTime);
@@ -1397,7 +1873,7 @@
       loadActiveSceneIntoForm();
       renderScenesTimeline();
       updateTimeBadge();
-      drawSlideOnCanvas(scenes[0]);
+      drawCurrentScene(scenes[0]);
     }
 
     function playCurrentSceneAudio() {
@@ -1437,7 +1913,7 @@
           loadActiveSceneIntoForm();
           renderScenesTimeline();
           updateTimeBadge();
-          drawSlideOnCanvas(scenes[idx]);
+          drawCurrentScene(scenes[idx]);
           if (isPlaying) playCurrentSceneAudio();
         });
         strip.appendChild(thumb);
@@ -1646,7 +2122,7 @@
       loadActiveSceneIntoForm();
       recalcTimeline();
       renderScenesTimeline();
-      drawSlideOnCanvas(newSc);
+      drawCurrentScene(newSc);
     });
 
     byId('btnDeleteScene').addEventListener('click', () => {
@@ -1659,7 +2135,7 @@
       loadActiveSceneIntoForm();
       recalcTimeline();
       renderScenesTimeline();
-      drawSlideOnCanvas(scenes[currentSceneIdx]);
+      drawCurrentScene(scenes[currentSceneIdx]);
     });
 
     byId('rangeAmbientVol').addEventListener('input', (e) => {
@@ -1670,6 +2146,127 @@
 
     byId('btnQuickRecord').addEventListener('click', startQuickBrowserRecord);
     byId('btnRenderMp4').addEventListener('click', submitServerMp4Render);
+
+    
+    // ------------------------------------------------------------------------
+    // INTERACTIVE DRAWING & ANNOTATION LOGIC (WITH AUTO-PAUSE)
+    // ------------------------------------------------------------------------
+    function selectTool(toolName) {
+      if (isPlaying) {
+        pauseTour(); // Auto-pause video so user can calmly draw!
+      }
+      if (activeTool === toolName) {
+        activeTool = 'none';
+        canvas.style.cursor = 'default';
+      } else {
+        activeTool = toolName;
+        canvas.style.cursor = 'crosshair';
+      }
+      ['toolBox', 'toolLine', 'toolTick', 'toolPen'].forEach(id => {
+        const el = byId(id);
+        if (el) el.classList.remove('active');
+      });
+      if (activeTool !== 'none') {
+        const activeBtn = byId(
+          activeTool === 'box' ? 'toolBox' :
+          activeTool === 'line' ? 'toolLine' :
+          activeTool === 'tick' ? 'toolTick' : 'toolPen'
+        );
+        if (activeBtn) activeBtn.classList.add('active');
+      }
+    }
+
+    byId('toolBox').addEventListener('click', () => selectTool('box'));
+    byId('toolLine').addEventListener('click', () => selectTool('line'));
+    byId('toolTick').addEventListener('click', () => selectTool('tick'));
+    byId('toolPen').addEventListener('click', () => selectTool('pen'));
+
+    byId('btnClearDrawings').addEventListener('click', () => {
+      userAnnotations = [];
+      autoTickMarks = [];
+      drawCurrentScene(scenes[currentSceneIdx]);
+    });
+
+    document.querySelectorAll('.color-dot').forEach(dot => {
+      dot.addEventListener('click', () => {
+        document.querySelectorAll('.color-dot').forEach(d => d.classList.remove('active'));
+        dot.classList.add('active');
+        currentColor = dot.dataset.color || '#fde047';
+      });
+    });
+
+    byId('btnViewWorkspace').addEventListener('click', () => {
+      currentViewMode = 'workspace_ui';
+      byId('btnViewWorkspace').classList.add('active');
+      byId('btnViewSlide').classList.remove('active');
+      drawCurrentScene(scenes[currentSceneIdx]);
+    });
+
+    byId('btnViewSlide').addEventListener('click', () => {
+      currentViewMode = 'slide';
+      byId('btnViewSlide').classList.add('active');
+      byId('btnViewWorkspace').classList.remove('active');
+      drawCurrentScene(scenes[currentSceneIdx]);
+    });
+
+    canvas.addEventListener('mousedown', (e) => {
+      if (activeTool === 'none') return;
+      const rect = canvas.getBoundingClientRect();
+      const scaleX = canvas.width / rect.width;
+      const scaleY = canvas.height / rect.height;
+      const x = (e.clientX - rect.left) * scaleX;
+      const y = (e.clientY - rect.top) * scaleY;
+
+      if (activeTool === 'tick') {
+        userAnnotations.push({
+          type: 'tick',
+          x: x,
+          y: y,
+          color: currentColor,
+          pulse: 1.15
+        });
+        drawCurrentScene(scenes[currentSceneIdx]);
+        return;
+      }
+
+      isDrawing = true;
+      startX = x;
+      startY = y;
+      currentShape = {
+        type: activeTool,
+        x0: x,
+        y0: y,
+        x1: x,
+        y1: y,
+        color: currentColor,
+        points: [{x, y}]
+      };
+    });
+
+    canvas.addEventListener('mousemove', (e) => {
+      if (!isDrawing || !currentShape) return;
+      const rect = canvas.getBoundingClientRect();
+      const scaleX = canvas.width / rect.width;
+      const scaleY = canvas.height / rect.height;
+      const x = (e.clientX - rect.left) * scaleX;
+      const y = (e.clientY - rect.top) * scaleY;
+
+      currentShape.x1 = x;
+      currentShape.y1 = y;
+      if (currentShape.type === 'pen') {
+        currentShape.points.push({x, y});
+      }
+      drawCurrentScene(scenes[currentSceneIdx]);
+    });
+
+    canvas.addEventListener('mouseup', () => {
+      if (isDrawing && currentShape) {
+        isDrawing = false;
+        userAnnotations.push(currentShape);
+        currentShape = null;
+        drawCurrentScene(scenes[currentSceneIdx]);
+      }
+    });
 
     // Boot Studio
     initDefaultScenes();
