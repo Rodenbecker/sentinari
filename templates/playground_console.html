@@ -702,6 +702,30 @@
           <div id="dsAssessCount"></span></div>
         </div>
 
+        <div class="card" id="data360-workspace" style="margin-top:14px;">
+          <div class="row" style="align-items:flex-start;justify-content:space-between;">
+            <div>
+              <h2>World Bank Data360</h2>
+              <div class="hint">Search public indicator metadata, then explicitly load observations for a country. Only the search terms and selected public indicator/country codes are sent to the World Bank API; private R&amp;D report text is never forwarded.</div>
+            </div>
+            <div class="mono">Data360 · CC BY 4.0</div>
+          </div>
+          <div class="hint" style="margin-top:7px;"><a href="/ui/gci">Open the Global Competitiveness 2026 country workspace</a></div>
+          <form id="data360SearchForm" class="scoutRow" style="margin-top:10px;display:flex;gap:8px;flex-wrap:wrap;">
+            <input id="data360Query" type="search" maxlength="200" placeholder="Public indicator search, e.g. R&amp;D expenditure or GDP growth" aria-label="Public Data360 indicator search" style="flex:1 1 320px;">
+            <button type="submit">Search Data360</button>
+          </form>
+          <div id="data360Status" class="hint" role="status" aria-live="polite" style="margin-top:8px;"></div>
+          <div id="data360Results" style="margin-top:8px;"></div>
+          <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-top:8px;">
+            <label for="data360Country" class="hint">Three-letter country code</label>
+            <input id="data360Country" type="text" maxlength="3" value="USA" pattern="[A-Za-z]{3}" aria-label="Three-letter country code" style="width:90px;">
+            <span class="hint">Each result has a “Load latest data” action.</span>
+          </div>
+          <div id="data360Observations" style="margin-top:10px;"></div>
+          <div class="hint" style="margin-top:8px;">Source: <a href="https://data360api.worldbank.org" target="_blank" rel="noopener">World Bank Data360 API</a> · Creative Commons Attribution 4.0 International (CC BY 4.0).</div>
+        </div>
+
         <div class="card" id="sentinel-grid" style="margin-top:14px;">
           <div class="row" style="align-items:flex-start; justify-content:space-between;">
             <div>
@@ -5014,3 +5038,90 @@ function showOncoTooltip(event, el, title) {
 </script>
 </body>
 </html>
+<script>
+(() => {
+  const form = document.getElementById('data360SearchForm');
+  if (!form) return;
+  const status = document.getElementById('data360Status');
+  const resultsBox = document.getElementById('data360Results');
+  const observationsBox = document.getElementById('data360Observations');
+  const escapeHtml = (value) => String(value ?? '').replace(/[&<>"']/g, (char) => ({
+    '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+  })[char]);
+  let indicators = [];
+
+  async function responseJson(response) {
+    const body = await response.json().catch(() => ({}));
+    if (!response.ok) throw new Error(body.detail || `Request failed (${response.status}).`);
+    return body;
+  }
+
+  form.addEventListener('submit', async (event) => {
+    event.preventDefault();
+    const query = document.getElementById('data360Query').value.trim();
+    if (!query) {
+      status.textContent = 'Enter a public indicator search term.';
+      return;
+    }
+    status.textContent = 'Searching World Bank Data360…';
+    resultsBox.replaceChildren();
+    observationsBox.replaceChildren();
+    try {
+      const response = await fetch('/api/playground/data360/search', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+        body: JSON.stringify({ query, top: 10 })
+      });
+      const data = await responseJson(response);
+      indicators = Array.isArray(data.results) ? data.results : [];
+      resultsBox.innerHTML = indicators.map((item, index) =>
+        `<div style="padding:10px;margin:6px 0;border:1px solid #d6dee8;border-radius:8px;">` +
+        `<strong>${escapeHtml(item.name)}</strong>` +
+        `<div class="hint">Indicator: ${escapeHtml(item.indicator_id)} · Dataset: ${escapeHtml(item.dataset_id)}</div>` +
+        `<button type="button" data-data360-index="${index}" style="margin-top:6px;">Load latest data</button></div>`
+      ).join('');
+      status.textContent = `${data.count} matching indicator(s); showing ${indicators.length}. Search terms are sent only to World Bank Data360.`;
+      if (!indicators.length) status.textContent = 'No indicators matched that search.';
+    } catch (error) {
+      status.textContent = error.message;
+    }
+  });
+
+  resultsBox.addEventListener('click', async (event) => {
+    const button = event.target.closest('button[data-data360-index]');
+    if (!button) return;
+    const item = indicators[Number(button.dataset.data360Index)];
+    if (!item) return;
+    const country = document.getElementById('data360Country').value.trim().toUpperCase();
+    if (!/^[A-Z]{3}$/.test(country)) {
+      status.textContent = 'Enter a three-letter country code, such as USA.';
+      return;
+    }
+    status.textContent = `Loading ${item.name} for ${country}…`;
+    observationsBox.replaceChildren();
+    button.disabled = true;
+    try {
+      const params = new URLSearchParams({
+        database_id: item.dataset_id,
+        indicator_id: item.indicator_id,
+        country_code: country,
+        latest: 'true'
+      });
+      const data = await responseJson(await fetch(`/api/playground/data360/data?${params}`));
+      const rows = Array.isArray(data.results) ? data.results : [];
+      observationsBox.innerHTML = rows.length
+        ? `<div style="overflow-x:auto"><table style="border-collapse:collapse;width:100%">` +
+          `<thead><tr><th align="left">Period</th><th align="left">Value</th><th align="left">Unit</th><th align="left">Status</th></tr></thead>` +
+          `<tbody>${rows.map((row) => `<tr><td>${escapeHtml(row.TIME_PERIOD)}</td>` +
+            `<td>${escapeHtml(row.OBS_VALUE)}</td><td>${escapeHtml(row.UNIT_MEASURE || row.UNIT_TYPE || '')}</td>` +
+            `<td>${escapeHtml(row.OBS_STATUS || '')}</td></tr>`).join('')}</tbody></table></div>`
+        : '<div class="hint">No observation was returned for this indicator and country.</div>';
+      status.textContent = `Loaded ${rows.length} observation(s) · Data360 · CC BY 4.0.`;
+    } catch (error) {
+      status.textContent = error.message;
+    } finally {
+      button.disabled = false;
+    }
+  });
+})();
+</script>

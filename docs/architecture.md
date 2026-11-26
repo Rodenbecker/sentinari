@@ -35,6 +35,8 @@ Sentinari/
 │   ├── unsupervised.py            #   Clustering layer (rung 2: closed curriculum loop)
 │   ├── pattern_api / _store / _worker / _report
 │   │                              #   Pattern Discovery (DARPA project 2)
+│   ├── gci_api.py / gci_index.py   #   Local IMD 2026 country index, reports, and dimension context
+│   ├── data360_client.py           #   Explicit World Bank Data360 Playground requests
 │   ├── sentinel_pipeline / _firewall / _domains / _prototype
 │   │                              #   SENTINEL verification pipeline (DARPA project 1)
 │   ├── external_validation.py     #   Four-stage verification support
@@ -80,6 +82,7 @@ Sentinari/
 │   ├── admin_login.html               # /ui/login
 │   ├── learning_workspace.html        # /ui/learning — examiner UI
 │   ├── patterns_workspace.html        # /ui/patterns — Pattern Discovery
+│   ├── gci_workspace.html             # /ui/gci — IMD 2026 country rankings and PDF reports
 │   ├── search_workspace.html          # /ui/search — library by field
 │   ├── model_deviation_lab.html       # /ui/model-lab — comparison scoring
 │   ├── playground_workbench.html      # workbenches A/B

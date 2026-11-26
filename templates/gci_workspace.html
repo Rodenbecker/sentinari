@@ -1,0 +1,201 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Global Competitiveness 2026 — Sentinari</title>
+  <style>
+    :root { color-scheme: light; font-family: Segoe UI, Arial, sans-serif; color: #172033; background: #f3f6fa; }
+    * { box-sizing: border-box; }
+    body { margin: 0; }
+    header { background: #12263c; color: #fff; padding: 18px max(20px, calc((100% - 1120px) / 2)); }
+    header nav { display: flex; flex-wrap: wrap; gap: 16px; margin-bottom: 14px; }
+    header a { color: #cfe5ff; text-decoration: none; }
+    header h1 { margin: 0 0 6px; font-size: 25px; }
+    header p { margin: 0; color: #d3deeb; }
+    main { max-width: 1120px; margin: 24px auto; padding: 0 18px 36px; }
+    .card { background: #fff; border: 1px solid #d6dee8; border-radius: 12px; padding: 18px; margin-bottom: 16px; box-shadow: 0 2px 6px #14253a0a; }
+    .search-row { display: flex; flex-wrap: wrap; gap: 8px; }
+    input, button { font: inherit; border-radius: 8px; padding: 10px 12px; }
+    input { border: 1px solid #b9c5d3; min-width: 230px; flex: 1; }
+    button, .download { color: #fff; background: #1769aa; border: 1px solid #1769aa; cursor: pointer; font-weight: 650; }
+    button:hover, .download:hover { background: #0e4f86; }
+    .download { display: inline-block; border-radius: 8px; padding: 10px 12px; text-decoration: none; }
+    .muted { color: #536579; font-size: 14px; }
+    .status { min-height: 22px; color: #285577; margin: 10px 0; }
+    .status.error { color: #a4262c; }
+    .country-list { display: flex; flex-wrap: wrap; gap: 7px; margin-top: 12px; }
+    .country-list button { background: #edf5fc; color: #16466e; border-color: #c5d9eb; font-weight: 500; }
+    .country-list button:hover { background: #dcecf9; }
+    .summary { display: flex; flex-wrap: wrap; gap: 10px; margin: 14px 0; }
+    .metric { padding: 10px 13px; background: #f1f6fb; border-radius: 9px; min-width: 155px; }
+    .metric b { display: block; font-size: 20px; }
+    .factor { display: grid; grid-template-columns: minmax(170px, 250px) 1fr 145px; align-items: center; gap: 12px; margin: 13px 0; }
+    .track { height: 15px; border-radius: 9px; background: #e5ebf2; overflow: hidden; }
+    .bar { height: 100%; background: linear-gradient(90deg, #2875bd, #23a0a0); }
+    .score { text-align: right; white-space: nowrap; font-variant-numeric: tabular-nums; }
+    .rank-factor { display: grid; grid-template-columns: minmax(170px, 250px) 1fr 90px; align-items: center; gap: 12px; margin: 8px 0; }
+    .rank-bar { height: 100%; background: #8b5cf6; }
+    .table-wrap { overflow-x: auto; }
+    table { border-collapse: collapse; width: 100%; }
+    th, td { padding: 9px 10px; border-bottom: 1px solid #e1e7ee; text-align: left; }
+    th { background: #f5f8fb; }
+    @media (max-width: 650px) {
+      .factor, .rank-factor { grid-template-columns: 1fr auto; }
+      .factor .track, .rank-factor .track { grid-column: 1 / -1; grid-row: 2; }
+      .factor .score, .rank-factor .score { grid-column: 2; grid-row: 1; }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <nav aria-label="Sentinari workspaces">
+      <a href="/ui/playground">Playground</a>
+      <a href="/ui/patterns">New Patterns</a>
+      <a href="/ui/gci" aria-current="page">Global Competitiveness</a>
+    </nav>
+    <h1>Global Competitiveness 2026</h1>
+    <p>Search the local IMD country index, compare its four factor scores and 20 sub-factor ranks, and download a country report.</p>
+  </header>
+  <main>
+    <section class="card" aria-labelledby="search-title">
+      <h2 id="search-title">Find an economy</h2>
+      <p class="muted">The index is built locally from the supplied 2026 booklet. No country search is sent to an external service.</p>
+      <form class="search-row" id="countrySearch">
+        <input id="countryQuery" type="search" autocomplete="off" placeholder="Country or economy, e.g. Singapore or Turkey" aria-label="Country or economy">
+        <button type="submit">Search</button>
+      </form>
+      <div id="workspaceStatus" class="status" role="status" aria-live="polite"></div>
+      <div id="countryResults" class="country-list" aria-label="Matching economies"></div>
+    </section>
+
+    <section id="countryPanel" class="card" hidden aria-live="polite">
+      <div style="display:flex;flex-wrap:wrap;justify-content:space-between;align-items:flex-start;gap:12px">
+        <div>
+          <h2 id="countryTitle" style="margin:0 0 5px"></h2>
+          <div class="muted">2026 IMD comparative results</div>
+        </div>
+        <a id="pdfDownload" class="download" href="#">Download country report (.pdf)</a>
+      </div>
+      <div id="countrySummary" class="summary"></div>
+      <h3>Four factor scores</h3>
+      <p class="muted">Index scores range from 0 to 100. Factor ranks are out of 70 economies.</p>
+      <div id="factorChart" role="img" aria-label="Bar chart of the four factor scores"></div>
+      <h3>Sub-factor rank profile</h3>
+      <p class="muted">Rank position out of 70; rank 1 is strongest, so longer bars represent lower relative ranks.</p>
+      <div id="subfactorChart" role="img" aria-label="Bar chart of the 20 sub-factor ranks"></div>
+      <h3>Twenty sub-factor ranks</h3>
+      <p class="muted">Rank 1 is strongest. The booklet reports ranks—not sub-factor scores.</p>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Dimension</th><th>Rank</th><th>Booklet page</th></tr></thead>
+          <tbody id="subfactorRows"></tbody>
+        </table>
+      </div>
+      <p id="sourceCitation" class="muted"></p>
+    </section>
+    <section class="card">
+      <h2>How to interpret this index</h2>
+      <p class="muted">The overall and factor scores are indices used for charting; the 20 sub-factor values are ordinal ranks. They provide comparative context, not causal evidence. Recommendations in a New Patterns R&amp;D report should remain grounded in that report’s own research evidence.</p>
+      <p class="muted">Source: IMD World Competitiveness Yearbook 2026 booklet, pages 65–68, 66–67, 76–83, and 86–87. This workspace presents extracted factual rankings and does not reproduce booklet pages.</p>
+    </section>
+  </main>
+  <script>
+    (() => {
+      const byId = (id) => document.getElementById(id);
+      const status = byId('workspaceStatus');
+      const panel = byId('countryPanel');
+      const escapeHtml = (value) => String(value ?? '').replace(/[&<>"']/g, (char) => ({
+        '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+      })[char]);
+
+      async function requestJson(url) {
+        const response = await fetch(url, { headers: { Accept: 'application/json' } });
+        const body = await response.json().catch(() => ({}));
+        if (!response.ok) throw new Error(body.detail || `Request failed (${response.status}).`);
+        return body;
+      }
+
+      async function searchCountries(query) {
+        status.classList.remove('error');
+        status.textContent = 'Searching the local index…';
+        byId('countryResults').replaceChildren();
+        try {
+          const limit = query ? 70 : 12;
+          const result = await requestJson(`/api/gci/countries?q=${encodeURIComponent(query)}&limit=${limit}`);
+          const list = byId('countryResults');
+          for (const item of result.countries || []) {
+            const button = document.createElement('button');
+            button.type = 'button';
+            button.textContent = `${item.country} · #${item.overall_rank}`;
+            button.addEventListener('click', () => loadCountry(item.country));
+            list.appendChild(button);
+          }
+          status.textContent = query
+            ? `${result.count} matching economy/economies.`
+            : `Showing ${result.count} leading economies; search to find any of the 70.`;
+          if (!result.count) status.textContent = 'No matching economy found.';
+        } catch (error) {
+          status.classList.add('error');
+          status.textContent = error.message;
+        }
+      }
+
+      async function loadCountry(country) {
+        status.classList.remove('error');
+        status.textContent = `Loading ${country}…`;
+        try {
+          const data = await requestJson(`/api/gci/country?country=${encodeURIComponent(country)}`);
+          byId('countryTitle').textContent = data.country;
+          byId('countrySummary').innerHTML =
+            `<div class="metric"><b>#${data.overall_rank} of 70</b><span>Overall rank</span></div>` +
+            `<div class="metric"><b>${Number(data.overall_score).toFixed(2)} / 100</b><span>Overall index score</span></div>`;
+          byId('factorChart').innerHTML = (data.dimensions || [])
+            .filter((item) => item.kind === 'factor')
+            .map((item) => {
+              const score = Math.max(0, Math.min(100, Number(item.score) || 0));
+              return `<div class="factor"><b>${escapeHtml(item.name)}</b>` +
+                `<div class="track"><div class="bar" style="width:${score}%"></div></div>` +
+                `<span class="score">${score.toFixed(2)} · #${Number(item.rank)}</span></div>`;
+            }).join('');
+          byId('subfactorChart').innerHTML = (data.dimensions || [])
+            .filter((item) => item.kind === 'subfactor')
+            .map((item) => {
+              const rank = Math.max(1, Math.min(70, Number(item.rank) || 70));
+              const width = (rank / 70) * 100;
+              return `<div class="rank-factor"><b>${escapeHtml(item.name)}</b>` +
+                `<div class="track"><div class="rank-bar" style="width:${width}%"></div></div>` +
+                `<span class="score">#${rank} / 70</span></div>`;
+            }).join('');
+          byId('subfactorRows').innerHTML = (data.dimensions || [])
+            .filter((item) => item.kind === 'subfactor')
+            .map((item) => `<tr><td>${escapeHtml(item.name)}</td><td>${Number(item.rank)} / 70</td>` +
+              `<td>${Number(item.source_page)}</td></tr>`).join('');
+          byId('sourceCitation').textContent = `Source: ${data.source_citation}`;
+          byId('pdfDownload').href = `/api/gci/report.pdf?country=${encodeURIComponent(data.country)}`;
+          panel.hidden = false;
+          status.textContent = `Loaded ${data.country}.`;
+        } catch (error) {
+          status.classList.add('error');
+          status.textContent = error.message;
+          panel.hidden = true;
+        }
+      }
+
+      byId('countrySearch').addEventListener('submit', (event) => {
+        event.preventDefault();
+        searchCountries(byId('countryQuery').value.trim());
+      });
+      requestJson('/api/gci/status')
+        .then((result) => {
+          status.textContent = `Local index ready · ${result.economies} economies · ${result.source}.`;
+          return searchCountries('');
+        })
+        .catch((error) => {
+          status.classList.add('error');
+          status.textContent = error.message;
+        });
+    })();
+  </script>
+</body>
+</html>
