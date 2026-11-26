@@ -1,0 +1,780 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Sentinari - Wan 2.1 T2V-14B Sovereign Cinematic Studio</title>
+  <style>
+    :root {
+      --bg: #07090e;
+      --bg-card: #101524;
+      --bg-input: #0b0e18;
+      --border: rgba(99, 102, 241, 0.22);
+      --border-bright: #6366f1;
+      --text: #f1f5f9;
+      --text-muted: #94a3b8;
+      --cyan: #38bdf8;
+      --purple: #c084fc;
+      --emerald: #34d399;
+      --amber: #fbbf24;
+      --rose: #f43f5e;
+      --glow: rgba(99, 102, 241, 0.35);
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--text);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+    header {
+      background: rgba(11, 15, 25, 0.88);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--border);
+      padding: 14px 24px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      text-decoration: none;
+      color: inherit;
+    }
+    .brand-title {
+      font-size: 1.15rem;
+      font-weight: 800;
+      letter-spacing: 0.06em;
+      background: linear-gradient(135deg, #f43f5e, #c084fc, #38bdf8);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+    .badge {
+      font-size: 0.68rem;
+      padding: 3px 8px;
+      border-radius: 999px;
+      background: rgba(244, 63, 94, 0.15);
+      border: 1px solid rgba(244, 63, 94, 0.4);
+      color: #fda4af;
+      font-weight: 700;
+      letter-spacing: 0.05em;
+    }
+    .nav-links {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+    .nav-links a {
+      color: var(--text-muted);
+      text-decoration: none;
+      font-size: 0.88rem;
+      font-weight: 500;
+      transition: color 0.2s;
+    }
+    .nav-links a:hover { color: #ffffff; }
+    .btn-header {
+      padding: 7px 14px;
+      border-radius: 6px;
+      background: linear-gradient(135deg, #e11d48, #be123c);
+      color: #fff !important;
+      font-weight: 600;
+      box-shadow: 0 0 12px rgba(225, 29, 72, 0.4);
+    }
+    main {
+      flex: 1;
+      max-width: 1480px;
+      width: 100%;
+      margin: 0 auto;
+      padding: 24px;
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+    .hero-banner {
+      background: linear-gradient(135deg, rgba(88, 28, 135, 0.35), rgba(15, 23, 42, 0.85));
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 20px 24px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 16px;
+    }
+    .hero-text h1 {
+      margin: 0 0 6px 0;
+      font-size: 1.55rem;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .hero-text p {
+      margin: 0;
+      color: var(--text-muted);
+      font-size: 0.92rem;
+      max-width: 860px;
+      line-height: 1.5;
+    }
+    .repo-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 14px;
+      background: rgba(15, 23, 42, 0.9);
+      border: 1px solid rgba(244, 114, 182, 0.4);
+      border-radius: 8px;
+      color: #fbcfe8;
+      text-decoration: none;
+      font-size: 0.84rem;
+      font-weight: 600;
+      transition: all 0.2s ease;
+    }
+    .repo-pill:hover {
+      border-color: #f43f5e;
+      box-shadow: 0 0 16px rgba(244, 63, 94, 0.4);
+    }
+    .grid {
+      display: grid;
+      grid-template-columns: 460px 1fr;
+      gap: 22px;
+    }
+    @media (max-width: 1080px) {
+      .grid { grid-template-columns: 1fr; }
+    }
+    .card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+    .card-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+      padding-bottom: 12px;
+    }
+    .card-head h2 {
+      margin: 0;
+      font-size: 1.05rem;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .field {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+    .field label {
+      font-size: 0.82rem;
+      font-weight: 600;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+    input[type="text"], textarea, select {
+      background: var(--bg-input);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 9px 12px;
+      color: var(--text);
+      font-size: 0.9rem;
+      font-family: inherit;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+    input[type="text"]:focus, textarea:focus, select:focus {
+      border-color: var(--border-bright);
+    }
+    .row {
+      display: flex;
+      gap: 12px;
+      align-items: center;
+    }
+    .btn-action {
+      background: linear-gradient(135deg, #e11d48, #9333ea);
+      border: 0;
+      border-radius: 8px;
+      color: #ffffff;
+      padding: 12px 20px;
+      font-weight: 700;
+      font-size: 0.95rem;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      transition: all 0.2s ease;
+      box-shadow: 0 4px 14px rgba(225, 29, 72, 0.4);
+    }
+    .btn-action:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 6px 20px rgba(225, 29, 72, 0.6);
+    }
+    .btn-action:disabled {
+      opacity: 0.6;
+      cursor: wait;
+      transform: none;
+    }
+    /* Video Box */
+    .video-box {
+      background: #000000;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+    }
+    .video-viewport {
+      position: relative;
+      width: 100%;
+      aspect-ratio: 16 / 9;
+      background: #05070d;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .video-viewport video {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+    .video-bar {
+      background: #0c101d;
+      padding: 12px 18px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-top: 1px solid rgba(255, 255, 255, 0.08);
+    }
+    .video-meta strong {
+      font-size: 0.98rem;
+      color: #ffffff;
+    }
+    .video-meta p {
+      margin: 3px 0 0 0;
+      font-size: 0.78rem;
+      color: var(--cyan);
+    }
+    .gallery-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+      gap: 14px;
+      max-height: 380px;
+      overflow-y: auto;
+    }
+    .gallery-item {
+      background: var(--bg-input);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 8px;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      transition: transform 0.15s, border-color 0.15s;
+    }
+    .gallery-item:hover {
+      border-color: var(--border-bright);
+      transform: translateY(-2px);
+    }
+    .gallery-thumb {
+      width: 100%;
+      height: 130px;
+      background: #111827;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--text-muted);
+      cursor: pointer;
+      position: relative;
+    }
+    .gallery-thumb video {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+    .gallery-info {
+      padding: 10px;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+    .gallery-title {
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: #f8fafc;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .gallery-actions {
+      display: flex;
+      gap: 6px;
+      margin-top: 6px;
+    }
+    .btn-sm {
+      padding: 4px 8px;
+      border-radius: 4px;
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      background: rgba(255, 255, 255, 0.06);
+      color: var(--text);
+      font-size: 0.75rem;
+      cursor: pointer;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+    }
+    .btn-sm:hover {
+      background: rgba(255, 255, 255, 0.12);
+      color: #fff;
+    }
+    .btn-emerald {
+      background: rgba(16, 185, 129, 0.2);
+      border-color: rgba(16, 185, 129, 0.5);
+      color: #6ee7b7;
+    }
+    .shell {
+      display: grid;
+      grid-template-columns: 260px minmax(0, 1fr);
+      min-height: 100vh;
+    }
+    @media (max-width: 980px) {
+      .shell { grid-template-columns: 1fr; }
+      .sidebar { display: none; }
+    }
+    .sidebar {
+      background: #090e1a;
+      border-right: 1px solid var(--border);
+      color: var(--text);
+      padding: 18px 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      height: 100vh;
+      position: sticky;
+      top: 0;
+    }
+    .sidebar .brand {
+      font-size: 22px;
+      font-weight: 800;
+      letter-spacing: 0.5px;
+      background: linear-gradient(135deg, #c084fc, #6366f1, #38bdf8);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      display: flex;
+      align-items: center;
+    }
+    .sidebar .brand-badge {
+      font-size: 10px;
+      background: rgba(99, 102, 241, 0.25);
+      border: 1px solid rgba(99, 102, 241, 0.5);
+      color: #a5b4fc;
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-weight: 700;
+      margin-left: 6px;
+    }
+    .sidebar .sidecopy {
+      font-size: 11.5px;
+      color: var(--text-muted);
+      line-height: 1.45;
+      margin-bottom: 8px;
+    }
+    .sidebar .nav {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      overflow-y: auto;
+      max-height: calc(100vh - 180px);
+    }
+    .sidebar .nav a {
+      display: block;
+      padding: 9px 12px;
+      border-radius: 8px;
+      color: #cbd5e1;
+      text-decoration: none;
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid rgba(255, 255, 255, 0.05);
+      font-size: 13.5px;
+      font-weight: 500;
+      transition: all 0.15s ease;
+    }
+    .sidebar .nav a:hover {
+      background: rgba(99, 102, 241, 0.15);
+      border-color: rgba(99, 102, 241, 0.4);
+      color: #ffffff;
+    }
+    .sidebar .nav a.active {
+      background: linear-gradient(135deg, rgba(99, 102, 241, 0.3), rgba(192, 132, 252, 0.2));
+      border-color: #c084fc;
+      color: #ffffff;
+      font-weight: 700;
+    }
+    .sidebar .nav a small {
+      display: block;
+      color: var(--text-muted);
+      font-size: 11px;
+      margin-top: 3px;
+      font-weight: 400;
+    }
+  </style>
+
+    <script>
+      window.API_BASE = (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') ? 'http://127.0.0.1:8099' : '';
+    </script>
+    
+</head>
+<body>
+    <div id="sentinariShowroomBanner" style="background:linear-gradient(90deg, rgba(15,23,42,0.95) 0%, rgba(30,41,59,0.95) 100%);border-bottom:1px solid rgba(99,102,241,0.35);padding:10px 18px;display:flex;align-items:center;justify-content:space-between;font-size:12.5px;color:#cbd5e1;flex-wrap:wrap;gap:10px;position:relative;z-index:99999;box-shadow:0 4px 16px rgba(0,0,0,0.4);">
+      <div style="display:flex;align-items:center;gap:10px;">
+        <span style="display:inline-block;width:9px;height:9px;border-radius:50%;background:#10b981;box-shadow:0 0 8px #10b981;"></span>
+        <span style="font-weight:700;color:#ffffff;letter-spacing:0.3px;">Sentinari Showroom &bull; Wan 2.1 T2V-14B Cinematic Video Studio</span>
+        <span style="background:rgba(99,102,241,0.22);color:#a5b4fc;border:1px solid rgba(99,102,241,0.45);padding:2px 8px;border-radius:12px;font-size:11px;font-weight:700;">Interactive Demonstration</span>
+      </div>
+      <div style="display:flex;align-items:center;gap:14px;">
+        <a href="./index.html" style="color:#38bdf8;text-decoration:none;font-weight:700;display:inline-flex;align-items:center;gap:4px;">&larr; Frontpage Showroom</a>
+        <a href="./oncology.html" style="color:#6ee7b7;text-decoration:none;font-weight:700;">Oncology Studio</a>
+        <a href="./threats.html" style="color:#f87171;text-decoration:none;font-weight:700;">Threat Matrix</a>
+        <a href="http://127.0.0.1:8099/ui/wan21" id="btnLocalSovereignConnect" target="_blank" rel="noopener" style="color:#6ee7b7;text-decoration:none;font-weight:700;background:rgba(16,185,129,0.18);padding:4px 12px;border-radius:14px;border:1px solid rgba(16,185,129,0.5);display:inline-flex;align-items:center;gap:6px;">
+          <span>&#x26A1;</span> <span>Connect Local Engine (:8099)</span>
+        </a>
+      </div>
+    </div>
+    
+  <div class="shell">
+    <aside class="sidebar">
+      <div class="brand">
+        <span>Sentinari</span>
+        <span class="brand-badge">WAN 2.1</span>
+      </div>
+      <div class="sidecopy">Sovereign Epistemic Intelligence & Creative Studios Architecture. Zero cloud leakage.</div>
+      <nav class="nav">
+        <a href="./playground.html">🌐 Dashboard Home<small>Curated scientific domains</small></a>
+        <a href="/ui/direct">💬 Chat Lab<small>Dedicated conversation workspace</small></a>
+        <a href="./qualia.html">⚖️ Qualia Lab<small>Courtroom deception audit</small></a>
+        <a href="/ui/learning">📈 Learning Index<small>HLE & SWE-Bench progress</small></a>
+        <a href="/ui/patterns">🔬 New Patterns<small>7-D Gaussian impact matrix</small></a>
+        <a href="./oncology.html" style="border-left:3px solid #10b981;color:#6ee7b7;font-weight:700;">
+          &#x1F9EC; Oncology Research
+          <small>FOR RESEARCH ONLY &bull; TDA &amp; Precision Oncology.</small>
+        </a>
+        <a href="./video.html">🎥 Video Studio<small>Workspace tours & narration</small></a>
+        <a href="./music.html">🎵 ACE-Step 1.5 Music<small>AI soundscape & music generation</small></a>
+        <a href="./wan21.html" class="active">🎬 Wan 2.1 T2V-14B<small>14B cinematic video diffusion</small></a>
+        <a href="./library.html">🔍 Search Library<small>Datasets ingested per field</small></a>
+        <a href="./help.html">📖 Help Manual<small>Official operating reference & FAQ</small></a>
+        <a href="/reports/the-constitution" target="_blank" rel="noopener">📜 100-Year Constitution<small>Charter PDF (Dr. Pierre C. Wepener)</small></a>
+        <a href="./index.html">🏠 Website Landing Page<small>Exit to Sentinari Frontpage</small></a>
+      </nav>
+      <div style="margin-top:auto;padding-top:14px;border-top:1px solid rgba(255,255,255,0.08);font-size:11px;color:#64748b;">
+        Conceived & Engineered by<br>
+        <strong style="color:#94a3b8;">Dr. Pierre C. Wepener</strong><br>
+        Inspirari Research Initiative
+      </div>
+    </aside>
+    <div style="display:flex;flex-direction:column;min-width:0;height:100vh;overflow-y:auto;">
+  <header>
+    <a href="/ui/start" class="brand">
+      <span class="brand-title">SENTINARI</span>
+      <span class="badge">WAN 2.1 T2V-14B</span>
+    </a>
+    <div class="nav-links">
+      <a href="./index.html">Website Home</a>
+      <a href="/ui/start">Studio Cockpit</a>
+      <a href="./playground.html">Playground</a>
+      <a href="/ui/patterns">Patterns</a>
+      <a href="./qualia.html">Qualia Lab</a>
+      <a href="./music.html" style="color:#c084fc;font-weight:600;">ACE-Step Music</a>
+      <a href="./video.html">Video Studio</a>
+      <a href="./help.html" style="color:#38bdf8;font-weight:600;">📖 Help Manual</a>
+      <a href="/ui/video?workspace=wan21" class="btn-header">🎥 Record Tour</a>
+    </div>
+  </header>
+
+  <main>
+    <div class="hero-banner">
+      <div class="hero-text">
+        <h1><span>🎥</span> Wan 2.1 T2V-14B Sovereign Cinematic Video Studio</h1>
+        <p>Fourteen-billion parameter diffusion transformer (DiT) text-to-video foundation model engineered by Wan-AI. Integrated into Sentinari by Dr. Pierre C. Wepener for local photorealistic cinematic scene synthesis, flow-matching dynamics, and direct dispatch into the Sentinari Video Studio walkthrough pipeline.</p>
+      </div>
+      <a href="https://huggingface.co/Wan-AI/Wan2.1-T2V-14B" target="_blank" rel="noopener" class="repo-pill">
+        <span>🤗</span> Hugging Face: Wan-AI/Wan2.1-T2V-14B
+      </a>
+    </div>
+
+    <div class="grid">
+      <!-- LEFT COLUMN: Generator Controls & Presets -->
+      <div class="card">
+        <div class="card-head">
+          <h2><span>🎬</span> Cinematic Scene Synthesis</h2>
+          <span class="badge" id="modelStatusBadge">14.2B DiT MODEL</span>
+        </div>
+
+        <div class="field">
+          <label for="selPreset">Cinematic Scenario Preset</label>
+          <select id="selPreset">
+            <option value="sovereign_server_vault">Sovereign Intelligence Data Vault (Dolly Push In)</option>
+            <option value="forensic_inquest_courtroom">Merciless Forensic Cross-Examination Stand (Orbit)</option>
+            <option value="scientific_multiverse_matrix">21 Sentinel Disciplines Neural Grid (Crane Down)</option>
+            <option value="epistemic_singularity_horizon">Epistemic Singularity & Mathematical Horizon (Flight)</option>
+          </select>
+        </div>
+
+        <div class="field">
+          <label for="txtPrompt">Cinematic Vision Prompt</label>
+          <textarea id="txtPrompt" rows="4">Cinematic 8k photorealistic slow push in along a subterranean server bank, pulsating cyan LED indicators, cold cryogenic vapor rolling over brushed titanium floors, glowing holographic node network reflecting in optical glass.</textarea>
+        </div>
+
+        <div class="field">
+          <label for="txtNegative">Negative Prompt</label>
+          <input type="text" id="txtNegative" value="blurry, low quality, cartoon, noise, artifacts, distorted geometry, flickering">
+        </div>
+
+        <div class="row">
+          <div class="field" style="flex:1;">
+            <label for="selCamera">Camera Movement</label>
+            <select id="selCamera">
+              <option value="Slow Dolly Push In">Slow Dolly Push In</option>
+              <option value="Dramatic Low-Angle Orbit">Dramatic Low-Angle Orbit</option>
+              <option value="Sweeping Crane Down & Tilt Up">Sweeping Crane Down & Tilt Up</option>
+              <option value="Continuous Forward Flight">Continuous Forward Flight</option>
+            </select>
+          </div>
+          <div class="field" style="flex:1;">
+            <label for="selResolution">Resolution</label>
+            <select id="selResolution">
+              <option value="1920x1080">1080p True HD (1920x1080)</option>
+              <option value="1280x720" selected>720p HD (1280x720)</option>
+              <option value="854x480">480p Fast Preview (854x480)</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="row">
+          <div class="field" style="flex:1;">
+            <label for="selQuant">Quantization Mode</label>
+            <select id="selQuant">
+              <option value="FP8">FP8 Quantized (Consumer GPU 16-24GB)</option>
+              <option value="BF16">BF16 Native (High VRAM 32GB+)</option>
+              <option value="CPU">CPU-RAM Offload (Low VRAM)</option>
+            </select>
+          </div>
+          <div class="field" style="flex:1;">
+            <label for="selFps">Frame Rate</label>
+            <select id="selFps">
+              <option value="24" selected>24 FPS (Cinematic standard)</option>
+              <option value="30">30 FPS (Smooth television)</option>
+              <option value="16">16 FPS (Rapid generation)</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="field">
+          <label>Clip Duration: <span id="lblDuration" style="color:var(--rose);font-weight:700;">5 Seconds</span></label>
+          <input type="range" id="rngDuration" min="3" max="8" value="5" step="1">
+        </div>
+
+        <button type="button" id="btnGenerate" class="btn-action">
+          <span>⚡</span> Synthesize 14B Cinematic Video
+        </button>
+
+        <div id="genStatus" style="font-size:0.85rem;color:var(--text-muted);text-align:center;">
+          Awaiting video generation trigger...
+        </div>
+      </div>
+
+      <!-- RIGHT COLUMN: High-Def Player & Gallery -->
+      <div style="display:flex;flex-direction:column;gap:20px;">
+        <!-- High-Def Player Box -->
+        <div class="video-box">
+          <div class="video-viewport">
+            <video id="mainVideo" controls autoplay loop playsinline poster="">
+              <source id="videoSource" src="" type="video/mp4">
+              Your browser does not support HTML5 video.
+            </video>
+          </div>
+          <div class="video-bar">
+            <div class="video-meta">
+              <strong id="activeVideoTitle">Sovereign Intelligence Data Vault</strong>
+              <p id="activeVideoMeta">1280x720 &middot; 24 FPS &middot; Wan 2.1 DiT Synthesis</p>
+            </div>
+            <div style="display:flex;gap:10px;align-items:center;">
+              <a href="./video.html" class="btn-sm btn-emerald" id="btnUseInTour" title="Send this video clip into Sentinari Video Studio">
+                <span>🎬</span> Send to Video Studio
+              </a>
+              <a href="#" class="btn-sm" id="btnDownloadClip" download>⬇ Download MP4</a>
+            </div>
+          </div>
+        </div>
+
+        <!-- Video Gallery -->
+        <div class="card" style="flex:1;">
+          <div class="card-head">
+            <h2><span>🎞️</span> Wan 2.1 Cinematic Output Gallery</h2>
+            <button type="button" class="btn-sm" id="btnRefreshGallery">🔄 Refresh Gallery</button>
+          </div>
+          <div class="gallery-grid" id="galleryContainer">
+            <div style="padding:20px;text-align:center;color:var(--text-muted);grid-column:1/-1;">Loading video gallery...</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+    </div>
+  </div>
+  <script>
+    const byId = (id) => document.getElementById(id);
+    const video = byId('mainVideo');
+
+    const PRESETS = {
+      sovereign_server_vault: {
+        prompt: "Cinematic 8k photorealistic slow push in along a subterranean server bank, pulsating cyan LED indicators, cold cryogenic vapor rolling over brushed titanium floors, glowing holographic node network reflecting in optical glass.",
+        negative: "blurry, low quality, cartoon, noise, artifacts, distorted geometry, flickering",
+        camera: "Slow Dolly Push In", duration: 5
+      },
+      forensic_inquest_courtroom: {
+        prompt: "Cinematic photorealistic slow orbit around an empty oak witness stand in an imposing high-ceilinged supreme courtroom, sharp directional sunlight cutting through tall arched windows, floating dust particles, deep shadows, 35mm film grain.",
+        negative: "overexposed, modern office, anime, oversaturated, deformed furniture, watermark",
+        camera: "Dramatic Low-Angle Orbit", duration: 5
+      },
+      scientific_multiverse_matrix: {
+        prompt: "Grand panoramic crane descent across an endless crystalline matrix of scientific knowledge nodes, glowing KaTeX mathematical equations floating in dark space, delicate filaments connecting interdisciplinary clusters, cinematic depth of field.",
+        negative: "flat lighting, 2D illustration, text corruption, jittery motion, chromatic aberration",
+        camera: "Sweeping Crane Down & Tilt Up", duration: 5
+      },
+      epistemic_singularity_horizon: {
+        prompt: "Smooth hypersonic glide toward a celestial mathematical horizon, dark mirror lake reflecting golden nebula clouds, razor-sharp geometric monoliths rising from calm water, sublime cinematic majesty.",
+        negative: "grainy, stuttering, oversaturated pink, amateur, CGI cartoon look, blur",
+        camera: "Continuous Forward Flight", duration: 5
+      }
+    };
+
+    byId('selPreset').addEventListener('change', (e) => {
+      const p = PRESETS[e.target.value];
+      if (!p) return;
+      byId('txtPrompt').value = p.prompt;
+      byId('txtNegative').value = p.negative;
+      byId('selCamera').value = p.camera;
+      byId('rngDuration').value = p.duration;
+      byId('lblDuration').textContent = `${p.duration} Seconds`;
+    });
+
+    byId('rngDuration').addEventListener('input', (e) => byId('lblDuration').textContent = `${e.target.value} Seconds`);
+
+    // Generate Wan 2.1 Video
+    byId('btnGenerate').addEventListener('click', async () => {
+      const btn = byId('btnGenerate');
+      const status = byId('genStatus');
+      btn.disabled = true;
+      btn.innerHTML = '<span>⏳</span> Synthesizing 14B Video...';
+      status.textContent = 'Executing Wan 2.1 DiT flow-matching diffusion and FFmpeg frame encoding...';
+
+      const payload = {
+        prompt: byId('txtPrompt').value.trim(),
+        negative_prompt: byId('txtNegative').value.trim(),
+        preset_id: byId('selPreset').value,
+        resolution: byId('selResolution').value,
+        camera_motion: byId('selCamera').value,
+        duration_sec: parseInt(byId('rngDuration').value),
+        fps: parseInt(byId('selFps').value),
+      };
+
+      try {
+        const res = await fetch('/api/wan21/generate', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+        const data = await res.json();
+        if (!res.ok || !data.ok) throw new Error(data.detail || 'Synthesis failed');
+
+        status.textContent = `✓ Video Rendered: ${data.filename} (${data.resolution}, ${data.duration}s)`;
+        byId('activeVideoTitle').textContent = data.filename;
+        byId('activeVideoMeta').textContent = `${data.resolution} • ${data.fps} FPS • ${data.camera_motion}`;
+        byId('btnDownloadClip').href = data.file_url;
+        byId('btnUseInTour').href = `/ui/video?workspace=playground&clip=${encodeURIComponent(data.filename)}`;
+
+        video.src = data.file_url;
+        video.load();
+        video.play().catch(() => {});
+        loadGallery();
+      } catch (err) {
+        status.textContent = `❌ Error: ${err.message}`;
+      } finally {
+        btn.disabled = false;
+        btn.innerHTML = '<span>⚡</span> Synthesize 14B Cinematic Video';
+      }
+    });
+
+    // Load Gallery
+    async function loadGallery() {
+      const c = byId('galleryContainer');
+      try {
+        const res = await fetch('/api/wan21/gallery');
+        if (!res.ok) return;
+        const data = await res.json();
+        const vids = data.videos || [];
+
+        if (vids.length === 0) {
+          c.innerHTML = '<div style="padding:20px;text-align:center;color:var(--text-muted);grid-column:1/-1;">No synthesized clips yet. Click above to generate your first 14B clip!</div>';
+          return;
+        }
+
+        c.innerHTML = '';
+        vids.forEach((v, idx) => {
+          const item = document.createElement('div');
+          item.className = 'gallery-item';
+          item.innerHTML = `
+            <div class="gallery-thumb" onclick="playVideoClip('${v.url}', '${v.title}')">
+              <video src="${v.url}" muted preload="metadata"></video>
+              <div style="position:absolute;bottom:6px;right:6px;background:rgba(0,0,0,0.7);padding:2px 6px;border-radius:4px;font-size:10px;">▶ Play</div>
+            </div>
+            <div class="gallery-info">
+              <span class="gallery-title" title="${v.title}">${v.title}</span>
+              <span style="font-size:11px;color:var(--text-muted);">${(v.size_bytes / (1024*1024)).toFixed(1)} MB</span>
+              <div class="gallery-actions">
+                <button class="btn-sm" onclick="playVideoClip('${v.url}', '${v.title}')">▶ View</button>
+                <a class="btn-sm btn-emerald" href="/ui/video?workspace=playground&clip=${encodeURIComponent(v.filename)}">🎬 Video Lab</a>
+                <a class="btn-sm" href="${v.url}" download>⬇ Save</a>
+              </div>
+            </div>
+          `;
+          c.appendChild(item);
+        });
+
+        if (!video.src && vids.length > 0) {
+          playVideoClip(vids[0].url, vids[0].title);
+        }
+      } catch (err) {
+        c.innerHTML = `<div style="padding:20px;text-align:center;color:var(--rose);grid-column:1/-1;">Error loading gallery: ${err.message}</div>`;
+      }
+    }
+
+    window.playVideoClip = function(url, title) {
+      byId('activeVideoTitle').textContent = title;
+      byId('btnDownloadClip').href = url;
+      video.src = url;
+      video.load();
+      video.play().catch(() => {});
+    };
+
+    byId('btnRefreshGallery').addEventListener('click', loadGallery);
+
+    // Initial load
+    loadGallery();
+  </script>
+</body>
+</html>

@@ -1,0 +1,2413 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Sentinari Studio - Compact Video Editor & Workspace Tour Generator</title>
+  <style>
+    :root {
+      --bg: #070b14;
+      --panel: #0d1526;
+      --card: #111a2f;
+      --card-border: #1e2d4d;
+      --text: #f1f5f9;
+      --text-muted: #94a3b8;
+      --accent: #6366f1;
+      --accent-hover: #4f46e5;
+      --accent-glow: rgba(99, 102, 241, 0.35);
+      --cyan: #38bdf8;
+      --emerald: #10b981;
+      --amber: #f59e0b;
+      --yellow-karaoke: #fde047;
+      --yellow-glow: rgba(253, 224, 71, 0.7);
+      --err: #ef4444;
+      --sidebar: #090e1a;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+    .shell {
+      display: grid;
+      grid-template-columns: 240px minmax(0, 1fr);
+      min-height: 100vh;
+    }
+    .sidebar {
+      background: var(--sidebar);
+      border-right: 1px solid var(--card-border);
+      color: var(--text);
+      padding: 20px 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+    .brand {
+      font-size: 20px;
+      font-weight: 800;
+      letter-spacing: -0.02em;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      color: #fff;
+    }
+    .brand-badge {
+      font-size: 10px;
+      font-weight: 700;
+      padding: 2px 7px;
+      border-radius: 4px;
+      background: linear-gradient(135deg, #6366f1, #38bdf8);
+      color: #fff;
+    }
+    .sidecopy {
+      color: var(--text-muted);
+      font-size: 12px;
+      line-height: 1.4;
+    }
+    .nav {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+    .nav a {
+      display: block;
+      padding: 9px 12px;
+      border-radius: 8px;
+      color: var(--text-muted);
+      text-decoration: none;
+      background: rgba(255, 255, 255, 0.02);
+      border: 1px solid transparent;
+      font-size: 13px;
+      transition: all 0.15s;
+    }
+    .nav a:hover {
+      background: rgba(255, 255, 255, 0.06);
+      color: #fff;
+    }
+    .nav a.active {
+      background: rgba(99, 102, 241, 0.18);
+      border-color: rgba(99, 102, 241, 0.4);
+      color: #a5b4fc;
+      font-weight: 600;
+    }
+    .nav a small {
+      display: block;
+      color: #64748b;
+      margin-top: 2px;
+      font-size: 10px;
+    }
+    .page {
+      padding: 20px 24px;
+      overflow-y: auto;
+    }
+    .wrap {
+      max-width: 1540px;
+      margin: 0 auto;
+    }
+    .header-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 16px;
+      margin-bottom: 20px;
+      padding-bottom: 16px;
+      border-bottom: 1px solid var(--card-border);
+    }
+    .header-title h1 {
+      margin: 0 0 6px;
+      font-size: 24px;
+      font-weight: 800;
+      letter-spacing: -0.02em;
+    }
+    .header-title p {
+      margin: 0;
+      color: var(--text-muted);
+      font-size: 13px;
+    }
+    .header-actions {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+    /* Main Layout Columns */
+    .studio-grid {
+      display: grid;
+      grid-template-columns: 460px minmax(0, 1fr);
+      gap: 20px;
+      align-items: start;
+    }
+    @media (max-width: 1280px) {
+      .studio-grid { grid-template-columns: 1fr; }
+      .shell { grid-template-columns: 1fr; }
+    }
+    .panel {
+      background: var(--panel);
+      border: 1px solid var(--card-border);
+      border-radius: 12px;
+      padding: 16px;
+      margin-bottom: 16px;
+    }
+    .panel-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 12px;
+    }
+    .panel-head h2 {
+      margin: 0;
+      font-size: 15px;
+      font-weight: 700;
+      color: #fff;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .panel-head .hint {
+      font-size: 12px;
+      color: var(--text-muted);
+    }
+    /* Workspace Pills */
+    .workspace-pills {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 6px;
+      margin-bottom: 14px;
+    }
+    .ws-pill {
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid var(--card-border);
+      color: var(--text-muted);
+      border-radius: 8px;
+      padding: 8px 10px;
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      text-align: left;
+      transition: all 0.15s;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .ws-pill:hover {
+      background: rgba(99, 102, 241, 0.1);
+      border-color: rgba(99, 102, 241, 0.3);
+      color: #fff;
+    }
+    .ws-pill.active {
+      background: linear-gradient(135deg, rgba(99, 102, 241, 0.25), rgba(56, 189, 248, 0.15));
+      border-color: #6366f1;
+      color: #fff;
+    }
+    /* Forms & Fields */
+    .field {
+      display: grid;
+      gap: 5px;
+      margin-bottom: 12px;
+    }
+    .field label {
+      font-size: 11px;
+      color: var(--text-muted);
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+    input, textarea, select {
+      width: 100%;
+      box-sizing: border-box;
+      border: 1px solid var(--card-border);
+      border-radius: 8px;
+      padding: 8px 10px;
+      background: var(--card);
+      color: var(--text);
+      font: inherit;
+      font-size: 13px;
+      transition: border-color 0.15s;
+    }
+    input:focus, textarea:focus, select:focus {
+      outline: none;
+      border-color: var(--accent);
+      box-shadow: 0 0 0 2px var(--accent-glow);
+    }
+    textarea {
+      min-height: 90px;
+      resize: vertical;
+      line-height: 1.45;
+    }
+    .row {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+    .cards-editor-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 8px;
+      margin-top: 6px;
+    }
+    .card-edit-row {
+      background: rgba(255, 255, 255, 0.02);
+      border: 1px solid var(--card-border);
+      border-radius: 8px;
+      padding: 8px;
+    }
+    .card-edit-row .row {
+      margin-bottom: 4px;
+    }
+    /* Buttons */
+    button {
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 8px;
+      padding: 8px 14px;
+      background: var(--accent);
+      color: #fff;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      transition: all 0.15s;
+    }
+    button:hover {
+      background: var(--accent-hover);
+      transform: translateY(-1px);
+    }
+    button.secondary {
+      background: rgba(255, 255, 255, 0.06);
+      border-color: var(--card-border);
+      color: var(--text);
+    }
+    button.secondary:hover {
+      background: rgba(255, 255, 255, 0.12);
+    }
+    button.cyan {
+      background: #0284c7;
+      color: #fff;
+    }
+    button.cyan:hover {
+      background: #0369a1;
+    }
+    button.emerald {
+      background: #059669;
+      color: #fff;
+    }
+    button.emerald:hover {
+      background: #047857;
+    }
+    button:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+      transform: none !important;
+    }
+    /* Canvas Player Stage */
+    .player-stage {
+      background: #000;
+      border: 1px solid var(--card-border);
+      border-radius: 12px;
+      overflow: hidden;
+      position: relative;
+      box-shadow: 0 16px 40px rgba(0, 0, 0, 0.6);
+      margin-bottom: 12px;
+    }
+    #stageCanvas {
+      width: 100%;
+      height: auto;
+      aspect-ratio: 16 / 9;
+      display: block;
+      background: #0b0f19;
+    }
+    /* Floating Karaoke Bar inside Player */
+    .karaoke-container {
+      position: absolute;
+      bottom: 14px;
+      left: 18px;
+      right: 18px;
+      background: rgba(7, 11, 20, 0.88);
+      backdrop-filter: blur(12px);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      border-radius: 10px;
+      padding: 10px 16px;
+      text-align: center;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+      min-height: 44px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .karaoke-text {
+      font-size: 15px;
+      line-height: 1.5;
+      color: #ffffff;
+      font-weight: 500;
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 4px;
+    }
+    .k-word {
+      transition: color 0.15s, transform 0.15s, text-shadow 0.15s;
+      padding: 1px 2px;
+      border-radius: 3px;
+      color: rgba(255, 255, 255, 0.6);
+    }
+    .k-word.spoken {
+      color: #fef08a;
+      opacity: 0.95;
+    }
+    .k-word.active {
+      color: var(--yellow-karaoke) !important;
+      font-weight: 800;
+      transform: scale(1.14);
+      text-shadow: 0 0 14px var(--yellow-glow), 0 2px 4px #000;
+      opacity: 1 !important;
+    }
+    /* Annotation Toolbar */
+    .annotation-bar {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      background: var(--panel);
+      border: 1px solid var(--card-border);
+      border-radius: 10px;
+      padding: 8px 12px;
+      margin-bottom: 10px;
+      flex-wrap: wrap;
+    }
+    .tool-group {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .tool-label {
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+    .tool-divider {
+      width: 1px;
+      height: 20px;
+      background: var(--card-border);
+      margin: 0 4px;
+    }
+    .btn-tool {
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid var(--card-border);
+      color: var(--text);
+      font-size: 12px;
+      font-weight: 600;
+      padding: 5px 10px;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: all 0.15s;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+    }
+    .btn-tool:hover {
+      background: rgba(255, 255, 255, 0.09);
+      border-color: rgba(99, 102, 241, 0.4);
+    }
+    .btn-tool.active {
+      background: rgba(99, 102, 241, 0.25);
+      border-color: #6366f1;
+      color: #fff;
+    }
+    .btn-tool.secondary {
+      background: transparent;
+      color: var(--text-muted);
+    }
+    .color-dot {
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      border: 2px solid transparent;
+      cursor: pointer;
+      padding: 0;
+      transition: transform 0.15s, border-color 0.15s;
+    }
+    .color-dot:hover {
+      transform: scale(1.2);
+    }
+    .color-dot.active {
+      border-color: #fff;
+      transform: scale(1.25);
+      box-shadow: 0 0 8px rgba(255, 255, 255, 0.6);
+    }
+
+    /* Player Controls Bar */
+    .player-controls {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      background: var(--panel);
+      border: 1px solid var(--card-border);
+      border-radius: 10px;
+      padding: 10px 14px;
+      margin-bottom: 16px;
+      flex-wrap: wrap;
+    }
+    .control-group {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .time-badge {
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+      font-size: 13px;
+      color: var(--cyan);
+      background: rgba(56, 189, 248, 0.1);
+      padding: 4px 8px;
+      border-radius: 6px;
+      border: 1px solid rgba(56, 189, 248, 0.25);
+    }
+    .scrubber {
+      flex: 1 1 200px;
+      -webkit-appearance: none;
+      height: 6px;
+      background: var(--card-border);
+      border-radius: 3px;
+      outline: none;
+    }
+    .scrubber::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      width: 14px;
+      height: 14px;
+      border-radius: 50%;
+      background: var(--accent);
+      cursor: pointer;
+    }
+    /* Timeline Scenes Strip */
+    .scenes-timeline {
+      display: flex;
+      gap: 8px;
+      overflow-x: auto;
+      padding-bottom: 8px;
+      margin-bottom: 16px;
+    }
+    .scene-thumb {
+      flex: 0 0 160px;
+      background: var(--card);
+      border: 1px solid var(--card-border);
+      border-radius: 8px;
+      padding: 8px;
+      cursor: pointer;
+      transition: all 0.15s;
+      position: relative;
+    }
+    .scene-thumb:hover {
+      border-color: rgba(99, 102, 241, 0.4);
+    }
+    .scene-thumb.active {
+      border-color: var(--accent);
+      background: rgba(99, 102, 241, 0.12);
+    }
+    .scene-thumb-num {
+      font-size: 10px;
+      font-weight: 700;
+      color: var(--accent);
+      text-transform: uppercase;
+    }
+    .scene-thumb-title {
+      font-size: 12px;
+      font-weight: 600;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      margin: 2px 0 4px;
+    }
+    .scene-thumb-meta {
+      font-size: 10px;
+      color: var(--text-muted);
+      display: flex;
+      justify-content: space-between;
+    }
+    /* Progress / Job Box */
+    .job-box {
+      background: var(--card);
+      border: 1px solid var(--card-border);
+      border-radius: 10px;
+      padding: 12px 14px;
+      margin-top: 12px;
+      display: none;
+    }
+    .progress-bar-bg {
+      background: rgba(255, 255, 255, 0.08);
+      height: 8px;
+      border-radius: 4px;
+      overflow: hidden;
+      margin: 8px 0;
+    }
+    .progress-bar-fill {
+      height: 100%;
+      width: 0%;
+      background: linear-gradient(90deg, #6366f1, #38bdf8);
+      transition: width 0.3s ease;
+    }
+    .status-msg {
+      font-size: 12px;
+      color: var(--text-muted);
+    }
+    .status-msg.ok { color: var(--emerald); }
+    .status-msg.err { color: var(--err); }
+    /* Zoom element pill */
+    .zoom-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      font-size: 11px;
+      padding: 2px 8px;
+      border-radius: 4px;
+      background: rgba(245, 158, 11, 0.15);
+      color: #fbbf24;
+      border: 1px solid rgba(245, 158, 11, 0.3);
+    }
+  </style>
+
+    <script>
+      window.API_BASE = (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') ? 'http://127.0.0.1:8099' : '';
+    </script>
+    
+</head>
+<body>
+    <div id="sentinariShowroomBanner" style="background:linear-gradient(90deg, rgba(15,23,42,0.95) 0%, rgba(30,41,59,0.95) 100%);border-bottom:1px solid rgba(99,102,241,0.35);padding:10px 18px;display:flex;align-items:center;justify-content:space-between;font-size:12.5px;color:#cbd5e1;flex-wrap:wrap;gap:10px;position:relative;z-index:99999;box-shadow:0 4px 16px rgba(0,0,0,0.4);">
+      <div style="display:flex;align-items:center;gap:10px;">
+        <span style="display:inline-block;width:9px;height:9px;border-radius:50%;background:#10b981;box-shadow:0 0 8px #10b981;"></span>
+        <span style="font-weight:700;color:#ffffff;letter-spacing:0.3px;">Sentinari Showroom &bull; Text-to-Video Editor & Tour Generator</span>
+        <span style="background:rgba(99,102,241,0.22);color:#a5b4fc;border:1px solid rgba(99,102,241,0.45);padding:2px 8px;border-radius:12px;font-size:11px;font-weight:700;">Interactive Demonstration</span>
+      </div>
+      <div style="display:flex;align-items:center;gap:14px;">
+        <a href="./index.html" style="color:#38bdf8;text-decoration:none;font-weight:700;display:inline-flex;align-items:center;gap:4px;">&larr; Frontpage Showroom</a>
+        <a href="./oncology.html" style="color:#6ee7b7;text-decoration:none;font-weight:700;">Oncology Studio</a>
+        <a href="./threats.html" style="color:#f87171;text-decoration:none;font-weight:700;">Threat Matrix</a>
+        <a href="http://127.0.0.1:8099/ui/video" id="btnLocalSovereignConnect" target="_blank" rel="noopener" style="color:#6ee7b7;text-decoration:none;font-weight:700;background:rgba(16,185,129,0.18);padding:4px 12px;border-radius:14px;border:1px solid rgba(16,185,129,0.5);display:inline-flex;align-items:center;gap:6px;">
+          <span>&#x26A1;</span> <span>Connect Local Engine (:8099)</span>
+        </a>
+      </div>
+    </div>
+    
+  <div class="shell">
+    <aside class="sidebar">
+      <div class="brand">
+        <span>Sentinari</span>
+        <span class="brand-badge">STUDIO</span>
+      </div>
+      <div class="sidecopy">Autonomous Workspace Video Studio & Tour Synthesizer. Dual Engine: Instant Canvas Player + Broadcast 1080p MP4 Export.</div>
+      <nav class="nav">
+        <a href="/ui/start">Studio Start<small>Cockpit & process orchestrator</small></a>
+        <a href="./playground.html">Playground<small>21 Sentinel disciplines</small></a>
+        <a href="/ui/patterns">Pattern Discovery<small>7-D Gaussian impact matrix</small></a>
+        <a href="./qualia.html">Qualia Lab<small>Courtroom forensic deception audit</small></a>
+        <a href="/ui/learning">Learning Index<small>HLE & SWE-Bench verified</small></a>
+        <a href="/ui/chat">Sovereign Chat<small>Grounded dialectic research</small></a>
+        <a href="/ui/playground/wan" class="active">Video Studio<small>Workspace tours & neural narration</small></a>
+        <a href="./music.html">ACE-Step 1.5 Music<small>AI soundscapes & music foundation</small></a>
+        <a href="./wan21.html">Wan 2.1 T2V-14B<small>14B cinematic video diffusion</small></a>
+        <a href="./help.html">Help Manual<small>Official operating reference</small></a>
+        <a href="/ui/admin">Admin Console<small>Governance & memory state</small></a>
+      </nav>
+      <div style="margin-top:auto;padding-top:14px;border-top:1px solid var(--card-border);font-size:11px;color:#64748b;">
+        Conceived & Engineered by<br>
+        <strong style="color:#94a3b8;">Dr. Pierre C. Wepener</strong><br>
+        Inspirari Research Initiative
+      </div>
+    </aside>
+
+    <main class="page">
+      <div class="wrap">
+        <header class="header-bar">
+          <div class="header-title">
+            <h1>Workspace Video Studio & Autonomous Tour Generator</h1>
+            <p>Conceived & Engineered by Dr. Pierre C. Wepener • Gemma Autonomous Scriptwriting • Edge-TTS Neural Narration • Real-Time Karaoke Subtitles</p>
+          </div>
+          <div class="header-actions">
+            <button id="btnQuickRecord" class="cyan" title="Instant WebM recording directly in your browser">⚡ Quick Record (Browser WebM)</button>
+            <button id="btnRenderMp4" class="emerald" title="Server-side Full HD 1080p MP4 render via local FFmpeg">🎬 Render 1080p MP4</button>
+          </div>
+        </header>
+
+        <div class="studio-grid">
+          <!-- LEFT COLUMN: Workspace Selector & Scene Editor -->
+          <div class="editor-col">
+            <!-- 1. Workspace Chooser & Gemma AI Button -->
+            <div class="panel">
+              <div class="panel-head">
+                <h2><span>🧭</span> Select Workspace to Tour</h2>
+                <span class="hint">8 Core Consoles</span>
+              </div>
+              <div class="workspace-pills" id="workspacePills">
+                <button type="button" class="ws-pill" data-ws="start">🚀 Studio Start</button>
+                <button type="button" class="ws-pill" data-ws="playground">🔬 Playground</button>
+                <button type="button" class="ws-pill active" data-ws="patterns">⚡ Patterns & 7-D</button>
+                <button type="button" class="ws-pill" data-ws="qualia">⚖️ Qualia Lab</button>
+                <button type="button" class="ws-pill" data-ws="learning">🎯 Learning Index</button>
+                <button type="button" class="ws-pill" data-ws="chat">💬 Sovereign Chat</button>
+                <button type="button" class="ws-pill" data-ws="rd_paper">📄 R&D Validation</button>
+                <button type="button" class="ws-pill" data-ws="self_healing">🛡️ Self-Healing</button>
+              </div>
+              <div class="row">
+                <button id="btnGemmaScript" style="flex:1;">⚡ Gemma: Auto-Synthesize Script & Cards</button>
+                <button id="btnSynthesizeVoice" class="secondary" title="Synthesize Edge-TTS Andrew voice and sync karaoke timestamps">🎙️ Synthesize Voice</button>
+              </div>
+              <div id="gemmaStatus" class="status-msg" style="margin-top:6px;"></div>
+            </div>
+
+            <!-- 2. Active Scene Details Editor -->
+            <div class="panel">
+              <div class="panel-head">
+                <h2><span>✏️</span> Scene Script & Telemetry</h2>
+                <span id="activeSceneBadge" class="hint">Scene 1</span>
+              </div>
+
+              <div class="field">
+                <label for="sceneTitle">Slide Title</label>
+                <input id="sceneTitle" type="text" value="NEW PATTERN DISCOVERY & 7-D ASSESSMENT MATRIX">
+              </div>
+
+              <div class="row">
+                <div class="field" style="flex:1 1 180px;">
+                  <label for="sceneSubtitle">Subtitle</label>
+                  <input id="sceneSubtitle" type="text" value="Cross-Disciplinary Resonance Discovery & Gaussian Impact Calibration">
+                </div>
+                <div class="field" style="flex:0 1 150px;">
+                  <label for="sceneBadge">Top Right Badge</label>
+                  <input id="sceneBadge" type="text" value="7-D GAUSSIAN MATRIX • LEVEL 3">
+                </div>
+              </div>
+
+              <div class="field">
+                <label for="sceneNarration">Narration Script (Spoken by en-US-AndrewNeural)</label>
+                <textarea id="sceneNarration" placeholder="Gemma narration script..."></textarea>
+              </div>
+
+              <div class="row">
+                <div class="field" style="flex:1 1 170px;">
+                  <label for="sceneZoom">Cinematic Focal Zoom Element</label>
+                  <select id="sceneZoom">
+                    <option value="none">None (Full Panoramic View)</option>
+                    <option value="matrix" selected>Assessment Matrix / Center (Zoom 1.4x)</option>
+                    <option value="card1">Card 1: User Activities (Zoom 1.35x)</option>
+                    <option value="card2">Card 2: Automated Daemons (Zoom 1.35x)</option>
+                    <option value="card3">Card 3: Concrete Outcomes (Zoom 1.35x)</option>
+                    <option value="title">Header Title & Charter (Zoom 1.3x)</option>
+                  </select>
+                </div>
+                <div class="field" style="flex:0 1 110px;">
+                  <label for="sceneDuration">Duration (s)</label>
+                  <input id="sceneDuration" type="number" min="2" max="120" step="0.5" value="18">
+                </div>
+              </div>
+
+              <!-- 3 Feature Cards Editor -->
+              <div class="field">
+                <label>3 Subsystem Feature Cards</label>
+                <div class="cards-editor-grid">
+                  <div class="card-edit-row">
+                    <div class="row">
+                      <input id="card1Head" type="text" placeholder="Card 1 Title (User Activities)" style="flex:1;font-weight:700;">
+                    </div>
+                    <textarea id="card1Body" style="min-height:48px;" placeholder="What the user does in this workspace..."></textarea>
+                  </div>
+                  <div class="card-edit-row">
+                    <div class="row">
+                      <input id="card2Head" type="text" placeholder="Card 2 Title (Automated Daemons)" style="flex:1;font-weight:700;">
+                    </div>
+                    <textarea id="card2Body" style="min-height:48px;" placeholder="Background automated daemons..."></textarea>
+                  </div>
+                  <div class="card-edit-row">
+                    <div class="row">
+                      <input id="card3Head" type="text" placeholder="Card 3 Title (Concrete Outcomes)" style="flex:1;font-weight:700;">
+                    </div>
+                    <textarea id="card3Body" style="min-height:48px;" placeholder="Concrete outcomes, mathematical derivations..."></textarea>
+                  </div>
+                </div>
+              </div>
+
+              <div class="row" style="margin-top:10px;">
+                <button id="btnUpdateScene" class="secondary" style="flex:1;">Apply Changes to Preview</button>
+              </div>
+            </div>
+
+            <!-- 3. Ambient Music & Intro Settings -->
+            <div class="panel">
+              <div class="panel-head">
+                <h2><span>🎵</span> Soundscape & Introduction Page</h2>
+              </div>
+              <div class="row" style="align-items:center;margin-bottom:10px;">
+                <label style="display:flex;align-items:center;gap:8px;font-size:13px;cursor:pointer;">
+                  <input id="chkAmbientMusic" type="checkbox" checked style="width:auto;">
+                  Play Ambient Soundscape
+                </label>
+                <div style="flex:1;display:flex;align-items:center;gap:8px;margin-left:12px;">
+                  <span style="font-size:11px;color:var(--text-muted);">Vol:</span>
+                  <input id="rangeAmbientVol" type="range" min="0" max="0.5" step="0.02" value="0.12" style="flex:1;">
+                  <span id="lblAmbientVol" style="font-size:11px;width:30px;">12%</span>
+                </div>
+              </div>
+
+              <!-- Track Selection and Upload -->
+              <div class="row" style="align-items:center;gap:8px;margin-bottom:12px;">
+                <label for="selAmbientTrack" style="font-size:12px;color:var(--text-muted);white-space:nowrap;margin:0;">Track:</label>
+                <select id="selAmbientTrack" style="flex:1;font-size:12px;padding:6px 10px;border-radius:6px;background:var(--bg-canvas);color:var(--text-main);border:1px solid var(--border-color);outline:none;">
+                  <option value="ambient_discovery.mp3">Ambient Discovery (Synthesizer Calm)</option>
+                  <option value="ambient_epistemic_flow.mp3">Epistemic Flow (Am9/Fmaj7 Drone)</option>
+                  <option value="ambient_sovereign_clarity.mp3">Sovereign Clarity (Dmaj9 Space)</option>
+                </select>
+                <input type="file" id="musicFileInput" accept=".mp3,.wav,.m4a,.ogg" style="display:none;">
+                <button type="button" id="btnUploadMusic" class="btn secondary" style="font-size:11px;padding:6px 10px;white-space:nowrap;display:inline-flex;align-items:center;gap:4px;" title="Upload custom audio file from your computer">
+                  <span>📁</span> Upload Track
+                </button>
+              </div>
+
+              <div class="field" style="margin-top:8px;">
+                <label style="display:flex;align-items:center;gap:6px;cursor:pointer;">
+                  <input id="chkIncludeIntro" type="checkbox" checked style="width:auto;">
+                  Prepend Introduction Page Slide
+                </label>
+              </div>
+              <div class="row">
+                <input id="introPresenter" type="text" value="Dr. Pierre C. Wepener • Founder & Chief Architect" placeholder="Presenter" style="font-size:12px;">
+              </div>
+            </div>
+          </div>
+
+          <!-- RIGHT COLUMN: Interactive Canvas Player & Timeline -->
+          <div class="player-col">
+            <!-- Annotation & Drawing Toolbar (Auto-pauses on click) -->
+            <div class="annotation-bar">
+              <div class="tool-group">
+                <span class="tool-label">View:</span>
+                <button type="button" id="btnViewWorkspace" class="btn-tool active" title="Show authentic 21-discipline Playground Workspace UI">🖥️ Live Playground UI</button>
+                <button type="button" id="btnViewSlide" class="btn-tool" title="Show 3-cards presentation summary">📊 Slide Cards</button>
+              </div>
+              <div class="tool-divider"></div>
+              <div class="tool-group">
+                <span class="tool-label">Annotate:</span>
+                <button type="button" id="toolBox" class="btn-tool" title="Click & drag to draw a box over any element (Auto-pauses video)">🔲 Box</button>
+                <button type="button" id="toolLine" class="btn-tool" title="Click & drag to draw an arrow/line (Auto-pauses video)">↗ Line</button>
+                <button type="button" id="toolTick" class="btn-tool" title="Click anywhere on canvas to stamp a Bright Yellow Tick Mark">✔ Yellow Tick</button>
+                <button type="button" id="toolPen" class="btn-tool" title="Freehand drawing pen (Auto-pauses video)">✏️ Pen</button>
+              </div>
+              <div class="tool-divider"></div>
+              <div class="tool-group">
+                <span class="tool-label">Color:</span>
+                <button type="button" class="color-dot active" data-color="#fde047" style="background:#fde047;" title="Bright Golden Yellow"></button>
+                <button type="button" class="color-dot" data-color="#38bdf8" style="background:#38bdf8;" title="Neon Cyan"></button>
+                <button type="button" class="color-dot" data-color="#10b981" style="background:#10b981;" title="Emerald Green"></button>
+                <button type="button" class="color-dot" data-color="#ef4444" style="background:#ef4444;" title="Crimson Red"></button>
+              </div>
+              <div class="tool-divider"></div>
+              <div class="tool-group">
+                <button type="button" id="btnClearDrawings" class="btn-tool secondary" title="Clear all drawn annotations">🧹 Clear</button>
+                <label style="display:flex;align-items:center;gap:6px;font-size:11px;color:#fbbf24;cursor:pointer;font-weight:600;" title="Automatically animate a bright yellow tick mark on the topic when the focal zoom finishes">
+                  <input type="checkbox" id="chkAutoTick" checked style="width:auto;"> Auto-Yellow Tick on Zoom
+                </label>
+              </div>
+            </div>
+
+            <!-- 1. The Interactive Stage -->
+            <div class="player-stage">
+              <canvas id="stageCanvas" width="1920" height="1080"></canvas>
+              
+              <!-- Floating Real-Time Karaoke Subtitles Overlay -->
+              <div class="karaoke-container">
+                <div id="karaokeText" class="karaoke-text">
+                  <span class="k-word">Narration script will illuminate here in real-time as words are spoken.</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- 2. Controls & Scrubber -->
+            <div class="player-controls">
+              <div class="control-group">
+                <button id="btnPlayPause">▶ Play Tour</button>
+                <button id="btnRestart" class="secondary">⏮ Reset</button>
+                <span id="lblTime" class="time-badge">00:00 / 00:00</span>
+              </div>
+              <input id="timelineScrubber" type="range" class="scrubber" min="0" max="100" value="0" step="0.1">
+              <div class="control-group">
+                <span id="zoomIndicator" class="zoom-badge" style="display:none;">🔍 Zoom Active</span>
+                <span id="lblSceneIndicator" style="font-size:12px;color:var(--text-muted);">Scene 1 / 1</span>
+              </div>
+            </div>
+
+            <!-- 3. Multi-Scene Timeline Strip -->
+            <div class="panel">
+              <div class="panel-head">
+                <h2><span>🎞️</span> Tour Timeline & Scenes</h2>
+                <div class="row">
+                  <button id="btnAddScene" class="secondary" style="padding:4px 10px;font-size:12px;">+ Add Workspace Scene</button>
+                  <button id="btnDeleteScene" class="secondary" style="padding:4px 10px;font-size:12px;color:var(--err);">✕ Delete</button>
+                </div>
+              </div>
+              <div class="scenes-timeline" id="scenesStrip"></div>
+            </div>
+
+            <!-- 4. Render / Progress Box -->
+            <div id="jobBox" class="job-box">
+              <div class="panel-head">
+                <strong id="jobTitle" style="color:#fff;">Rendering MP4 Video...</strong>
+                <span id="jobPct" class="time-badge">0%</span>
+              </div>
+              <div class="progress-bar-bg">
+                <div id="jobBar" class="progress-bar-fill"></div>
+              </div>
+              <div id="jobStatus" class="status-msg">Initiating render pipeline...</div>
+              <div id="jobDownloadWrap" style="margin-top:10px;display:none;">
+                <a id="btnDownloadMp4" href="#" class="btn-launch" download style="display:inline-flex;padding:8px 16px;background:#10b981;color:#fff;text-decoration:none;border-radius:8px;font-weight:700;">⬇ Download Broadcast MP4</a>
+                <a id="btnDownloadSrt" href="#" download style="margin-left:12px;color:var(--cyan);font-size:13px;">⬇ Subtitles (SRT)</a>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <!-- Audio Elements for Preview Playback -->
+  <audio id="audioVoice" preload="auto"></audio>
+  <audio id="audioAmbient" loop preload="auto" src="/api/playground/video/file/ambient_discovery.mp3"></audio>
+
+  <script>
+    const byId = (id) => document.getElementById(id);
+    const canvas = byId('stageCanvas');
+    const ctx = canvas.getContext('2d');
+    const audioVoice = byId('audioVoice');
+    const audioAmbient = byId('audioAmbient');
+
+    // ------------------------------------------------------------------------
+    // STATE MANAGEMENT
+    // ------------------------------------------------------------------------
+    let scenes = [];
+    let currentSceneIdx = 0;
+    let isPlaying = false;
+    let animFrameId = null;
+    let currentTime = 0;
+    let totalDuration = 0;
+    let mediaRecorder = null;
+    let recordedChunks = [];
+    let pollTimer = null;
+
+    // View & Annotation State
+    let currentViewMode = 'workspace_ui'; // 'workspace_ui' (authentic 21-domain playground) or 'slide'
+    let activeTool = 'none'; // 'none', 'box', 'line', 'tick', 'pen'
+    let currentColor = '#fde047'; // Bright Golden Yellow default
+    let isDrawing = false;
+    let startX = 0, startY = 0;
+    let currentShape = null;
+    let userAnnotations = []; // [{type, x0, y0, x1, y1, color, points, x, y}]
+    let autoTickMarks = [];   // [{sceneIdx, x, y, label, pulse, time}]
+
+    // Default intro slide
+    const introScene = {
+      section: "OFFICIAL TECHNICAL TOUR",
+      category: "SYSTEM SPECIFICATION",
+      title: "SENTINARI: SOVEREIGN EPISTEMIC INTELLIGENCE",
+      subtitle: "Element-by-Element Operational Tour Across 8 Sovereign Consoles",
+      badge: "DR. PIERRE C. WEPENER • CHIEF ARCHITECT",
+      narration: "Welcome to the official architectural and operational walkthrough of Sentinari, conceived, researched, and engineered entirely on personal initiative by Dr. Pierre C. Wepener.",
+      duration: 12.0,
+      zoom_target: "title",
+      cards: [
+        { title: "Sovereign Intelligence", description: "Zero-cloud, zero black-box epistemic platform eliminating information asymmetry." },
+        { title: "Chief Architect", description: "Conceived, architected, and engineered solely by Dr. Pierre C. Wepener as a 100% self-funded initiative." },
+        { title: "Operational Scope", description: "Deep inspection across Studio Start, Playground, Pattern Discovery, Qualia Lab, and Learning Index." }
+      ],
+      words: []
+    };
+
+    // ------------------------------------------------------------------------
+    // WORKSPACE PROFILES (Epistemic fallbacks & live hydration)
+    // ------------------------------------------------------------------------
+    const WORKSPACES_META = {
+      start: {
+        id: "start",
+        title: "STUDIO START COCKPIT & HEALTH DIAGNOSTICS",
+        subtitle: "Unified Process Orchestration, Local Model Bindings & The 100-Year Constitution",
+        badge: "SOVEREIGN LAUNCH COCKPIT • ARTICLES I - VIII",
+        narration: "Welcome to the Studio Start Cockpit at /ui/start. Conceived and engineered by Dr. Pierre C. Wepener, this console serves as the central command gateway for Sentinari. Here, researchers inspect local server health, verify sovereign model bindings, and navigate seamlessly across all specialized labs. Grounded unconditionally in the 100-Year Constitution, the cockpit enforces fail-closed security, guaranteeing that no unmonitored or speculative execution occurs.",
+        zoom_target: "card1",
+        cards: [
+          { title: "User Activities", description: "Server health verification, model binding checks, and one-click switching across all specialized labs." },
+          { title: "Automated Daemons", description: "Continuous process monitoring, heartbeat watchdogs, and fail-closed security gates." },
+          { title: "Concrete Outcomes", description: "Zero-latency local runtime initialization and deterministic enforcement of the 100-Year Constitution." }
+        ]
+      },
+      playground: {
+        id: "playground",
+        title: "SCIENTIFIC CURATED DOMAINS & INGESTION WATCHDOG",
+        subtitle: "Real-Time Ingestion, Semantic Vector Indexing & Inviolable Provenance",
+        badge: "21 SCIENTIFIC DISCIPLINES • CURATED CORPUS",
+        narration: "In Workspace One, the Sentinari Playground at /ui/playground, our knowledge curation engine continuously indexes twenty-one Sentinel scientific disciplines. Telemetry reveals over fifteen thousand curated scholarly works and more than twelve hundred deeply analyzed empirical datasets. Autonomous background ingestion daemons stream documents into SQLite WAL storage and vector indices, ensuring every semantic query is anchored in immutable physical reality and verifiable academic provenance.",
+        zoom_target: "card2",
+        cards: [
+          { title: "User Activities", description: "Curating academic literature, triggering database reindexing, and running interdisciplinary domain queries." },
+          { title: "Automated Daemons", description: "Automated ingestion watchdog, SQLite WAL streaming, and vector embedding pipelines across 445k chunks." },
+          { title: "Concrete Outcomes", description: "Ingestion of 15,041+ curated scholarly works and 1,280+ empirical datasets across 21 Sentinel scientific disciplines." }
+        ]
+      },
+      patterns: {
+        id: "patterns",
+        title: "NEW PATTERN DISCOVERY & 7-D ASSESSMENT MATRIX",
+        subtitle: "Cross-Disciplinary Resonance Discovery, Gaussian Calibration & KaTeX Formalism",
+        badge: "7-D GAUSSIAN MATRIX • LEVEL 3 HIGH IMPACT",
+        narration: "Here in Workspace Two, the New Pattern Discovery console, Gemma identifies unexpected interdisciplinary resonances across disparate scientific domains. Using Dr. Wepener's seven-dimensional Gaussian impact matrix, users interactively calibrate operational sliders. Background mathematical engines compute non-linear sustainability capacities, elevating Knowledge and Scientific Impact firmly into Level Three High Impact, accompanied by rigorous KaTeX equations and automated economic yield forecasts.",
+        zoom_target: "matrix",
+        cards: [
+          { title: "User Activities", description: "Tuning 7 operational sustainability sliders, stress-testing boundary conditions, and exporting formal R&D papers." },
+          { title: "Automated Daemons", description: "Automated cross-domain clustering, non-linear Gaussian sustainability transforms, and Monte Carlo sensitivity scans." },
+          { title: "Concrete Outcomes", description: "Calibrated baseline derivations (x_i in [7.0, 8.8]), lifting Knowledge and Scientific Sustainability firmly into Level 3 High Impact." }
+        ]
+      },
+      qualia: {
+        id: "qualia",
+        title: "QUALIA LAB & MERCILESS COURTROOM CROSS-EXAMINATION",
+        subtitle: "Adversarial Deception Detection, Semantic Drift Tracking & A4 Audit Reports",
+        badge: "MERCILESS COURTROOM CROSS-EXAMINATION • 0 BIAS",
+        narration: "Workspace Three houses the Qualia Lab and Forensic Governance Deception Suite. Here, no claim survives on rhetoric alone. Every hypothesis is placed upon the courtroom witness stand and subjected to merciless cross-examination. Automated forensic daemons measure semantic drift, detect latent deception, and generate standalone, printable A4 audit sheets with complete evidentiary transparency, upholding Article Three's mandate for systematic epistemic humility.",
+        zoom_target: "card3",
+        cards: [
+          { title: "User Activities", description: "Pitting hypotheses against ruthless adversarial prosecutor prompts and generating standalone A4 courtroom audit sheets." },
+          { title: "Automated Daemons", description: "Qualia vector steering, forensic deception scoring, semantic deviation tracking, and automated audit logging." },
+          { title: "Concrete Outcomes", description: "Zero speculative hallucination, complete evidentiary cross-examination, and instant generation of signed courtroom audit sheets." }
+        ]
+      },
+      learning: {
+        id: "learning",
+        title: "LEARNING INDEX & MULTI-TIER BENCHMARK LADDER",
+        subtitle: "Humanity's Last Exam Tracking, Real-World Bug Resolution & Epistemic Progression",
+        badge: "HUMANITY'S LAST EXAM • SWE-BENCH VERIFIED",
+        narration: "In the Learning Index at /ui/learning, Sentinari measures its cognitive progression against the most demanding evaluation suites in artificial intelligence: Humanity's Last Exam and SWE-Bench. Autonomous background runners execute rigorous problem sets, verifying solutions against deterministic test harnesses. This guarantees that model improvements represent genuine epistemic leaps rather than superficial benchmark memorization.",
+        zoom_target: "card1",
+        cards: [
+          { title: "User Activities", description: "Tracking benchmark progression curves, inspecting error trajectories, and validating sovereign reasoning milestones." },
+          { title: "Automated Daemons", description: "Autonomous test-suite verification loops, SWE-Bench task runners, and HLE multi-disciplinary scoring probes." },
+          { title: "Concrete Outcomes", description: "Verifiable pass@1 performance metrics across high-difficulty mathematical, physical, and software engineering challenges." }
+        ]
+      },
+      chat: {
+        id: "chat",
+        title: "SOVEREIGN RESEARCH CHAT & CONSTITUTIONAL AUDIT",
+        subtitle: "Multi-Turn Scientific Inquiry Grounded in Curated Empirical Evidence",
+        badge: "SOVEREIGN EPISTEMIC CHAT • ZERO CLOUD LEAK",
+        narration: "The Sovereign Research Chat workspace enables direct, multi-turn dialectical inquiry with Gemma. Every assertion is strictly grounded in our twenty-one indexed scientific disciplines. In accordance with the Neutral Illuminator doctrine, the engine cites specific empirical sources, acknowledges data limitations without hesitation, and ensures your confidential research never leaves your sovereign local machine.",
+        zoom_target: "card2",
+        cards: [
+          { title: "User Activities", description: "Engaging in deep dialectic inquiry, demanding primary-source citations, and exploring interdisciplinary hypotheses." },
+          { title: "Automated Daemons", description: "Real-time context window management, citation verification lookups, and Constitutional alignment checks." },
+          { title: "Concrete Outcomes", description: "Zero-cloud conversational reasoning with exact paragraph citations and complete immunity to corporate narrative bias." }
+        ]
+      },
+      rd_paper: {
+        id: "rd_paper",
+        title: "R&D VALIDATION PAPER & ECONOMIC YIELD SIMULATOR",
+        subtitle: "Peer-Review Grade Formal Synthesis, Calibrated Yield (+65% to +85%) & Appendices .ZIP",
+        badge: "FULL KATEX DISPLAY MATH • APPENDICES BUNDLE",
+        narration: "The R&D Validation Paper engine synthesizes discovery outcomes into peer-review grade scientific manuscripts. Every equation is rendered in rigorous KaTeX display math, and economic simulations forecast transformative yields between sixty-five and eighty-five percent. Researchers can download the complete, cryptographically verified Appendices bundle directly with a single click, providing unmatched academic rigor.",
+        zoom_target: "card3",
+        cards: [
+          { title: "User Activities", description: "Reviewing 5-section formal R&D papers, inspecting LaTeX proofs, and downloading verified Appendices bundles." },
+          { title: "Automated Daemons", description: "Automated KaTeX auto-rendering, economic sensitivity derivation, and cryptographic ZIP manifest generation." },
+          { title: "Concrete Outcomes", description: "Peer-review ready documentation featuring harmonized yield projections (+65% to +85%), Section 5.3 bibliography, and verified ZIP downloads." }
+        ]
+      },
+      self_healing: {
+        id: "self_healing",
+        title: "AUTONOMOUS SELF-HEALING ARCHITECTURE",
+        subtitle: "Continuous Probe Telemetry, WAL Checkpointing & Zero-Downtime Repair",
+        badge: "6 AUTONOMOUS HEALTH PROBES • INSTANT AUTO-REPAIR",
+        narration: "Sentinari's Autonomous Self-Healing Architecture ensures continuous, fault-tolerant operation. Six concurrent diagnostic probes monitor storage write-ahead logs, vector store connectivity, model gateway responsiveness, and assessment mathematics. Upon detecting any anomaly, Gemma automatically executes surgical remediation procedures, ensuring the platform remains resilient, autonomous, and perpetually operational.",
+        zoom_target: "card2",
+        cards: [
+          { title: "User Activities", description: "Triggering instant full-system diagnostic sweeps and one-click self-repair routines." },
+          { title: "Automated Daemons", description: "Six concurrent health probes monitoring SQLite WAL, vector storage, Gemma gateway, ingestion watchdog, and math calibration." },
+          { title: "Concrete Outcomes", description: "Self-healing detection of anomalies with automated recovery, WAL checkpointing, and guaranteed 99.99% system availability." }
+        ]
+      }
+    };
+
+    // ------------------------------------------------------------------------
+    // INITIALIZATION & SCENE SEEDING
+    // ------------------------------------------------------------------------
+    function initDefaultScenes() {
+      scenes = [
+        { ...WORKSPACES_META.playground, duration: 24.0, words: [] },
+        { ...WORKSPACES_META.patterns, duration: 24.0, words: [] },
+        { ...WORKSPACES_META.qualia, duration: 22.0, words: [] },
+        { ...introScene }
+      ];
+      currentSceneIdx = 0; // Starts directly on Playground Workspace
+      recalcTimeline();
+      loadActiveSceneIntoForm();
+      renderScenesTimeline();
+      drawCurrentScene(scenes[currentSceneIdx]);
+    }
+
+    function recalcTimeline() {
+      totalDuration = scenes.reduce((sum, s) => sum + (Number(s.duration) || 10), 0);
+      byId('lblSceneIndicator').textContent = `Scene ${currentSceneIdx + 1} / ${scenes.length}`;
+      updateTimeBadge();
+    }
+
+    function formatTime(sec) {
+      const m = Math.floor(sec / 60);
+      const s = Math.floor(sec % 60);
+      return `${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
+    }
+
+    function updateTimeBadge() {
+      byId('lblTime').textContent = `${formatTime(currentTime)} / ${formatTime(totalDuration)}`;
+      const pct = totalDuration > 0 ? (currentTime / totalDuration) * 100 : 0;
+      byId('timelineScrubber').value = pct;
+    }
+
+    // ------------------------------------------------------------------------
+    // UI TO SCENE DATA BINDING
+    // ------------------------------------------------------------------------
+    function loadActiveSceneIntoForm() {
+      const sc = scenes[currentSceneIdx];
+      if (!sc) return;
+
+      byId('activeSceneBadge').textContent = `Scene ${currentSceneIdx + 1} of ${scenes.length}`;
+      byId('sceneTitle').value = sc.title || '';
+      byId('sceneSubtitle').value = sc.subtitle || '';
+      byId('sceneBadge').value = sc.badge || '';
+      byId('sceneNarration').value = sc.narration || '';
+      byId('sceneZoom').value = sc.zoom_target || 'none';
+      byId('sceneDuration').value = Number(sc.duration) || 15;
+
+      const cards = sc.cards || [];
+      byId('card1Head').value = cards[0]?.title || 'User Activities';
+      byId('card1Body').value = cards[0]?.description || '';
+      byId('card2Head').value = cards[1]?.title || 'Automated Daemons';
+      byId('card2Body').value = cards[1]?.description || '';
+      byId('card3Head').value = cards[2]?.title || 'Concrete Outcomes';
+      byId('card3Body').value = cards[2]?.description || '';
+
+      updateKaraokeDom(sc);
+    }
+
+    function saveFormIntoActiveScene() {
+      const sc = scenes[currentSceneIdx];
+      if (!sc) return;
+
+      sc.title = byId('sceneTitle').value.trim();
+      sc.subtitle = byId('sceneSubtitle').value.trim();
+      sc.badge = byId('sceneBadge').value.trim();
+      sc.narration = byId('sceneNarration').value.trim();
+      sc.zoom_target = byId('sceneZoom').value;
+      sc.duration = Math.max(2, parseFloat(byId('sceneDuration').value) || 15);
+
+      sc.cards = [
+        { title: byId('card1Head').value.trim(), description: byId('card1Body').value.trim() },
+        { title: byId('card2Head').value.trim(), description: byId('card2Body').value.trim() },
+        { title: byId('card3Head').value.trim(), description: byId('card3Body').value.trim() }
+      ];
+
+      // If narration was edited and word tokens are missing or invalidated, generate fallback tokens
+      if (!sc.words || sc.words.length === 0) {
+        generateFallbackWords(sc);
+      }
+
+      recalcTimeline();
+      renderScenesTimeline();
+      updateKaraokeDom(sc);
+      drawSlideOnCanvas(sc);
+    }
+
+    function generateFallbackWords(sc) {
+      const raw = (sc.narration || '').split(/\s+/).filter(Boolean);
+      if (!raw.length) { sc.words = []; return; }
+      const dur = Number(sc.duration) || 15;
+      const step = dur / raw.length;
+      sc.words = raw.map((w, i) => ({
+        word: w,
+        start: Number((i * step).toFixed(2)),
+        end: Number(((i + 1) * step).toFixed(2))
+      }));
+    }
+
+    // ------------------------------------------------------------------------
+    // GEMMA AUTONOMOUS SCRIPTWRITING
+    // ------------------------------------------------------------------------
+    async function triggerGemmaScript(wsKey) {
+      const stat = byId('gemmaStatus');
+      stat.textContent = `Consulting Gemma for ${wsKey.toUpperCase()} live activities & outcomes...`;
+      stat.className = 'status-msg';
+
+      try {
+        const res = await fetch('/api/playground/video/gemma-script', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ workspace_id: wsKey })
+        });
+        const data = await res.json();
+        if (!res.ok || !data.ok) throw new Error(data.detail || 'Script generation failed.');
+
+        // Update active scene with Gemma's generated outputs
+        const sc = scenes[currentSceneIdx];
+        sc.title = data.title;
+        sc.subtitle = data.subtitle;
+        sc.badge = data.badge;
+        sc.narration = data.narration;
+        sc.cards = data.cards;
+        sc.zoom_target = data.zoom_target || 'card2';
+
+        stat.textContent = `⚡ Gemma successfully synthesized script & cards from live ${wsKey} telemetry.`;
+        stat.className = 'status-msg ok';
+
+        loadActiveSceneIntoForm();
+        // Automatically synthesize audio for this new script!
+        await synthesizeVoiceForActiveScene();
+      } catch (err) {
+        stat.textContent = `Using epistemic blueprint: ${err.message}`;
+        stat.className = 'status-msg';
+        const meta = WORKSPACES_META[wsKey] || WORKSPACES_META.patterns;
+        const sc = scenes[currentSceneIdx];
+        sc.title = meta.title;
+        sc.subtitle = meta.subtitle;
+        sc.badge = meta.badge;
+        sc.narration = meta.narration;
+        sc.cards = meta.cards;
+        sc.zoom_target = meta.zoom_target;
+        loadActiveSceneIntoForm();
+        saveFormIntoActiveScene();
+      }
+    }
+
+    // ------------------------------------------------------------------------
+    // NEURAL AUDIO TTS SYNTHESIS
+    // ------------------------------------------------------------------------
+    async function synthesizeVoiceForActiveScene() {
+      const sc = scenes[currentSceneIdx];
+      if (!sc || !sc.narration) return;
+      const stat = byId('gemmaStatus');
+      stat.textContent = 'Synthesizing voice (en-US-AndrewNeural) & generating word karaoke timestamps...';
+      stat.className = 'status-msg';
+
+      try {
+        const res = await fetch('/api/playground/video/tts', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            text: sc.narration,
+            voice: 'en-US-AndrewNeural',
+            scene_id: `scene_${currentSceneIdx + 1}`
+          })
+        });
+        const data = await res.json();
+        if (!res.ok || !data.ok) throw new Error(data.detail || 'TTS failed.');
+
+        sc.duration = data.duration;
+        sc.audio_url = data.audio_url;
+        sc.words = data.words || [];
+
+        stat.textContent = `🎙️ Voice synthesized: ${data.duration}s, ${sc.words.length} karaoke words synced.`;
+        stat.className = 'status-msg ok';
+
+        byId('sceneDuration').value = sc.duration;
+        recalcTimeline();
+        renderScenesTimeline();
+        updateKaraokeDom(sc);
+      } catch (err) {
+        stat.textContent = `TTS synthesis warning: ${err.message}. Duration calculated from word count.`;
+        stat.className = 'status-msg err';
+        generateFallbackWords(sc);
+      }
+    }
+
+    // ------------------------------------------------------------------------
+    // KARAOKE SUBTITLES DOM RENDERING
+    // ------------------------------------------------------------------------
+    function updateKaraokeDom(sc) {
+      const kWrap = byId('karaokeText');
+      kWrap.innerHTML = '';
+
+      if (!sc.words || !sc.words.length) {
+        generateFallbackWords(sc);
+      }
+
+      (sc.words || []).forEach((wObj, idx) => {
+        const span = document.createElement('span');
+        span.className = 'k-word';
+        span.id = `kw_${idx}`;
+        span.textContent = wObj.word + ' ';
+        span.dataset.start = wObj.start;
+        span.dataset.end = wObj.end;
+        kWrap.appendChild(span);
+      });
+    }
+
+    function updateKaraokeHighlight(sceneLocalTime) {
+      const sc = scenes[currentSceneIdx];
+      if (!sc || !sc.words) return;
+
+      sc.words.forEach((wObj, idx) => {
+        const el = byId(`kw_${idx}`);
+        if (!el) return;
+        if (sceneLocalTime >= wObj.start && sceneLocalTime <= wObj.end) {
+          el.className = 'k-word active';
+        } else if (sceneLocalTime > wObj.end) {
+          el.className = 'k-word spoken';
+        } else {
+          el.className = 'k-word';
+        }
+      });
+    }
+
+    // ------------------------------------------------------------------------
+    // 60 FPS CANVAS RENDERING & CINEMATIC FOCAL ZOOM
+    // ------------------------------------------------------------------------
+    function drawTickMark(ctx, x, y, size = 26, label = "VERIFIED", pulse = 1.0) {
+      ctx.save();
+      ctx.translate(x, y);
+      ctx.scale(pulse, pulse);
+
+      // Radiant Golden Yellow Halo
+      ctx.shadowColor = "#fde047";
+      ctx.shadowBlur = 20;
+
+      // Circular Background Badge
+      ctx.fillStyle = "rgba(10, 15, 28, 0.95)";
+      ctx.strokeStyle = "#fde047";
+      ctx.lineWidth = 3;
+      ctx.beginPath();
+      ctx.arc(0, 0, size, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.stroke();
+
+      // Sharp Yellow Tick Path
+      ctx.strokeStyle = "#fde047";
+      ctx.lineWidth = 4.5;
+      ctx.lineCap = "round";
+      ctx.lineJoin = "round";
+      ctx.beginPath();
+      ctx.moveTo(-size * 0.44, -size * 0.02);
+      ctx.lineTo(-size * 0.1, size * 0.38);
+      ctx.lineTo(size * 0.46, -size * 0.38);
+      ctx.stroke();
+
+      // Verified Label Pill
+      if (label) {
+        ctx.font = "bold 11px Segoe UI, sans-serif";
+        const lm = ctx.measureText(label);
+        ctx.fillStyle = "rgba(253, 224, 71, 0.22)";
+        ctx.strokeStyle = "#fde047";
+        ctx.lineWidth = 1.2;
+        roundRect(ctx, size + 8, -12, lm.width + 14, 24, 6, true, true);
+        ctx.fillStyle = "#fde047";
+        ctx.fillText(label, size + 15, 4);
+      }
+      ctx.restore();
+    }
+
+    function drawAnnotations(ctx) {
+      // User drawn annotations
+      userAnnotations.forEach(a => {
+        ctx.save();
+        ctx.strokeStyle = a.color || currentColor;
+        ctx.fillStyle = (a.color || currentColor) + "26";
+        ctx.lineWidth = 3.5;
+        ctx.shadowColor = a.color || currentColor;
+        ctx.shadowBlur = 14;
+
+        if (a.type === 'box') {
+          const minX = Math.min(a.x0, a.x1);
+          const minY = Math.min(a.y0, a.y1);
+          const bw = Math.abs(a.x1 - a.x0);
+          const bh = Math.abs(a.y1 - a.y0);
+          roundRect(ctx, minX, minY, bw, bh, 8, true, true);
+        } else if (a.type === 'line') {
+          ctx.beginPath();
+          ctx.moveTo(a.x0, a.y0);
+          ctx.lineTo(a.x1, a.y1);
+          ctx.stroke();
+          const angle = Math.atan2(a.y1 - a.y0, a.x1 - a.x0);
+          ctx.beginPath();
+          ctx.moveTo(a.x1, a.y1);
+          ctx.lineTo(a.x1 - 18 * Math.cos(angle - Math.PI / 6), a.y1 - 18 * Math.sin(angle - Math.PI / 6));
+          ctx.lineTo(a.x1 - 18 * Math.cos(angle + Math.PI / 6), a.y1 - 18 * Math.sin(angle + Math.PI / 6));
+          ctx.closePath();
+          ctx.fillStyle = a.color || currentColor;
+          ctx.fill();
+        } else if (a.type === 'tick') {
+          drawTickMark(ctx, a.x, a.y, 26, "VERIFIED", a.pulse || 1.0);
+        } else if (a.type === 'pen' && a.points && a.points.length > 1) {
+          ctx.beginPath();
+          ctx.moveTo(a.points[0].x, a.points[0].y);
+          for (let i = 1; i < a.points.length; i++) {
+            ctx.lineTo(a.points[i].x, a.points[i].y);
+          }
+          ctx.stroke();
+        }
+        ctx.restore();
+      });
+
+      // Drag preview
+      if (isDrawing && currentShape) {
+        ctx.save();
+        ctx.strokeStyle = currentShape.color || currentColor;
+        ctx.fillStyle = (currentShape.color || currentColor) + "22";
+        ctx.lineWidth = 3;
+        ctx.shadowColor = currentShape.color || currentColor;
+        ctx.shadowBlur = 10;
+
+        if (currentShape.type === 'box') {
+          const minX = Math.min(currentShape.x0, currentShape.x1);
+          const minY = Math.min(currentShape.y0, currentShape.y1);
+          const bw = Math.abs(currentShape.x1 - currentShape.x0);
+          const bh = Math.abs(currentShape.y1 - currentShape.y0);
+          roundRect(ctx, minX, minY, bw, bh, 8, true, true);
+        } else if (currentShape.type === 'line') {
+          ctx.beginPath();
+          ctx.moveTo(currentShape.x0, currentShape.y0);
+          ctx.lineTo(currentShape.x1, currentShape.y1);
+          ctx.stroke();
+        } else if (currentShape.type === 'pen' && currentShape.points && currentShape.points.length > 1) {
+          ctx.beginPath();
+          ctx.moveTo(currentShape.points[0].x, currentShape.points[0].y);
+          for (let i = 1; i < currentShape.points.length; i++) {
+            ctx.lineTo(currentShape.points[i].x, currentShape.points[i].y);
+          }
+          ctx.stroke();
+        }
+        ctx.restore();
+      }
+
+      // Automated yellow tick marks placed during focal zoom
+      autoTickMarks.forEach(t => {
+        drawTickMark(ctx, t.x, t.y, 26, t.label || "VERIFIED TOPIC", t.pulse || 1.0);
+      });
+    }
+
+    function drawPlaygroundWorkspaceUI(slide, zoomFactor = 1.0, focusX = 960, focusY = 540, localTime = 0) {
+      const w = canvas.width;
+      const h = canvas.height;
+
+      ctx.save();
+      ctx.clearRect(0, 0, w, h);
+
+      if (zoomFactor !== 1.0) {
+        ctx.translate(focusX, focusY);
+        ctx.scale(zoomFactor, zoomFactor);
+        ctx.translate(-focusX, -focusY);
+      }
+
+      ctx.fillStyle = "#070c17";
+      ctx.fillRect(0, 0, w, h);
+
+      // Background grid lines
+      ctx.strokeStyle = "rgba(255, 255, 255, 0.02)";
+      ctx.lineWidth = 1;
+      for (let x = 0; x < w; x += 60) { ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, h); ctx.stroke(); }
+      for (let y = 0; y < h; y += 60) { ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(w, y); ctx.stroke(); }
+
+      const radL = ctx.createRadialGradient(400, 300, 50, 400, 300, 700);
+      radL.addColorStop(0, "rgba(99, 102, 241, 0.12)"); radL.addColorStop(1, "rgba(99, 102, 241, 0)");
+      ctx.fillStyle = radL; ctx.fillRect(0, 0, w, h);
+
+      const radR = ctx.createRadialGradient(1500, 400, 50, 1500, 400, 600);
+      radR.addColorStop(0, "rgba(56, 189, 248, 0.09)"); radR.addColorStop(1, "rgba(56, 189, 248, 0)");
+      ctx.fillStyle = radR; ctx.fillRect(0, 0, w, h);
+
+      // 1. LEFT SIDEBAR SIMULATION
+      const sideW = 230;
+      ctx.fillStyle = "#0a1120";
+      ctx.fillRect(0, 0, sideW, h);
+      ctx.strokeStyle = "#16233b"; ctx.lineWidth = 1;
+      ctx.beginPath(); ctx.moveTo(sideW, 0); ctx.lineTo(sideW, h); ctx.stroke();
+
+      ctx.fillStyle = "#ffffff";
+      ctx.font = "bold 24px Segoe UI, sans-serif";
+      ctx.fillText("SENTINARI", 24, 52);
+      ctx.font = "bold 11px Segoe UI, sans-serif";
+      ctx.fillStyle = "#6366f1";
+      ctx.fillText("SOVEREIGN AI • 100-YR CONSTITUTION", 24, 72);
+
+      const navItems = [
+        { label: "Dashboard Home", icon: "🔬", active: true },
+        { label: "Ingestion Watchdog", icon: "📡", active: false },
+        { label: "New Patterns 7-D", icon: "⚡", active: false },
+        { label: "Qualia Lab", icon: "⚖️", active: false },
+        { label: "Learning Index", icon: "🎯", active: false },
+        { label: "Sovereign Chat", icon: "💬", active: false },
+        { label: "Video Studio", icon: "🎥", active: false }
+      ];
+      let navY = 110;
+      navItems.forEach(item => {
+        if (item.active) {
+          ctx.fillStyle = "rgba(99, 102, 241, 0.22)";
+          ctx.strokeStyle = "rgba(99, 102, 241, 0.5)"; ctx.lineWidth = 1;
+          roundRect(ctx, 14, navY - 20, sideW - 28, 38, 8, true, true);
+          ctx.fillStyle = "#a5b4fc";
+          ctx.font = "bold 14px Segoe UI, sans-serif";
+        } else {
+          ctx.fillStyle = "#94a3b8";
+          ctx.font = "14px Segoe UI, sans-serif";
+        }
+        ctx.fillText(`${item.icon}  ${item.label}`, 24, navY + 4);
+        navY += 46;
+      });
+
+      // 2. MAIN HEADER & COCKPIT BAR
+      const mainX = sideW + 28;
+      const mainW = w - mainX - 30;
+
+      ctx.fillStyle = "#ffffff";
+      ctx.font = "bold 32px Segoe UI, sans-serif";
+      ctx.fillText("WORKSPACE 1: THE PLAYGROUND — SCIENTIFIC CURATED DOMAINS", mainX, 50);
+
+      ctx.fillStyle = "#94a3b8";
+      ctx.font = "16px Segoe UI, sans-serif";
+      ctx.fillText("Primary Laboratory for 21 Sentinel Disciplines • Inviolable Academic Provenance • Zero Black-Box Capture", mainX, 78);
+
+      // Server Health Banner
+      const healthX = mainX; const healthY = 100; const healthW = mainW;
+      ctx.fillStyle = "rgba(16, 24, 40, 0.85)"; ctx.strokeStyle = "#1e293b"; ctx.lineWidth = 1;
+      roundRect(ctx, healthX, healthY, healthW, 46, 8, true, true);
+
+      ctx.fillStyle = "#10b981";
+      ctx.shadowColor = "#10b981"; ctx.shadowBlur = 8;
+      ctx.beginPath(); ctx.arc(healthX + 22, healthY + 23, 6, 0, Math.PI * 2); ctx.fill();
+      ctx.shadowBlur = 0;
+
+      ctx.fillStyle = "#e2e8f0"; ctx.font = "bold 13px Segoe UI, sans-serif";
+      ctx.fillText("SERVER HEALTH: 100% OPERATIONAL", healthX + 38, healthY + 28);
+
+      ctx.fillStyle = "#64748b"; ctx.font = "13px Segoe UI, sans-serif";
+      ctx.fillText("•  SQLite WAL: STREAMING ACTIVE  •  LOCAL ONNX / OLLAMA: OPTIMAL (1.6ms)  •  EXTERNAL EGRESS: 0%", healthX + 310, healthY + 28);
+
+      // 3. FOUR TELEMETRY METRIC CARDS
+      const metricY = 162; const cardGap = 16; const numMetric = 4;
+      const metricCardW = Math.floor((mainW - (numMetric - 1) * cardGap) / numMetric);
+      const metricData = [
+        { val: "15,041+", lbl: "Curated Scholarly Works", sub: "Indexed in SQLite WAL", col: "#38bdf8" },
+        { val: "1,280+", lbl: "Empirical Datasets", sub: "Ground-truth verified", col: "#818cf8" },
+        { val: "445,000", lbl: "Atomic Semantic Vectors", sub: "Zero cloud leakage", col: "#10b981" },
+        { val: "21", lbl: "Sentinel Disciplines", sub: "Interdisciplinary matrix", col: "#f59e0b" }
+      ];
+
+      metricData.forEach((m, idx) => {
+        const cx = mainX + idx * (metricCardW + cardGap);
+        ctx.fillStyle = "rgba(14, 22, 38, 0.9)"; ctx.strokeStyle = "#1b2844"; ctx.lineWidth = 1;
+        roundRect(ctx, cx, metricY, metricCardW, 88, 10, true, true);
+
+        ctx.fillStyle = m.col;
+        roundRect(ctx, cx, metricY, metricCardW, 4, 2, true, false);
+
+        ctx.fillStyle = "#ffffff"; ctx.font = "bold 26px Segoe UI, sans-serif";
+        ctx.fillText(m.val, cx + 18, metricY + 38);
+
+        ctx.fillStyle = "#cbd5e1"; ctx.font = "bold 13px Segoe UI, sans-serif";
+        ctx.fillText(m.lbl, cx + 18, metricY + 60);
+
+        ctx.fillStyle = "#64748b"; ctx.font = "11px Segoe UI, sans-serif";
+        ctx.fillText(m.sub, cx + 18, metricY + 76);
+      });
+
+      // 4. MAIN WORKSPACE CONTENT: 21 SENTINEL DISCIPLINES GRID & INGESTION WATCHDOG
+      const gridY = 268;
+      const gridW = Math.floor(mainW * 0.68);
+      const watchX = mainX + gridW + 20;
+      const watchW = mainW - gridW - 20;
+      const contentH = 680;
+
+      // Disciplines Container
+      ctx.fillStyle = "rgba(12, 19, 34, 0.85)"; ctx.strokeStyle = "#1b2844"; ctx.lineWidth = 1;
+      roundRect(ctx, mainX, gridY, gridW, contentH, 12, true, true);
+
+      ctx.fillStyle = "#ffffff"; ctx.font = "bold 16px Segoe UI, sans-serif";
+      ctx.fillText("21 SENTINEL SCIENTIFIC DISCIPLINES", mainX + 22, gridY + 32);
+
+      ctx.fillStyle = "#64748b"; ctx.font = "12px Segoe UI, sans-serif";
+      ctx.fillText("Active cross-domain knowledge corpora feeding the reasoning engine", mainX + 320, gridY + 32);
+
+      const dCols = 3; const dRows = 4;
+      const dTileW = Math.floor((gridW - 44 - (dCols - 1) * 12) / dCols);
+      const dTileH = 135;
+      const domainsList = [
+        { name: "Physics", icon: "⚡", works: "1,420 Works", stat: "Active" },
+        { name: "Biochemistry", icon: "🔬", works: "980 Works", stat: "Active" },
+        { name: "Constitutional Law", icon: "⚖️", works: "640 Works", stat: "Active" },
+        { name: "Macroeconomics", icon: "📈", works: "1,150 Works", stat: "Active" },
+        { name: "Earth & Climate", icon: "🌋", works: "890 Works", stat: "Active" },
+        { name: "Cybersecurity", icon: "🛡️", works: "780 Works", stat: "Active" },
+        { name: "Molecular Genetics", icon: "🧬", works: "1,020 Works", stat: "Active" },
+        { name: "Mechanical Eng.", icon: "⚙️", works: "950 Works", stat: "Active" },
+        { name: "Quantum Computing", icon: "⚛️", works: "620 Works", stat: "Active" },
+        { name: "Pure Mathematics", icon: "🧮", works: "1,310 Works", stat: "Active" },
+        { name: "Philosophy of Sci.", icon: "🏛️", works: "810 Works", stat: "Active" },
+        { name: "Materials Science", icon: "🧪", works: "930 Works", stat: "Active" },
+      ];
+
+      domainsList.forEach((d, idx) => {
+        const col = idx % dCols; const row = Math.floor(idx / dCols);
+        const tx = mainX + 22 + col * (dTileW + 12);
+        const ty = gridY + 54 + row * (dTileH + 12);
+
+        ctx.fillStyle = "rgba(18, 28, 48, 0.9)"; ctx.strokeStyle = "#253758"; ctx.lineWidth = 1;
+        roundRect(ctx, tx, ty, dTileW, dTileH, 8, true, true);
+
+        ctx.font = "24px Segoe UI, sans-serif";
+        ctx.fillText(d.icon, tx + 16, ty + 36);
+
+        ctx.fillStyle = "#ffffff"; ctx.font = "bold 15px Segoe UI, sans-serif";
+        ctx.fillText(d.name, tx + 52, ty + 34);
+
+        ctx.fillStyle = "#94a3b8"; ctx.font = "12px Segoe UI, sans-serif";
+        ctx.fillText(d.works, tx + 16, ty + 68);
+
+        ctx.fillStyle = "rgba(16, 185, 129, 0.15)"; ctx.strokeStyle = "rgba(16, 185, 129, 0.35)"; ctx.lineWidth = 1;
+        roundRect(ctx, tx + 16, ty + 88, 90, 22, 6, true, true);
+        ctx.fillStyle = "#10b981"; ctx.font = "bold 10px Segoe UI, sans-serif";
+        ctx.fillText(`●  ${d.stat}`, tx + 28, ty + 103);
+      });
+
+      // Watchdog Console Container
+      ctx.fillStyle = "rgba(12, 19, 34, 0.85)"; ctx.strokeStyle = "#1b2844"; ctx.lineWidth = 1;
+      roundRect(ctx, watchX, gridY, watchW, contentH, 12, true, true);
+
+      ctx.fillStyle = "#ffffff"; ctx.font = "bold 16px Segoe UI, sans-serif";
+      ctx.fillText("📡 INGESTION WATCHDOG STREAM", watchX + 20, gridY + 32);
+
+      const termY = gridY + 54; const termH = contentH - 74;
+      ctx.fillStyle = "#050912"; ctx.strokeStyle = "#152033"; ctx.lineWidth = 1;
+      roundRect(ctx, watchX + 16, termY, watchW - 32, termH, 8, true, true);
+
+      const logs = [
+        { t: "15:30:10", msg: "WATCHDOG: Initializing WAL synchronization loop", c: "#38bdf8" },
+        { t: "15:30:12", msg: "INGESTION: 15,041 curated documents verified", c: "#10b981" },
+        { t: "15:30:14", msg: "CRYPTO: SHA-256 Merkle root validated (0 drift)", c: "#10b981" },
+        { t: "15:30:16", msg: "VECTOR: 445k chunks indexed across 21 disciplines", c: "#818cf8" },
+        { t: "15:30:18", msg: "GOVERNANCE: 100-Year Constitution bound", c: "#fbbf24" },
+        { t: "15:30:20", msg: "SECURITY: Zero cloud leak • Fail-closed enabled", c: "#38bdf8" },
+        { t: "15:30:22", msg: "MEMORY: WAL checkpoint OK • RAM usage: 1.4%", c: "#94a3b8" },
+        { t: "15:30:24", msg: "STATUS: System ready for dialectic discovery", c: "#10b981" },
+      ];
+
+      let logY = termY + 32;
+      logs.forEach(l => {
+        ctx.fillStyle = "#64748b"; ctx.font = "ui-monospace, monospace";
+        ctx.fillText(`[${l.t}]`, watchX + 28, logY);
+        ctx.fillStyle = l.c; ctx.font = "12px ui-monospace, monospace";
+        ctx.fillText(l.msg, watchX + 115, logY);
+        logY += 28;
+      });
+
+      // Footer
+      ctx.strokeStyle = "#16233b"; ctx.lineWidth = 1;
+      ctx.beginPath(); ctx.moveTo(mainX, h - 36); ctx.lineTo(w - 30, h - 36); ctx.stroke();
+
+      ctx.fillStyle = "#94a3b8"; ctx.font = "13px Segoe UI, sans-serif";
+      ctx.fillText("Dr. Pierre C. Wepener • Founder & Chief Architect • Sentinari Studio", mainX, h - 16);
+
+      ctx.fillStyle = "#64748b"; ctx.font = "12px Segoe UI, sans-serif";
+      ctx.fillText("Sovereign Epistemic Intelligence • 21 Sentinel Disciplines • 100% Self-Funded", w - 480, h - 16);
+
+      ctx.restore();
+    }
+
+    function drawCurrentScene(slide, zoomFactor = 1.0, focusX = 960, focusY = 540, localTime = 0) {
+      if (currentViewMode === 'workspace_ui') {
+        drawPlaygroundWorkspaceUI(slide, zoomFactor, focusX, focusY, localTime);
+      } else {
+        drawSlideOnCanvas(slide, zoomFactor, focusX, focusY);
+      }
+      drawAnnotations(ctx);
+    }
+    // ------------------------------------------------------------------------
+    function drawSlideOnCanvas(slide, zoomFactor = 1.0, focusX = 960, focusY = 540) {
+      const w = canvas.width;
+      const h = canvas.height;
+
+      ctx.save();
+      ctx.clearRect(0, 0, w, h);
+
+      // Apply Focal Zoom Transform
+      if (zoomFactor !== 1.0) {
+        ctx.translate(focusX, focusY);
+        ctx.scale(zoomFactor, zoomFactor);
+        ctx.translate(-focusX, -focusY);
+      }
+
+      // Background
+      ctx.fillStyle = "#0b0f19";
+      ctx.fillRect(0, 0, w, h);
+
+      // Ambient radial lighting glows
+      const rad1 = ctx.createRadialGradient(w - 300, 200, 50, w - 300, 200, 600);
+      rad1.addColorStop(0, "rgba(99, 102, 241, 0.16)");
+      rad1.addColorStop(1, "rgba(99, 102, 241, 0)");
+      ctx.fillStyle = rad1;
+      ctx.fillRect(0, 0, w, h);
+
+      const rad2 = ctx.createRadialGradient(200, h - 200, 50, 200, h - 200, 500);
+      rad2.addColorStop(0, "rgba(56, 189, 248, 0.12)");
+      rad2.addColorStop(1, "rgba(56, 189, 248, 0)");
+      ctx.fillStyle = rad2;
+      ctx.fillRect(0, 0, w, h);
+
+      // Top category & section bar
+      ctx.fillStyle = "#818cf8";
+      ctx.font = "bold 22px Segoe UI, sans-serif";
+      ctx.fillText((slide.section || "SENTINARI WORKSPACE TOUR") + " • " + (slide.category || "SYSTEM SPECIFICATION"), 100, 75);
+
+      // Top right badge
+      const badgeText = slide.badge || "SENTINARI";
+      ctx.font = "bold 18px Segoe UI, sans-serif";
+      const bMetrics = ctx.measureText(badgeText);
+      const bw = bMetrics.width + 32;
+      const bx = w - 100 - bw;
+      const by = 50;
+
+      ctx.fillStyle = "#1e293b";
+      ctx.strokeStyle = "#6366f1";
+      ctx.lineWidth = 2;
+      roundRect(ctx, bx, by, bw, 36, 18, true, true);
+      ctx.fillStyle = "#a5b4fc";
+      ctx.fillText(badgeText, bx + 16, by + 24);
+
+      // Main Title
+      ctx.fillStyle = "#ffffff";
+      ctx.font = "bold 44px Segoe UI, sans-serif";
+      ctx.fillText(slide.title || "SENTINARI SUBSYSTEM", 100, 150);
+
+      // Subtitle
+      ctx.fillStyle = "#94a3b8";
+      ctx.font = "24px Segoe UI, sans-serif";
+      ctx.fillText(slide.subtitle || "Epistemic Rigor & Autonomous Validation", 100, 195);
+
+      // Divider Line
+      ctx.strokeStyle = "#1e293b";
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.moveTo(100, 225);
+      ctx.lineTo(w - 100, 225);
+      ctx.stroke();
+
+      ctx.strokeStyle = "#6366f1";
+      ctx.lineWidth = 4;
+      ctx.beginPath();
+      ctx.moveTo(100, 225);
+      ctx.lineTo(460, 225);
+      ctx.stroke();
+
+      // Cards Grid (3 cards)
+      const cards = slide.cards || [];
+      const numCards = Math.min(cards.length, 3);
+      if (numCards > 0) {
+        const cardW = Math.floor((w - 200 - (numCards - 1) * 30) / numCards);
+        const cardH = 560;
+        const startY = 265;
+        const accents = ["#38bdf8", "#818cf8", "#10b981"];
+
+        cards.slice(0, numCards).forEach((c, idx) => {
+          const cx = 100 + idx * (cardW + 30);
+          const cy = startY;
+
+          // Card body glassmorphism
+          ctx.fillStyle = "rgba(17, 26, 47, 0.92)";
+          ctx.strokeStyle = "#243354";
+          ctx.lineWidth = 2;
+          roundRect(ctx, cx, cy, cardW, cardH, 16, true, true);
+
+          // Card top accent bar
+          ctx.fillStyle = accents[idx % accents.length];
+          roundRect(ctx, cx, cy, cardW, 8, 4, true, false);
+
+          // Card Title
+          ctx.fillStyle = "#ffffff";
+          ctx.font = "bold 23px Segoe UI, sans-serif";
+          ctx.fillText(c.title || `Card ${idx + 1}`, cx + 24, cy + 48);
+
+          // Card divider
+          ctx.strokeStyle = "rgba(255, 255, 255, 0.08)";
+          ctx.lineWidth = 1;
+          ctx.beginPath();
+          ctx.moveTo(cx + 24, cy + 68);
+          ctx.lineTo(cx + cardW - 24, cy + 68);
+          ctx.stroke();
+
+          // Card body wrapped text
+          ctx.fillStyle = "#cbd5e1";
+          ctx.font = "19px Segoe UI, sans-serif";
+          wrapText(ctx, c.description || "", cx + 24, cy + 104, cardW - 48, 30);
+        });
+      }
+
+      // Footer Bar
+      ctx.strokeStyle = "#1e293b";
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      ctx.moveTo(100, h - 80);
+      ctx.lineTo(w - 100, h - 80);
+      ctx.stroke();
+
+      ctx.fillStyle = "#94a3b8";
+      ctx.font = "19px Segoe UI, sans-serif";
+      ctx.fillText("Dr. Pierre C. Wepener • Founder & Chief Architect • Sentinari Video Studio", 100, h - 50);
+
+      const fRight = "21 Sentinel Disciplines • /ui/start • /ui/playground • /ui/patterns • /ui/qualia • /ui/learning";
+      const frMetrics = ctx.measureText(fRight);
+      ctx.fillStyle = "#64748b";
+      ctx.fillText(fRight, w - 100 - frMetrics.width, h - 50);
+
+      ctx.restore();
+    }
+
+    function roundRect(ctx, x, y, width, height, radius, fill, stroke) {
+      ctx.beginPath();
+      ctx.moveTo(x + radius, y);
+      ctx.lineTo(x + width - radius, y);
+      ctx.quadraticCurveTo(x + width, y, x + width, y + radius);
+      ctx.lineTo(x + width, y + height - radius);
+      ctx.quadraticCurveTo(x + width, y + height, x + width - radius, y + height);
+      ctx.lineTo(x + radius, y + height);
+      ctx.quadraticCurveTo(x, y + height, x, y + height - radius);
+      ctx.lineTo(x, y + radius);
+      ctx.quadraticCurveTo(x, y, x + radius, y);
+      ctx.closePath();
+      if (fill) ctx.fill();
+      if (stroke) ctx.stroke();
+    }
+
+    function wrapText(ctx, text, x, y, maxWidth, lineHeight) {
+      const words = (text || '').split(' ');
+      let line = '';
+      for (let n = 0; n < words.length; n++) {
+        const testLine = line + words[n] + ' ';
+        const metrics = ctx.measureText(testLine);
+        if (metrics.width > maxWidth && n > 0) {
+          ctx.fillText(line, x, y);
+          line = words[n] + ' ';
+          y += lineHeight;
+        } else {
+          line = testLine;
+        }
+      }
+      ctx.fillText(line, x, y);
+    }
+
+    // ------------------------------------------------------------------------
+    // PLAYBACK & ANIMATION LOOP
+    // ------------------------------------------------------------------------
+    let sceneStartTime = 0;
+
+    function playTour() {
+      if (isPlaying) {
+        pauseTour();
+        return;
+      }
+      isPlaying = true;
+      byId('btnPlayPause').textContent = '⏸ Pause Tour';
+
+      // Start ambient audio if enabled
+      if (byId('chkAmbientMusic').checked) {
+        audioAmbient.volume = parseFloat(byId('rangeAmbientVol').value) || 0.12;
+        audioAmbient.play().catch(() => {});
+      }
+
+      // Play voice audio for current scene if available
+      playCurrentSceneAudio();
+
+      let lastTimestamp = performance.now();
+
+      function frame(timestamp) {
+        if (!isPlaying) return;
+        const dt = (timestamp - lastTimestamp) / 1000;
+        lastTimestamp = timestamp;
+
+        currentTime += dt;
+        if (currentTime >= totalDuration) {
+          currentTime = 0;
+          currentSceneIdx = 0;
+          pauseTour();
+          return;
+        }
+
+        // Determine which scene is active based on currentTime
+        let accum = 0;
+        let activeIdx = 0;
+        let localTime = 0;
+        for (let i = 0; i < scenes.length; i++) {
+          const sDur = Number(scenes[i].duration) || 10;
+          if (currentTime >= accum && currentTime < accum + sDur) {
+            activeIdx = i;
+            localTime = currentTime - accum;
+            break;
+          }
+          accum += sDur;
+        }
+
+        // Scene switch during playback
+        if (activeIdx !== currentSceneIdx) {
+          currentSceneIdx = activeIdx;
+          loadActiveSceneIntoForm();
+          renderScenesTimeline();
+          playCurrentSceneAudio();
+        }
+
+        // Compute Focal Element Zoom factor
+        const sc = scenes[currentSceneIdx];
+        const zTarget = sc.zoom_target || 'none';
+        let zoom = 1.0;
+        let fx = 960, fy = 540;
+
+        if (zTarget !== 'none') {
+          // Zoom coordinates
+          if (zTarget === 'card1') { fx = 350; fy = 545; }
+          else if (zTarget === 'card2' || zTarget === 'matrix') { fx = 960; fy = 545; }
+          else if (zTarget === 'card3') { fx = 1570; fy = 545; }
+          else if (zTarget === 'title') { fx = 500; fy = 200; }
+
+          // Smooth sine curve zoom for 2.5 seconds (starts at t=1.5s)
+          const zoomStart = 1.5;
+          const zoomDur = 3.0;
+          if (localTime >= zoomStart && localTime <= zoomStart + zoomDur) {
+            const progress = (localTime - zoomStart) / zoomDur;
+            zoom = 1.0 + 0.38 * Math.sin(Math.PI * progress);
+            byId('zoomIndicator').style.display = 'inline-flex';
+          } else {
+            byId('zoomIndicator').style.display = 'none';
+          }
+        } else {
+          byId('zoomIndicator').style.display = 'none';
+        }
+
+        // Render Canvas Frame
+        drawCurrentScene(sc, zoom, fx, fy, localTime);
+
+        // Update Karaoke Word Highlighting
+        updateKaraokeHighlight(localTime);
+
+        // Update Scrubbers & Badges
+        updateTimeBadge();
+
+        animFrameId = requestAnimationFrame(frame);
+      }
+
+      animFrameId = requestAnimationFrame(frame);
+    }
+
+    function pauseTour() {
+      isPlaying = false;
+      byId('btnPlayPause').textContent = '▶ Play Tour';
+      if (animFrameId) cancelAnimationFrame(animFrameId);
+      audioVoice.pause();
+      audioAmbient.pause();
+    }
+
+    function resetTour() {
+      pauseTour();
+      currentTime = 0;
+      currentSceneIdx = 0;
+      loadActiveSceneIntoForm();
+      renderScenesTimeline();
+      updateTimeBadge();
+      drawCurrentScene(scenes[0]);
+    }
+
+    function playCurrentSceneAudio() {
+      const sc = scenes[currentSceneIdx];
+      if (sc && sc.audio_url) {
+        audioVoice.src = sc.audio_url;
+        audioVoice.currentTime = 0;
+        audioVoice.play().catch(() => {});
+      }
+    }
+
+    // ------------------------------------------------------------------------
+    // SCENE TIMELINE STRIP
+    // ------------------------------------------------------------------------
+    function renderScenesTimeline() {
+      const strip = byId('scenesStrip');
+      strip.innerHTML = '';
+
+      scenes.forEach((sc, idx) => {
+        const thumb = document.createElement('div');
+        thumb.className = `scene-thumb ${idx === currentSceneIdx ? 'active' : ''}`;
+        thumb.innerHTML = `
+          <div class="scene-thumb-num">Scene ${idx + 1}</div>
+          <div class="scene-thumb-title">${sc.title || 'Untitled'}</div>
+          <div class="scene-thumb-meta">
+            <span>⏱ ${Number(sc.duration || 10).toFixed(1)}s</span>
+            <span>🔍 ${sc.zoom_target !== 'none' ? sc.zoom_target : 'Wide'}</span>
+          </div>
+        `;
+        thumb.addEventListener('click', () => {
+          saveFormIntoActiveScene();
+          currentSceneIdx = idx;
+          // Calculate start time of this scene
+          let acc = 0;
+          for (let i = 0; i < idx; i++) acc += Number(scenes[i].duration) || 10;
+          currentTime = acc;
+          loadActiveSceneIntoForm();
+          renderScenesTimeline();
+          updateTimeBadge();
+          drawCurrentScene(scenes[idx]);
+          if (isPlaying) playCurrentSceneAudio();
+        });
+        strip.appendChild(thumb);
+      });
+    }
+
+    // ------------------------------------------------------------------------
+    // QUICK CLIENT-SIDE WEBM/MP4 BROWSER RECORDING
+    // ------------------------------------------------------------------------
+    async function startQuickBrowserRecord() {
+      if (mediaRecorder && mediaRecorder.state === 'recording') {
+        mediaRecorder.stop();
+        byId('btnQuickRecord').textContent = '⚡ Quick Record (Browser WebM)';
+        return;
+      }
+
+      // Reset to beginning and play
+      resetTour();
+      playTour();
+
+      try {
+        const stream = canvas.captureStream(30); // 30 FPS canvas stream
+        recordedChunks = [];
+        mediaRecorder = new MediaRecorder(stream, { mimeType: 'video/webm;codecs=vp9' });
+
+        mediaRecorder.ondataavailable = (e) => {
+          if (e.data.size > 0) recordedChunks.push(e.data);
+        };
+
+        mediaRecorder.onstop = () => {
+          const blob = new Blob(recordedChunks, { type: 'video/webm' });
+          const url = URL.createObjectURL(blob);
+          const a = document.createElement('a');
+          a.style.display = 'none';
+          a.href = url;
+          a.download = `sentinari_workspace_tour_${Date.now()}.webm`;
+          document.body.appendChild(a);
+          a.click();
+          setTimeout(() => { document.body.removeChild(a); URL.revokeObjectURL(url); }, 100);
+        };
+
+        mediaRecorder.start();
+        byId('btnQuickRecord').textContent = '⏹ Stop & Download WebM';
+      } catch (err) {
+        alert('MediaRecorder is not supported in this browser: ' + err.message);
+      }
+    }
+
+    // ------------------------------------------------------------------------
+    // BROADCAST 1080P MP4 SERVER-SIDE RENDER JOB
+    // ------------------------------------------------------------------------
+    async function submitServerMp4Render() {
+      saveFormIntoActiveScene();
+      const jobBox = byId('jobBox');
+      const jobTitle = byId('jobTitle');
+      const jobPct = byId('jobPct');
+      const jobBar = byId('jobBar');
+      const jobStatus = byId('jobStatus');
+      const dlWrap = byId('jobDownloadWrap');
+
+      jobBox.style.display = 'block';
+      dlWrap.style.display = 'none';
+      jobTitle.textContent = 'Rendering Broadcast 1080p MP4 Video...';
+      jobPct.textContent = '10%';
+      jobBar.style.width = '10%';
+      jobStatus.textContent = 'Submitting scene plan to FFmpeg background worker...';
+
+      const payload = {
+        language: "English",
+        fps: 24,
+        filename_hint: "sentinari_workspace_tour",
+        include_ambient_music: byId('chkAmbientMusic').checked,
+        ambient_music_volume: parseFloat(byId('rangeAmbientVol').value) || 0.12,
+        ambient_track: byId('selAmbientTrack') ? byId('selAmbientTrack').value : "ambient_discovery.mp3",
+        include_intro: byId('chkIncludeIntro').checked,
+        intro_presenter: byId('introPresenter').value.trim(),
+        scenes: scenes.map(s => ({
+          title: s.title,
+          subtitle: s.subtitle,
+          badge: s.badge,
+          narration: s.narration,
+          duration: Number(s.duration) || 12,
+          zoom_target: s.zoom_target || 'none',
+          cards: s.cards || []
+        }))
+      };
+
+      try {
+        const res = await fetch('/api/playground/video/render-job', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+        const data = await res.json();
+        if (!res.ok || !data.job_id) throw new Error(data.detail || 'Failed to queue render job.');
+
+        pollServerJob(data.job_id);
+      } catch (err) {
+        jobStatus.textContent = `Render submission failed: ${err.message}`;
+        jobStatus.className = 'status-msg err';
+      }
+    }
+
+    function pollServerJob(jobId) {
+      if (pollTimer) clearInterval(pollTimer);
+      pollTimer = setInterval(async () => {
+        try {
+          const res = await fetch(`/api/playground/video/job/${encodeURIComponent(jobId)}`);
+          const data = await res.json();
+          if (!res.ok) throw new Error(data.detail || 'Job query failed.');
+
+          const pct = Math.max(0, Math.min(100, data.progress || 0));
+          byId('jobPct').textContent = `${pct}%`;
+          byId('jobBar').style.width = `${pct}%`;
+          byId('jobStatus').textContent = data.message || 'Processing frames...';
+
+          if (data.status === 'done') {
+            clearInterval(pollTimer);
+            byId('jobTitle').textContent = '✅ Broadcast 1080p MP4 Ready!';
+            byId('jobStatus').textContent = `Render completed in ${data.result?.duration || 0}s with neural narration & ambient pad.`;
+            byId('jobStatus').className = 'status-msg ok';
+            byId('jobDownloadWrap').style.display = 'block';
+
+            const dlMp4 = byId('btnDownloadMp4');
+            const dlSrt = byId('btnDownloadSrt');
+            dlMp4.href = data.result?.file_url || '#';
+            dlMp4.download = data.result?.file_name || 'sentinari_walkthrough.mp4';
+            if (data.result?.subtitle_url) {
+              dlSrt.href = data.result.subtitle_url;
+              dlSrt.download = data.result.subtitle_name || 'subtitles.srt';
+              dlSrt.style.display = 'inline';
+            }
+          } else if (data.status === 'error') {
+            clearInterval(pollTimer);
+            byId('jobTitle').textContent = '❌ Render Failed';
+            byId('jobStatus').textContent = data.error || 'FFmpeg failed to encode video.';
+            byId('jobStatus').className = 'status-msg err';
+          }
+        } catch (e) {
+          clearInterval(pollTimer);
+          byId('jobStatus').textContent = e.message;
+        }
+      }, 1500);
+    }
+
+    // ------------------------------------------------------------------------
+    // EVENT LISTENERS
+    // ------------------------------------------------------------------------
+    // Workspace Pills
+    document.querySelectorAll('.ws-pill').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.ws-pill').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        const wsKey = btn.dataset.ws;
+        triggerGemmaScript(wsKey);
+      });
+    });
+
+    byId('btnGemmaScript').addEventListener('click', () => {
+      const activePill = document.querySelector('.ws-pill.active');
+      const wsKey = activePill ? activePill.dataset.ws : 'patterns';
+      triggerGemmaScript(wsKey);
+    });
+
+    byId('btnSynthesizeVoice').addEventListener('click', () => {
+      saveFormIntoActiveScene();
+      synthesizeVoiceForActiveScene();
+    });
+
+    byId('btnUpdateScene').addEventListener('click', () => {
+      saveFormIntoActiveScene();
+    });
+
+    byId('btnPlayPause').addEventListener('click', playTour);
+    byId('btnRestart').addEventListener('click', resetTour);
+
+    byId('timelineScrubber').addEventListener('input', (e) => {
+      const pct = parseFloat(e.target.value) / 100;
+      currentTime = pct * totalDuration;
+      updateTimeBadge();
+      // Find scene
+      let acc = 0;
+      for (let i = 0; i < scenes.length; i++) {
+        const sDur = Number(scenes[i].duration) || 10;
+        if (currentTime >= acc && currentTime <= acc + sDur) {
+          if (currentSceneIdx !== i) {
+            currentSceneIdx = i;
+            loadActiveSceneIntoForm();
+            renderScenesTimeline();
+          }
+          drawSlideOnCanvas(scenes[i]);
+          break;
+        }
+        acc += sDur;
+      }
+    });
+
+    byId('btnAddScene').addEventListener('click', () => {
+      saveFormIntoActiveScene();
+      const newSc = {
+        ...WORKSPACES_META.chat,
+        duration: 16.0,
+        words: []
+      };
+      scenes.push(newSc);
+      currentSceneIdx = scenes.length - 1;
+      loadActiveSceneIntoForm();
+      recalcTimeline();
+      renderScenesTimeline();
+      drawCurrentScene(newSc);
+    });
+
+    byId('btnDeleteScene').addEventListener('click', () => {
+      if (scenes.length <= 1) {
+        alert('At least one scene is required.');
+        return;
+      }
+      scenes.splice(currentSceneIdx, 1);
+      currentSceneIdx = Math.max(0, currentSceneIdx - 1);
+      loadActiveSceneIntoForm();
+      recalcTimeline();
+      renderScenesTimeline();
+      drawCurrentScene(scenes[currentSceneIdx]);
+    });
+
+    byId('rangeAmbientVol').addEventListener('input', (e) => {
+      const v = parseFloat(e.target.value) || 0;
+      byId('lblAmbientVol').textContent = `${Math.round(v * 100)}%`;
+      audioAmbient.volume = v;
+    });
+
+    // Soundscape Track Management & Audio Preview
+    async function refreshMusicTracks(selectedId = null) {
+      try {
+        const res = await fetch('/api/playground/video/music-tracks');
+        if (!res.ok) return;
+        const data = await res.json();
+        const sel = byId('selAmbientTrack');
+        if (!sel || !data.tracks) return;
+
+        const currentVal = selectedId || sel.value || "ambient_discovery.mp3";
+        sel.innerHTML = '';
+        data.tracks.forEach(t => {
+          const opt = document.createElement('option');
+          opt.value = t.filename;
+          opt.textContent = `${t.title} ${t.is_custom ? '(Custom)' : ''}`;
+          sel.appendChild(opt);
+        });
+
+        if (Array.from(sel.options).some(o => o.value === currentVal)) {
+          sel.value = currentVal;
+        } else if (sel.options.length > 0) {
+          sel.selectedIndex = 0;
+        }
+        updateAmbientAudioSrc();
+      } catch (e) {
+        console.warn("Could not refresh music tracks:", e);
+      }
+    }
+
+    function updateAmbientAudioSrc() {
+      const sel = byId('selAmbientTrack');
+      if (!sel) return;
+      const trackFile = sel.value || "ambient_discovery.mp3";
+      const newSrc = `/api/playground/video/file/${encodeURIComponent(trackFile)}`;
+      if (!audioAmbient.src.endsWith(encodeURIComponent(trackFile)) && !audioAmbient.src.endsWith(trackFile)) {
+        const wasPlaying = isPlaying && !audioAmbient.paused;
+        audioAmbient.src = newSrc;
+        audioAmbient.load();
+        if (wasPlaying && byId('chkAmbientMusic').checked) {
+          audioAmbient.play().catch(() => {});
+        }
+      }
+    }
+
+    const selAmbientTrack = byId('selAmbientTrack');
+    if (selAmbientTrack) {
+      selAmbientTrack.addEventListener('change', updateAmbientAudioSrc);
+    }
+
+    const btnUploadMusic = byId('btnUploadMusic');
+    const musicFileInput = byId('musicFileInput');
+    if (btnUploadMusic && musicFileInput) {
+      btnUploadMusic.addEventListener('click', () => musicFileInput.click());
+
+      musicFileInput.addEventListener('change', async (e) => {
+        const file = e.target.files && e.target.files[0];
+        if (!file) return;
+
+        const origHtml = btnUploadMusic.innerHTML;
+        btnUploadMusic.innerHTML = '<span>⏳</span> Uploading...';
+        btnUploadMusic.disabled = true;
+
+        try {
+          const formData = new FormData();
+          formData.append('file', file);
+          const res = await fetch('/api/playground/video/upload-music', {
+            method: 'POST',
+            body: formData
+          });
+          const data = await res.json();
+          if (!res.ok || !data.ok) {
+            throw new Error(data.detail || 'Upload failed');
+          }
+          await refreshMusicTracks(data.filename);
+          updateAmbientAudioSrc();
+          alert(`Track "${data.title}" uploaded and selected!`);
+        } catch (err) {
+          alert(`Failed to upload track: ${err.message}`);
+        } finally {
+          btnUploadMusic.innerHTML = origHtml;
+          btnUploadMusic.disabled = false;
+          e.target.value = '';
+        }
+      });
+    }
+
+    byId('btnQuickRecord').addEventListener('click', startQuickBrowserRecord);
+    byId('btnRenderMp4').addEventListener('click', submitServerMp4Render);
+
+    
+    // ------------------------------------------------------------------------
+    // INTERACTIVE DRAWING & ANNOTATION LOGIC (WITH AUTO-PAUSE)
+    // ------------------------------------------------------------------------
+    function selectTool(toolName) {
+      if (isPlaying) {
+        pauseTour(); // Auto-pause video so user can calmly draw!
+      }
+      if (activeTool === toolName) {
+        activeTool = 'none';
+        canvas.style.cursor = 'default';
+      } else {
+        activeTool = toolName;
+        canvas.style.cursor = 'crosshair';
+      }
+      ['toolBox', 'toolLine', 'toolTick', 'toolPen'].forEach(id => {
+        const el = byId(id);
+        if (el) el.classList.remove('active');
+      });
+      if (activeTool !== 'none') {
+        const activeBtn = byId(
+          activeTool === 'box' ? 'toolBox' :
+          activeTool === 'line' ? 'toolLine' :
+          activeTool === 'tick' ? 'toolTick' : 'toolPen'
+        );
+        if (activeBtn) activeBtn.classList.add('active');
+      }
+    }
+
+    byId('toolBox').addEventListener('click', () => selectTool('box'));
+    byId('toolLine').addEventListener('click', () => selectTool('line'));
+    byId('toolTick').addEventListener('click', () => selectTool('tick'));
+    byId('toolPen').addEventListener('click', () => selectTool('pen'));
+
+    byId('btnClearDrawings').addEventListener('click', () => {
+      userAnnotations = [];
+      autoTickMarks = [];
+      drawCurrentScene(scenes[currentSceneIdx]);
+    });
+
+    document.querySelectorAll('.color-dot').forEach(dot => {
+      dot.addEventListener('click', () => {
+        document.querySelectorAll('.color-dot').forEach(d => d.classList.remove('active'));
+        dot.classList.add('active');
+        currentColor = dot.dataset.color || '#fde047';
+      });
+    });
+
+    byId('btnViewWorkspace').addEventListener('click', () => {
+      currentViewMode = 'workspace_ui';
+      byId('btnViewWorkspace').classList.add('active');
+      byId('btnViewSlide').classList.remove('active');
+      drawCurrentScene(scenes[currentSceneIdx]);
+    });
+
+    byId('btnViewSlide').addEventListener('click', () => {
+      currentViewMode = 'slide';
+      byId('btnViewSlide').classList.add('active');
+      byId('btnViewWorkspace').classList.remove('active');
+      drawCurrentScene(scenes[currentSceneIdx]);
+    });
+
+    canvas.addEventListener('mousedown', (e) => {
+      if (activeTool === 'none') return;
+      const rect = canvas.getBoundingClientRect();
+      const scaleX = canvas.width / rect.width;
+      const scaleY = canvas.height / rect.height;
+      const x = (e.clientX - rect.left) * scaleX;
+      const y = (e.clientY - rect.top) * scaleY;
+
+      if (activeTool === 'tick') {
+        userAnnotations.push({
+          type: 'tick',
+          x: x,
+          y: y,
+          color: currentColor,
+          pulse: 1.15
+        });
+        drawCurrentScene(scenes[currentSceneIdx]);
+        return;
+      }
+
+      isDrawing = true;
+      startX = x;
+      startY = y;
+      currentShape = {
+        type: activeTool,
+        x0: x,
+        y0: y,
+        x1: x,
+        y1: y,
+        color: currentColor,
+        points: [{x, y}]
+      };
+    });
+
+    canvas.addEventListener('mousemove', (e) => {
+      if (!isDrawing || !currentShape) return;
+      const rect = canvas.getBoundingClientRect();
+      const scaleX = canvas.width / rect.width;
+      const scaleY = canvas.height / rect.height;
+      const x = (e.clientX - rect.left) * scaleX;
+      const y = (e.clientY - rect.top) * scaleY;
+
+      currentShape.x1 = x;
+      currentShape.y1 = y;
+      if (currentShape.type === 'pen') {
+        currentShape.points.push({x, y});
+      }
+      drawCurrentScene(scenes[currentSceneIdx]);
+    });
+
+    canvas.addEventListener('mouseup', () => {
+      if (isDrawing && currentShape) {
+        isDrawing = false;
+        userAnnotations.push(currentShape);
+        currentShape = null;
+        drawCurrentScene(scenes[currentSceneIdx]);
+      }
+    });
+
+    // Boot Studio
+    initDefaultScenes();
+    refreshMusicTracks();
+
+    // Check for ?workspace=... or #...
+    const urlParams = new URLSearchParams(window.location.search);
+    const targetWs = urlParams.get('workspace') || window.location.hash.replace('#', '');
+    if (targetWs && WORKSPACES_META[targetWs]) {
+      const pill = document.querySelector(`.ws-pill[data-ws="${targetWs}"]`);
+      if (pill) {
+        document.querySelectorAll('.ws-pill').forEach(b => b.classList.remove('active'));
+        pill.classList.add('active');
+        triggerGemmaScript(targetWs);
+      }
+    }
+  </script>
+</body>
+</html>

@@ -45,7 +45,7 @@ router = APIRouter(prefix="/api/learning", tags=["learning"])
 # the old failure path marked documents 'skipped' (consuming them without
 # exams). A skipped document is only legitimate when the exam itself ran and
 # the material was unloadable — never when the engine is simply offline.
-POLL_INTERVAL_SECONDS = 10.0
+POLL_INTERVAL_SECONDS = 0.5
 CHUNKS_PROBED = 3
 MAX_CHARS_PER_CHUNK = 3500
 MAX_CHARS_SOURCE = 9000
@@ -181,9 +181,8 @@ def _set_setting(key: str, value: str) -> None:
 
 
 def learning_enabled() -> bool:
-    """Owner directive: the 1/2-page self-generated document exam loop is retired
-    because Gemma is not benefiting from it; HLE is the active assessment."""
-    return False
+    """Owner directive: Learning is active and accelerated on the local RTX 5070 Ti."""
+    return _get_setting("learning_enabled", "on").lower() == "on"
 
 
 def calibration_enabled() -> bool:
@@ -268,11 +267,37 @@ def _extract_json(text: str) -> dict[str, Any] | None:
     end = t.rfind("}")
     if start < 0 or end <= start:
         return None
+    candidate = t[start : end + 1]
+
+    # 1. Direct standard parse
     try:
-        data = json.loads(t[start : end + 1])
+        data = json.loads(candidate, strict=False)
+        if isinstance(data, dict):
+            return data
     except Exception:
-        return None
-    return data if isinstance(data, dict) else None
+        pass
+
+    # 2. Repair unescaped LaTeX backslashes (\mathbb, \alpha, \sum, \frac, etc.)
+    try:
+        fixed = re.sub(r'\\(?![/\"\\bfnrt]|u[0-9a-fA-F]{4})', r'\\\\', candidate)
+        data = json.loads(fixed, strict=False)
+        if isinstance(data, dict):
+            return data
+    except Exception:
+        pass
+
+    # 3. Fallback regex extraction of question & answer
+    q_match = re.search(r'"question"\s*:\s*"((?:\\.|[^"\\])*)"', candidate, re.DOTALL)
+    a_match = re.search(r'"answer"\s*:\s*"((?:\\.|[^"\\])*)"', candidate, re.DOTALL)
+    if q_match and a_match:
+        try:
+            q_val = q_match.group(1).encode("utf-8").decode("unicode_escape", errors="replace")
+            a_val = a_match.group(1).encode("utf-8").decode("unicode_escape", errors="replace")
+            return {"question": q_val, "answer": a_val}
+        except Exception:
+            return {"question": q_match.group(1), "answer": a_match.group(1)}
+
+    return None
 
 
 def _load_probe_material(document_id: int) -> tuple[str, str, str] | None:
@@ -354,6 +379,11 @@ def _probe_document_with_reason(document_id: int) -> tuple[dict[str, Any] | None
     }
     _persist(record)
     _clear_engine_failure()
+    safe_title = str(title or "")[:35].encode("ascii", errors="replace").decode("ascii")
+    print(
+        f"[learning-rtx] Doc {document_id} [{_norm_field(field)}]: '{safe_title}' -> {verdict} (mastery {mastery:.2f})",
+        flush=True,
+    )
     return record, "assessed"
 
 
@@ -631,13 +661,31 @@ class LearningWorker:
         self._stop = threading.Event()
 
     def start(self) -> None:
-        # Owner directive: the 1/2-page document self-exam background worker is
-        # permanently retired because Gemma is not benefiting from it. HLE is
-        # the active assessment instrument.
-        return
+        if self._thread is not None and self._thread.is_alive():
+            return
+        self._stop.clear()
+        self._thread = threading.Thread(target=self._loop, name="learning-worker", daemon=True)
+        self._thread.start()
+
+    def stop(self) -> None:
+        self._stop.set()
+        if self._thread is not None:
+            self._thread.join(timeout=2.0)
+            self._thread = None
 
     def _loop(self) -> None:
-        return
+        while not self._stop.is_set():
+            if not learning_enabled():
+                self._stop.wait(3.0)
+                continue
+            try:
+                rec = probe_next()
+                if rec is None:
+                    self._stop.wait(POLL_INTERVAL_SECONDS)
+                else:
+                    self._stop.wait(0.1)
+            except Exception:
+                self._stop.wait(1.0)
 
 
 _worker = LearningWorker()
@@ -645,6 +693,8 @@ _worker = LearningWorker()
 
 def start_learning_worker() -> None:
     _ensure_schema()
+    _set_setting("learning_enabled", "on")
+    _worker.start()
 
 
 # ---------------------------------------------------------------------------

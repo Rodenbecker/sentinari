@@ -269,7 +269,8 @@ async def query_gemma_threat_intervention(
     observed_risk_score: float,
     tda_summary: Dict[str, Any],
     gaussian_projection: Dict[str, Any],
-    clinician_notes: str = ""
+    clinician_notes: str = "",
+    country_matrix: Optional[Dict[str, Any]] = None
 ) -> str:
     """
     Prompts local Gemma ONNX engine on port 8100 to cross-examine the exogenous
@@ -289,6 +290,13 @@ Conduct an emergency forensic assessment and strategic counter-intervention prot
 - Projected Displacement: {gaussian_projection.get('projections', {}).get('displacement_millions')} million citizens
 - Grid / Civil Rupture Exposure: {gaussian_projection.get('projections', {}).get('civil_rupture_pct')}%
 - User / Field Commander Notes: {clinician_notes or 'Standard autonomous sovereign monitoring.'}
+{f"""### ACTIVE ISO-3166 SOVEREIGN FRICTION PROFILES & CASCADING MECHANICS:
+- Ukraine (UKR): {country_matrix.get('ukr', 0.89)*100:.1f}% (+14.2% surge) [Critical / Terminal Rupture]
+- Levant Corridor (ISR): {country_matrix.get('isr', 0.85)*100:.1f}% (+11.7% surge) [Acute / Escalating Flashpoint]
+- Sudan / Sahel (SUD): {country_matrix.get('sud', 0.81)*100:.1f}% (+6.3% increase) [Severe Instability]
+- Taiwan Strait (TWN): {country_matrix.get('twn', 0.78)*100:.1f}% (+8.5% increase) [High Strategic Strain]
+- Southern Africa (ZAF): {country_matrix.get('zaf', 0.42)*100:.1f}% (Cascade Multiplier: {country_matrix.get('zaf_components', {}).get('cascade_multiplier', 1.0)}x)
+- Cascading Civil Rupture Index: {country_matrix.get('civil_rupture_pct', 58.4)}%""" if country_matrix else ""}
 
 ### REQUIRED SOVEREIGN DELIVERABLE:
 Provide a rigorous 4-part tactical directive:
@@ -325,3 +333,106 @@ Provide a rigorous 4-part tactical directive:
             f"- **TDA Assessment**: {tda_summary.get('early_warning_status')} detected across 14 API state vectors.\n"
             f"- **Action**: Immediately enact physical grid isolation, air-gap critical SCADA controllers, and distribute local mesh backup power."
         )
+
+
+# ============================================================================
+# 5. SOVEREIGN COUNTRY RISK BREAKDOWN & NON-LINEAR ZAF CASCADING LOGIC
+# ============================================================================
+
+SOVEREIGN_FRICTION_PROFILES: Dict[str, Dict[str, Any]] = {
+    "UKR": {
+        "code": "UKR",
+        "name": "Ukraine / Eastern Front",
+        "risk_score": 0.89,
+        "delta": "+14.2%",
+        "status": "Critical / Terminal Rupture",
+        "context": "Highest active rupture score on matrix; severe, ongoing kinetic escalations along Eastern European vector."
+    },
+    "ISR": {
+        "code": "ISR",
+        "name": "Levant / Middle East Corridor",
+        "risk_score": 0.85,
+        "delta": "+11.7%",
+        "status": "Acute / Escalating Flashpoint",
+        "context": "Highly volatile risk scaling; compounding proxy conflicts and trade lane choke points pushing regional matrix toward structural breach."
+    },
+    "SUD": {
+        "code": "SUD",
+        "name": "Sudan / Sahel Rift",
+        "risk_score": 0.81,
+        "delta": "+6.3%",
+        "status": "Severe / High Instability",
+        "context": "Severe kinetic instability and asymmetric resource disruptions across Sahel rift."
+    },
+    "TWN": {
+        "code": "TWN",
+        "name": "Taiwan Strait / INDOPACOM",
+        "risk_score": 0.78,
+        "delta": "+8.5%",
+        "status": "High Risk / Strategic Strain",
+        "context": "Macro-confrontation positioning, heavily weighted by trade weaponization and semiconductor maritime corridors."
+    },
+    "ZAF": {
+        "code": "ZAF",
+        "name": "Southern Africa Critical Minerals",
+        "risk_score": 0.42,
+        "delta": "+2.1%",
+        "status": "Emerging / Asset Vulnerability",
+        "context": "Sub-surface vector tracking supply security, geoeconomic asset protection, and local infrastructure strain under global reallocation.",
+        "components": {
+            "critical_mineral_strain": 0.45,
+            "infrastructure_grid_strain": 0.38,
+            "macro_disinfo": 0.42
+        }
+    }
+}
+
+
+def recalculate_sovereign_cascade(
+    ukr: float = 0.89,
+    isr: float = 0.85,
+    sud: float = 0.81,
+    twn: float = 0.78,
+    zaf_minerals: float = 0.45,
+    zaf_grid_freeze: bool = False,
+    zaf_disinfo: float = 0.42
+) -> Dict[str, Any]:
+    """
+    Computes non-linear ripple effects from P1 friction zones into South Africa (ZAF)
+    and global Civil Rupture Exposure.
+
+    Formula from Dr. Pierre C. Wepener's Sovereign Risk Architecture:
+      Total ZAF Risk Score = w1*(Critical Minerals) + w2*(Infrastructure Strain) + w3*(Disinformation)
+      where Critical Minerals experiences a non-linear demand surge multiplier when UKR or TWN exceed 0.75.
+    """
+    ukr_overflow = max(0.0, ukr - 0.75)
+    twn_overflow = max(0.0, twn - 0.75)
+    cascade_multiplier = 1.0 + (1.6 * ukr_overflow) + (2.1 * twn_overflow)
+
+    eff_minerals = min(1.0, zaf_minerals * cascade_multiplier)
+    eff_grid = 0.88 if zaf_grid_freeze else 0.38
+    eff_disinfo = zaf_disinfo
+
+    w1, w2, w3 = 0.45, 0.35, 0.20
+    zaf_total = min(0.99, (w1 * eff_minerals) + (w2 * eff_grid) + (w3 * eff_disinfo))
+
+    civil_rupture_pct = round(
+        32.0 + (ukr * 11.2) + (isr * 8.6) + (sud * 5.4) + (twn * 7.5) + (zaf_total * 4.8),
+        1
+    )
+
+    return {
+        "ukr": round(ukr, 2),
+        "isr": round(isr, 2),
+        "sud": round(sud, 2),
+        "twn": round(twn, 2),
+        "zaf": round(zaf_total, 2),
+        "zaf_components": {
+            "critical_minerals_effective": round(eff_minerals, 2),
+            "grid_logistics_effective": round(eff_grid, 2),
+            "macro_disinfo": round(eff_disinfo, 2),
+            "cascade_multiplier": round(cascade_multiplier, 2)
+        },
+        "civil_rupture_pct": civil_rupture_pct,
+        "tda_tear_detected": (ukr > 0.80 or isr > 0.80 or zaf_total > 0.55 or zaf_grid_freeze)
+    }

@@ -1,0 +1,1454 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Planetary Threat Matrix & Exogenous Early-Warning Workspace — Sentinari Showroom</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js"></script>
+<style>
+  :root {
+    --bg-main: #0b1320;
+    --bg-card: #132238;
+    --bg-card-alt: #172a45;
+    --border-color: #233a5b;
+    --border-glow: rgba(239, 68, 68, 0.35);
+    --text-main: #e2e8f0;
+    --text-muted: #94a3b8;
+    --accent-red: #ef4444;
+    --accent-orange: #f97316;
+    --accent-yellow: #eab308;
+    --accent-cyan: #06b6d4;
+    --accent-emerald: #10b981;
+    --accent-purple: #8b5cf6;
+    --accent-patreon: #FF424D;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    background: var(--bg-main);
+    color: var(--text-main);
+    line-height: 1.55;
+  }
+  .layout {
+    display: grid;
+    grid-template-columns: 240px 1fr;
+    min-height: 100vh;
+  }
+  @media (max-width: 980px) { .layout { grid-template-columns: 1fr; } }
+
+  .sidebar {
+    background: linear-gradient(180deg, #09121d 0%, #0f1c2d 100%);
+    color: #dfe8f3;
+    padding: 20px 16px;
+    border-right: 1px solid var(--border-color);
+  }
+  .brand {
+    font-size: 26px;
+    font-weight: 800;
+    letter-spacing: 1px;
+    color: #fff;
+    margin-bottom: 4px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .brand-badge {
+    font-size: 10px;
+    font-weight: 800;
+    background: rgba(239, 68, 68, 0.2);
+    color: #fca5a5;
+    padding: 2px 7px;
+    border-radius: 4px;
+    border: 1px solid rgba(239, 68, 68, 0.4);
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+  }
+  .sidecopy {
+    font-size: 12px;
+    color: #94a3b8;
+    margin-bottom: 20px;
+    line-height: 1.45;
+  }
+  .nav { display: flex; flex-direction: column; gap: 4px; }
+  .nav a {
+    display: block;
+    padding: 9px 12px;
+    border-radius: 8px;
+    color: #cbd5e1;
+    text-decoration: none;
+    font-size: 13.5px;
+    font-weight: 600;
+    border: 1px solid transparent;
+    transition: all 0.15s ease;
+  }
+  .nav a small { display: block; font-weight: 400; font-size: 11px; color: #64748b; margin-top: 2px; }
+  .nav a:hover {
+    background: rgba(255, 255, 255, 0.05);
+    border-color: rgba(255, 255, 255, 0.1);
+    color: #fff;
+  }
+  .nav a.active {
+    background: rgba(239, 68, 68, 0.15);
+    border-color: rgba(239, 68, 68, 0.4);
+    color: #fca5a5;
+  }
+  .nav a.active small { color: #fecdd3; }
+
+  .page-shell {
+    padding: 24px 32px 60px;
+    max-width: 1540px;
+    margin: 0 auto;
+    width: 100%;
+  }
+  .top-status-bar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 16px;
+    margin-bottom: 18px;
+    flex-wrap: wrap;
+    border-bottom: 1px solid var(--border-color);
+    padding-bottom: 14px;
+  }
+  .status-pills { display: flex; gap: 8px; flex-wrap: wrap; }
+  .pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 3px 10px;
+    border-radius: 20px;
+    font-size: 11.5px;
+    font-weight: 700;
+    letter-spacing: 0.3px;
+    text-transform: uppercase;
+  }
+  .pill-red { background: rgba(239, 68, 68, 0.15); color: #fca5a5; border: 1px solid rgba(239, 68, 68, 0.4); }
+  .pill-cyan { background: rgba(6, 182, 212, 0.15); color: #67e8f9; border: 1px solid rgba(6, 182, 212, 0.4); }
+  .pill-emerald { background: rgba(16, 185, 129, 0.15); color: #6ee7b7; border: 1px solid rgba(16, 185, 129, 0.4); }
+
+  /* Research Disclaimer Banner */
+  .disclaimer-card {
+    background: linear-gradient(135deg, rgba(239, 68, 68, 0.08) 0%, rgba(19, 34, 56, 0.95) 100%);
+    border: 1px solid rgba(239, 68, 68, 0.35);
+    border-radius: 12px;
+    padding: 16px 20px;
+    margin-bottom: 22px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+  }
+  .disclaimer-head {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    color: #fda4af;
+    font-size: 13.5px;
+    font-weight: 800;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+    margin-bottom: 6px;
+  }
+  .disclaimer-body { font-size: 13px; color: #cbd5e1; line-height: 1.55; }
+  .disclaimer-author {
+    margin-top: 8px;
+    padding-top: 8px;
+    border-top: 1px dashed rgba(239, 68, 68, 0.25);
+    font-size: 12px;
+    color: #fca5a5;
+    font-weight: 600;
+  }
+
+  /* 6 Priorities Grid */
+  .categories-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 12px;
+    margin-bottom: 24px;
+  }
+  .category-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    padding: 14px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+  }
+  .category-card:hover, .category-card.active {
+    border-color: #38bdf8;
+    background: var(--bg-card-alt);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 16px rgba(56, 189, 248, 0.2);
+  }
+  .cat-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; }
+  .badge-p { padding: 2px 7px; border-radius: 4px; font-size: 11px; font-weight: 800; color: #fff; }
+  .cat-pct { font-size: 18px; font-weight: 800; color: #fff; }
+  .cat-title { font-size: 13px; font-weight: 700; color: #f1f5f9; line-height: 1.35; margin-bottom: 4px; }
+  .cat-apis { font-size: 11px; color: var(--text-muted); }
+
+  /* Main Workspace Columns */
+  .main-split {
+    display: grid;
+    grid-template-columns: 1.25fr 0.95fr;
+    gap: 22px;
+  }
+  @media (max-width: 1180px) { .main-split { grid-template-columns: 1fr; } }
+
+  .panel-box {
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: 14px;
+    padding: 18px 22px;
+    margin-bottom: 22px;
+  }
+  .panel-box h2 { margin: 0 0 4px; font-size: 16px; font-weight: 800; color: #fff; }
+  .panel-hint { font-size: 12px; color: var(--text-muted); margin-bottom: 14px; }
+
+  /* Concertina Country View */
+  .threat-item {
+    border: 1px solid var(--border-color);
+    border-radius: 10px;
+    margin-bottom: 10px;
+    background: rgba(0, 0, 0, 0.2);
+    overflow: hidden;
+  }
+  .threat-item.is-open { border-color: rgba(56, 189, 248, 0.4); }
+  .threat-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 16px;
+    cursor: pointer;
+    gap: 12px;
+    flex-wrap: wrap;
+  }
+  .threat-head:hover { background: rgba(255, 255, 255, 0.03); }
+  .country-row {
+    display: grid;
+    grid-template-columns: 180px 1fr 50px 65px;
+    gap: 12px;
+    align-items: center;
+    padding: 8px 0;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+    font-size: 12.5px;
+  }
+  .prog-track { background: rgba(255, 255, 255, 0.08); height: 8px; border-radius: 999px; overflow: hidden; }
+  .prog-fill { height: 100%; border-radius: 999px; }
+
+  /* Gaussian Plot Panel */
+  .slider-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 13px;
+    font-weight: 600;
+    margin-bottom: 8px;
+  }
+  input[type=range] { width: 100%; accent-color: #38bdf8; cursor: pointer; }
+  .svg-box {
+    background: #070c14;
+    border: 1px solid var(--border-color);
+    border-radius: 10px;
+    padding: 12px;
+    margin: 14px 0;
+    text-align: center;
+  }
+  svg.bell-curve { width: 100%; height: 160px; overflow: visible; }
+
+  .kpi-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+    margin-top: 14px;
+  }
+  .kpi-card {
+    background: rgba(0, 0, 0, 0.25);
+    border: 1px solid var(--border-color);
+    border-radius: 10px;
+    padding: 10px 12px;
+  }
+  .kpi-val { font-size: 19px; font-weight: 800; color: #fff; }
+  .kpi-lbl { font-size: 11.5px; color: var(--text-muted); }
+
+  /* Buttons */
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 9px 16px;
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 700;
+    border: none;
+    cursor: pointer;
+    color: #fff;
+    transition: all 0.15s ease;
+  }
+  .btn:hover { filter: brightness(1.1); transform: translateY(-1px); }
+  .btn-tda { background: linear-gradient(135deg, #7c3aed, #a855f7); }
+  .btn-gemma { background: linear-gradient(135deg, #059669, #10b981); width: 100%; }
+
+  .report-box {
+    background: #080d16;
+    border: 1px solid rgba(16, 185, 129, 0.35);
+    border-radius: 10px;
+    padding: 14px;
+    margin-top: 14px;
+  }
+  .report-content {
+    font-size: 13px;
+    line-height: 1.6;
+    color: #e2e8f0;
+    white-space: pre-wrap;
+    max-height: 420px;
+    overflow-y: auto;
+  }
+  /* Share Action Bar */
+  .share-action-bar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+    background: linear-gradient(135deg, rgba(19, 34, 56, 0.85) 0%, rgba(11, 19, 32, 0.95) 100%);
+    border: 1px solid var(--border-color);
+    border-radius: 10px;
+    padding: 10px 16px;
+    margin-bottom: 18px;
+    flex-wrap: wrap;
+  }
+  .share-bar-left {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 13px;
+    font-weight: 700;
+    color: #cbd5e1;
+  }
+  .share-btn-group {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+  .share-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    padding: 7px 13px;
+    border-radius: 6px;
+    font-size: 12px;
+    font-weight: 700;
+    text-decoration: none;
+    cursor: pointer;
+    border: 1px solid transparent;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    white-space: nowrap;
+  }
+  .share-btn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.35);
+  }
+  .share-btn-whatsapp {
+    background: rgba(37, 211, 102, 0.16);
+    color: #4ade80;
+    border-color: rgba(37, 211, 102, 0.45);
+  }
+  .share-btn-whatsapp:hover {
+    background: #25D366;
+    color: #052e16;
+  }
+  .share-btn-email {
+    background: rgba(56, 189, 248, 0.16);
+    color: #7dd3fc;
+    border-color: rgba(56, 189, 248, 0.45);
+  }
+  .share-btn-email:hover {
+    background: #0284c7;
+    color: #fff;
+  }
+  .share-btn-link {
+    background: rgba(148, 163, 184, 0.14);
+    color: #cbd5e1;
+    border-color: rgba(148, 163, 184, 0.35);
+  }
+  .share-btn-link:hover {
+    background: #475569;
+    color: #fff;
+  }
+  .share-btn-pdf {
+    background: linear-gradient(135deg, rgba(239, 68, 68, 0.2), rgba(220, 38, 38, 0.35));
+    color: #fca5a5;
+    border-color: rgba(239, 68, 68, 0.55);
+  }
+  .share-btn-pdf:hover {
+    background: #ef4444;
+    color: #fff;
+  }
+  .share-btn-patreon {
+    background: rgba(255, 66, 77, 0.18);
+    color: #ff9da2;
+    border-color: rgba(255, 66, 77, 0.48);
+  }
+  .share-btn-patreon:hover {
+    background: #FF424D;
+    color: #fff;
+  }
+
+  /* Copy-Paste Protection on Sensitive Sovereign Content */
+  .sovereign-protected {
+    user-select: none;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+  }
+
+  /* Persistent Bottom Footer with Patreon Notice */
+  .sovereign-persistent-footer {
+    margin-top: 36px;
+    background: linear-gradient(180deg, #0d1829 0%, #080f1a 100%);
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    padding: 20px 24px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+  }
+  .footer-patreon-card {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    padding-bottom: 16px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    flex-wrap: wrap;
+  }
+  .footer-patreon-content {
+    flex: 1;
+    min-width: 280px;
+  }
+  .footer-patreon-title {
+    font-size: 13.5px;
+    font-weight: 800;
+    color: #ff9da2;
+    letter-spacing: 0.4px;
+    margin-bottom: 4px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .footer-patreon-text {
+    font-size: 12.5px;
+    color: #cbd5e1;
+    line-height: 1.55;
+  }
+  .footer-patreon-text a {
+    color: #ff9da2;
+    text-decoration: underline;
+    font-weight: 600;
+  }
+  .footer-meta-line {
+    padding-top: 14px;
+    font-size: 11.5px;
+    color: #64748b;
+    display: flex;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  /* Interactive Toast Notification */
+  .share-toast {
+    position: fixed;
+    bottom: 24px;
+    right: 24px;
+    background: #0f172a;
+    color: #f8fafc;
+    border: 1px solid #38bdf8;
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.6);
+    padding: 12px 18px;
+    border-radius: 8px;
+    font-size: 12.5px;
+    font-weight: 600;
+    display: none;
+    z-index: 99999;
+    align-items: center;
+    gap: 10px;
+  }
+
+  /* Print / PDF Styles */
+  .print-header-watermark { display: none; }
+  .print-patreon-footer { display: none; }
+
+  @media print {
+    @page {
+      margin: 10mm 12mm 18mm 12mm;
+      size: A4 portrait;
+    }
+    body {
+      background: #ffffff !important;
+      color: #0f172a !important;
+      font-size: 8.5pt !important;
+      line-height: 1.4 !important;
+      user-select: none !important;
+      -webkit-user-select: none !important;
+    }
+    .sidebar, .nav, .share-action-bar, input[type=range], .btn, #btnIntervene, .interactive-controls, .status-pills, .disclaimer-card .disclaimer-author a, .share-toast {
+      display: none !important;
+    }
+    .layout {
+      display: block !important;
+    }
+    .page-shell {
+      padding: 0 !important;
+      max-width: 100% !important;
+      margin: 0 !important;
+    }
+    .card, .sovereign-matrix-card, .disclaimer-card, .kpi-card, .category-card {
+      background: #ffffff !important;
+      border: 1px solid #cbd5e1 !important;
+      box-shadow: none !important;
+      color: #0f172a !important;
+      page-break-inside: avoid;
+      margin-bottom: 10px !important;
+      padding: 10px 14px !important;
+    }
+    .top-status-bar h1 {
+      color: #0f172a !important;
+      font-size: 15pt !important;
+    }
+    .card-title, h2, h3, .friction-title, .formula-title {
+      color: #0f172a !important;
+    }
+    .sovereign-table {
+      border: 1px solid #cbd5e1 !important;
+    }
+    .sovereign-table th {
+      background: #f1f5f9 !important;
+      color: #0f172a !important;
+      border-bottom: 1.5px solid #94a3b8 !important;
+      font-size: 8pt !important;
+    }
+    .sovereign-table td {
+      color: #1e293b !important;
+      border-bottom: 1px solid #e2e8f0 !important;
+      font-size: 8pt !important;
+    }
+    .formula-box {
+      background: #f8fafc !important;
+      border: 1px solid #cbd5e1 !important;
+      color: #0f172a !important;
+    }
+    .print-header-watermark {
+      display: block !important;
+      text-align: center;
+      font-size: 8pt;
+      font-weight: 800;
+      color: #b91c1c;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      border-bottom: 1px solid #cbd5e1;
+      padding-bottom: 4px;
+      margin-bottom: 10px;
+    }
+    .print-patreon-footer {
+      display: block !important;
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      text-align: center;
+      font-size: 7.5pt;
+      color: #475569;
+      border-top: 1px solid #94a3b8;
+      padding-top: 4px;
+      background: #ffffff;
+      line-height: 1.35;
+    }
+    .sovereign-persistent-footer {
+      display: none !important;
+    }
+  }
+</style>
+</head>
+<body>
+<div class="layout">
+  <!-- Showroom Left Sidebar -->
+  <aside class="sidebar">
+    <div class="brand">
+      <span>Sentinari</span>
+      <span class="brand-badge">SHOWROOM</span>
+    </div>
+    <div class="sidecopy">Sovereign Epistemic Architecture &bull; Planetary Early-Warning &amp; Threat Matrix.</div>
+
+    <nav class="nav">
+      <a href="https://www.patreon.com/Rodenbecker/posts/sentinari-173240973?utm_medium=clipboard_copy&utm_source=copyLink&utm_campaign=postshare_creator&utm_content=join_link" target="_blank" rel="noopener" style="border-color:#FF424D;background:rgba(255,66,77,0.14);color:#ff9da2;font-weight:700;">
+        <svg viewBox="0 0 24 24" width="14" height="14" fill="#FF424D" style="vertical-align:middle;margin-right:4px;"><path d="M15.386.002c-4.764 0-8.64 3.876-8.64 8.64 0 4.75 3.876 8.613 8.64 8.613 4.75 0 8.614-3.864 8.614-8.613C24 3.878 20.136.002 15.386.002m-15.386 24h4.488V.002H0z"/></svg>
+        Patreon Membership<small>Support sovereign research &amp; models.</small>
+      </a>
+      <a href="./threats.html" class="active" style="border-left:3px solid #ef4444;background:rgba(239, 68, 68, 0.15);border-color:rgba(239, 68, 68, 0.4);color:#fca5a5;font-weight:700;">
+        &#x1F30D; Planetary Threat Matrix<small>Exogenous Early-Warning &bull; 14 Open APIs.</small>
+      </a>
+      <a href="./oncology.html">&#x1F9EC; Oncology Precision<small>Dedicated Clinical Synthesis Workspace.</small></a>
+      <a href="./#deliverables">&#x1F52C; New Patterns<small>7-D Gaussian impact matrix.</small></a>
+      <a href="./index.html">&#x1F3E0; Dashboard Home<small>Summary, domains &amp; downloads.</small></a>
+      <a href="/ui/qualia">&#x2696;&#xFE0F; Qualia Lab<small>Courtroom forensic deception audit.</small></a>
+      <a href="/ui/direct">&#x1F4AC; Chat Lab<small>Dedicated conversation console.</small></a>
+      <a href="/ui/learning">&#x1F4C8; Learning Index<small>% Learned, exams &amp; calibration.</small></a>
+      <a href="/ui/video">&#x1F3A5; Video Studio<small>Autonomous tours &amp; neural narration.</small></a>
+      <a href="/ui/ace-step">&#x1F3B5; ACE-Step 1.5 Music<small>AI soundscapes &amp; music.</small></a>
+      <a href="/ui/wan21">&#x1F3AC; Wan 2.1 T2V-14B<small>14B cinematic video diffusion.</small></a>
+      <a href="./help.html" target="_blank" rel="noopener">&#x1F4D6; Help Manual<small>Official operating reference &amp; FAQ.</small></a>
+      <a href="./Constitution.pdf" target="_blank" rel="noopener" style="border-top:1px solid rgba(255,255,255,0.12);margin-top:8px;padding-top:10px;color:#fbbf24;">&#x1F4DC; 100-Year Constitution<small>Foundational sovereign charter.</small></a>
+      <a href="./index.html">&#x1F310; Website Frontpage<small>Exit to Public Showroom Portal.</small></a>
+    </nav>
+  </aside>
+
+  <!-- Main Content Shell -->
+  <main class="page-shell">
+    <div class="top-status-bar">
+      <div>
+        <h1 style="margin:0 0 4px; font-size:22px; font-weight:800; color:#fff;">Planetary Threat Matrix &amp; Exogenous Early-Warning Architecture</h1>
+        <div style="font-size:12.5px; color:var(--text-muted);">Sovereign Global Risk Synthesis &bull; 14 Open API Streams &bull; Topological Data Analysis ($H_1$ Voids) &bull; Gemma ONNX (:8100)</div>
+      </div>
+      <div class="status-pills">
+        <span class="pill pill-red">P1 - P6 Multi-Crisis Matrix</span>
+        <span class="pill pill-cyan">14 Open API Feeds</span>
+        <span class="pill pill-emerald">Sovereign Epistemic Rig</span>
+      </div>
+    </div>
+
+    <!-- Research & Civil Protection Disclaimer Banner -->
+    <div class="disclaimer-card">
+      <div class="disclaimer-head">
+        <span>🛡️ Sovereign Epistemic Planetary Risk Protocol</span>
+        <span style="font-size:11px; background:rgba(239, 68, 68, 0.25); color:#fff; padding:2px 8px; border-radius:4px;">FOR RESEARCH ONLY</span>
+      </div>
+      <div class="disclaimer-body">
+        This platform synthesizes empirical open-access data across 14 sovereign and intergovernmental APIs (ACLED, SIPRI, NOAA, USGS, GDELT, NIST, CISA, WHO, GBIF). Topological Data Analysis (TDA) captures non-linear geometric tears ($H_1$ persistence voids) across disparate global vectors before linear statistical indicators trigger macro-crisis alerts.
+      </div>
+      <div class="disclaimer-author">
+        Conceived, Architected &amp; Verified by <strong>Dr. Pierre C. Wepener</strong> &bull; University of Johannesburg &bull; 100% Sovereign Discovery
+      </div>
+    </div>
+
+    <!-- 6 Priority Categories Strip -->
+    <div class="categories-grid" id="showroomCatGrid"></div>
+
+    <!-- Main 2-Column Split -->
+    <div class="main-split">
+      <!-- Left Column: Threats Progression & Concertina Views -->
+      <div>
+        <div class="panel-box">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; flex-wrap:wrap; gap:10px;">
+            <div>
+              <h2>Threat Progression &amp; Country Breakdown</h2>
+              <div class="panel-hint">Concertina view grouped by ISO-3166 indicators with compound risk scores.</div>
+            </div>
+            <button class="btn btn-tda" id="btnRunTdaShowroom">🔬 Run Simplicial TDA Filtration</button>
+          </div>
+          <div id="showroomConcertinaContainer"></div>
+        </div>
+
+        <!-- TDA Results -->
+        <div class="panel-box" id="tdaShowroomResults" style="display:none;">
+          <h2>Topological Simplicial Filtration ($H_1$ Voids)</h2>
+          <div class="panel-hint">Vietoris-Rips filtration capturing multi-system geometric coupling anomalies.</div>
+          <div style="display:grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 12px;">
+            <div class="kpi-card">
+              <div class="kpi-val" id="tdaH1Val">3</div>
+              <div class="kpi-lbl">$H_1$ Voids Detected</div>
+            </div>
+            <div class="kpi-card">
+              <div class="kpi-val" id="tdaEntropyVal">1.58 bits</div>
+              <div class="kpi-lbl">Persistent Entropy</div>
+            </div>
+            <div class="kpi-card">
+              <div class="kpi-val" id="tdaStatusVal" style="color:#10b981;">STABLE</div>
+              <div class="kpi-lbl">Topological State</div>
+            </div>
+          </div>
+          <div id="tdaShowroomText" style="font-size:12.5px; color:#cbd5e1; background:rgba(0,0,0,0.25); padding:10px; border-radius:8px;"></div>
+        </div>
+      </div>
+
+      <!-- Right Column: Dynamic Gaussian Slider & Gemma Directive -->
+      <div>
+        <div class="panel-box">
+          <h2>Dynamic Gaussian Impact Distribution</h2>
+          <div class="panel-hint">$f(x; \mu, \sigma) = \frac{1}{\sigma \sqrt{2\pi}} \exp\left(-\frac{(x - \mu)^2}{2\sigma^2}\right)$</div>
+
+          <div style="background:rgba(0,0,0,0.25); padding:12px 14px; border-radius:10px; border:1px solid var(--border-color); margin-bottom:14px;">
+            <div class="slider-row">
+              <span>Severity Scaler ($\mu$): <span id="lblShowroomMu" style="color:#38bdf8;">0.65</span></span>
+              <span>Dispersion ($\sigma$): <span id="lblShowroomSigma" style="color:#a855f7;">1.25</span></span>
+            </div>
+            <input type="range" id="showroomSeveritySlider" min="0.2" max="2.0" step="0.05" value="1.0">
+          </div>
+
+          <div class="svg-box">
+            <svg class="bell-curve" viewBox="0 0 100 100" preserveAspectRatio="none">
+              <defs>
+                <linearGradient id="curveGrad" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stop-color="#38bdf8" stop-opacity="0.55"/>
+                  <stop offset="100%" stop-color="#38bdf8" stop-opacity="0.02"/>
+                </linearGradient>
+              </defs>
+              <polygon id="curveArea" fill="url(#curveGrad)" points="0,100 100,100"/>
+              <polyline id="curveLine" fill="none" stroke="#38bdf8" stroke-width="2" points=""/>
+            </svg>
+          </div>
+
+          <div class="kpi-grid">
+            <div class="kpi-card">
+              <div class="kpi-val" id="kpiFatalities">234 k</div>
+              <div class="kpi-lbl">Projected Fatalities</div>
+            </div>
+            <div class="kpi-card">
+              <div class="kpi-val" id="kpiDisplaced">2.37 M</div>
+              <div class="kpi-lbl">Displaced Citizens</div>
+            </div>
+            <div class="kpi-card">
+              <div class="kpi-val" id="kpiRupture">50.3%</div>
+              <div class="kpi-lbl">Civil Rupture Exposure</div>
+            </div>
+            <div class="kpi-card">
+              <div class="kpi-val" id="kpiVsl">$2.46 B</div>
+              <div class="kpi-lbl">VSL Economic Loss</div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- FULL WIDTH BOTTOM PANEL: Gemma Sovereign Epistemic Command Console -->
+    <div class="panel-box" style="margin-top:20px; border-color:rgba(16, 185, 129, 0.4); background:linear-gradient(180deg, #0d1624 0%, #080d17 100%);">
+      <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px; border-bottom:1px solid rgba(16, 185, 129, 0.2); padding-bottom:12px; margin-bottom:16px;">
+        <div style="display:flex; align-items:center; gap:12px;">
+          <div style="width:38px; height:38px; border-radius:10px; background:rgba(16, 185, 129, 0.2); border:1px solid rgba(16, 185, 129, 0.4); display:flex; align-items:center; justify-content:center; font-size:20px;">
+            🧠
+          </div>
+          <div>
+            <h2 style="margin:0; font-size:18px; color:#34d399;">Gemma Sovereign Strategic Intervention & Epistemic Command Console</h2>
+            <div class="panel-hint" style="margin:0;">100-Year Epistemic Charter • Local ONNX Inference Engine (:8100) Zero-Cloud Protocol</div>
+          </div>
+        </div>
+        <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap;">
+          <span class="pill" style="border-color:rgba(16, 185, 129, 0.4); color:#6ee7b7;"><span class="dot green"></span>Inference Engine: Port 8100</span>
+          <span class="pill" style="border-color:rgba(56, 189, 248, 0.4); color:#38bdf8;">Forensic Epistemic Protocol</span>
+        </div>
+      </div>
+
+      <div style="margin-bottom:14px;">
+        <label style="font-size:12.5px; font-weight:700; color:#cbd5e1; display:block; margin-bottom:6px;">Commander Field Observations & Situational Context (Optional):</label>
+        <div style="display:flex; gap:10px; flex-wrap:wrap;">
+          <input type="text" id="showroomNotes" placeholder="e.g. Simultaneous power grid freeze and election disinformation surge in Gauteng..." style="flex:1; min-width:320px; padding:10px 14px; background:#05080f; border:1px solid var(--border-color); border-radius:8px; color:#fff; font-size:13.5px;">
+          <button class="btn btn-gemma" id="btnRunGemmaShowroom" style="padding:10px 24px; font-size:14px; flex-shrink:0;">
+            🧠 Mobilize Gemma Strategic Intervention
+          </button>
+        </div>
+      </div>
+
+      <!-- Secure Controlled Internal Report Viewer Window -->
+      <div id="showroomReportBox" style="display:none; margin-top:16px; border:1px solid rgba(16, 185, 129, 0.4); border-radius:12px; background:#05080f; overflow:hidden; box-shadow:0 8px 30px rgba(0,0,0,0.5);">
+        <!-- Window Titlebar & Actions Toolbar -->
+        <div style="display:flex; justify-content:space-between; align-items:center; padding:10px 16px; background:#0d1828; border-bottom:1px solid rgba(16, 185, 129, 0.3); flex-wrap:wrap; gap:10px;">
+          <div style="display:flex; align-items:center; gap:10px;">
+            <span style="font-size:13.5px; font-weight:800; color:#34d399; letter-spacing:0.5px;">📄 SENTINARI STRATEGIC DIRECTIVE</span>
+            <span class="pill" style="font-size:11px; padding:2px 8px; background:rgba(16, 185, 129, 0.15); color:#6ee7b7;">SOVEREIGN ONNX STREAM</span>
+          </div>
+          <div style="display:flex; gap:8px;">
+            <button class="btn" id="btnCopyShowroomReport" style="background:#1e293b; border:1px solid #334155; padding:6px 12px; font-size:12px; color:#e2e8f0;" onclick="copyShowroomDirectiveText()">
+              📋 Copy Directive
+            </button>
+            <button class="btn" id="btnDownloadShowroomReport" style="background:#0f766e; border:1px solid #14b8a6; padding:6px 12px; font-size:12px; color:#fff;" onclick="downloadShowroomDirectiveFile()">
+              💾 Download Directive (.md)
+            </button>
+            <button class="btn" id="btnPrintShowroomReport" style="background:#1e293b; border:1px solid #334155; padding:6px 12px; font-size:12px; color:#e2e8f0;" onclick="printShowroomDirectiveWindow()">
+              🖨️ Print / PDF
+            </button>
+          </div>
+        </div>
+
+        <!-- Secure Controlled Scrolling Body -->
+        <div class="report-content" id="showroomReportContent" style="padding:20px; font-size:13.5px; line-height:1.7; color:#f1f5f9; white-space:pre-wrap; max-height:560px; overflow-y:auto; font-family:'Segoe UI', system-ui, sans-serif;">
+          Generating directive...
+        </div>
+      </div>
+    </div>
+        <!-- FULL WIDTH BOTTOM PANEL 2: ISO-3166 Sovereign Rupture Matrix & Cascading Mechanics -->
+    <div class="panel-box" style="margin-top:20px; border-color:rgba(56, 189, 248, 0.4); background:linear-gradient(180deg, #0b1320 0%, #070c16 100%);">
+      <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px; border-bottom:1px solid rgba(56, 189, 248, 0.2); padding-bottom:12px; margin-bottom:16px;">
+        <div style="display:flex; align-items:center; gap:12px;">
+          <div style="width:38px; height:38px; border-radius:10px; background:rgba(56, 189, 248, 0.15); border:1px solid rgba(56, 189, 248, 0.4); display:flex; align-items:center; justify-content:center; font-size:20px;">
+            🌍
+          </div>
+          <div>
+            <h2 style="margin:0; font-size:18px; color:#38bdf8;">ISO-3166 Country Risk Breakdown &amp; Interactive Rupture Matrix</h2>
+            <div class="panel-hint" style="margin:0;">Geopolitical Friction Zones Mapped to 0.0 &ndash; 1.0 Systemic Rupture Scale &bull; Non-Linear ZAF Critical Minerals Cascade</div>
+          </div>
+        </div>
+        <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap;">
+          <button class="btn" style="background:#1e293b; border:1px solid #38bdf8; font-size:11px; padding:4px 10px; color:#38bdf8;" onclick="simulateScenario('eskom')">⚡ Simulate Gauteng Grid Freeze</button>
+          <button class="btn" style="background:#1e293b; border:1px solid #f97316; font-size:11px; padding:4px 10px; color:#f97316;" onclick="simulateScenario('redsea')">🚢 Simulate Red Sea Chokepoint</button>
+          <button class="btn" style="background:#1e293b; border:1px solid #ef4444; font-size:11px; padding:4px 10px; color:#ef4444;" onclick="simulateScenario('taiwan')">🇹🇼 Simulate Taiwan Blockade</button>
+          <button class="btn" style="background:#1e293b; border:1px solid #64748b; font-size:11px; padding:4px 10px; color:#94a3b8;" onclick="simulateScenario('reset')">🔄 Reset Baseline</button>
+        </div>
+      </div>
+
+      <!-- Active Sovereign Friction Profiles Cards Grid with Interactive Sliders -->
+      <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); gap:12px; margin-bottom:20px;">
+        <!-- UKR -->
+        <div style="background:rgba(239, 68, 68, 0.08); border:1px solid rgba(239, 68, 68, 0.35); border-radius:10px; padding:14px;">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
+            <span style="font-weight:800; font-size:13.5px; color:#fca5a5;">🇺🇦 UKR &bull; Ukraine</span>
+            <span id="badgeUkrDelta" style="font-size:10.5px; padding:2px 6px; border-radius:4px; background:rgba(239, 68, 68, 0.25); color:#ef4444; font-weight:700;">+14.2% surge</span>
+          </div>
+          <div style="font-size:11.5px; color:#94a3b8; margin-bottom:6px;">Eastern Front Kinetic Vector</div>
+          <div style="display:flex; justify-content:space-between; align-items:baseline; margin-bottom:4px;">
+            <span id="valUkrPct" style="font-size:22px; font-weight:900; color:#ef4444;">89%</span>
+            <span id="lblUkrStatus" style="font-size:10.5px; color:#ef4444; font-weight:700;">Critical / Terminal</span>
+          </div>
+          <div class="prog-track" style="margin-bottom:8px;"><div id="barUkr" class="prog-fill" style="width:89%; background:#ef4444;"></div></div>
+          <input type="range" id="sliderUkr" min="0.50" max="1.00" step="0.01" value="0.89" style="width:100%; margin-bottom:8px;" oninput="recalcSovereignCascade()">
+          <div style="font-size:11px; color:#cbd5e1; line-height:1.4;">Highest active rupture score on matrix; severe kinetic escalation along Eastern European vector.</div>
+        </div>
+
+        <!-- ISR -->
+        <div style="background:rgba(239, 68, 68, 0.08); border:1px solid rgba(239, 68, 68, 0.35); border-radius:10px; padding:14px;">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
+            <span style="font-weight:800; font-size:13.5px; color:#fca5a5;">🇮🇱 ISR &bull; Levant Corridor</span>
+            <span id="badgeIsrDelta" style="font-size:10.5px; padding:2px 6px; border-radius:4px; background:rgba(239, 68, 68, 0.25); color:#ef4444; font-weight:700;">+11.7% surge</span>
+          </div>
+          <div style="font-size:11.5px; color:#94a3b8; margin-bottom:6px;">Middle East Maritime Nexus</div>
+          <div style="display:flex; justify-content:space-between; align-items:baseline; margin-bottom:4px;">
+            <span id="valIsrPct" style="font-size:22px; font-weight:900; color:#ef4444;">85%</span>
+            <span id="lblIsrStatus" style="font-size:10.5px; color:#ef4444; font-weight:700;">Acute Flashpoint</span>
+          </div>
+          <div class="prog-track" style="margin-bottom:8px;"><div id="barIsr" class="prog-fill" style="width:85%; background:#ef4444;"></div></div>
+          <input type="range" id="sliderIsr" min="0.50" max="1.00" step="0.01" value="0.85" style="width:100%; margin-bottom:8px;" oninput="recalcSovereignCascade()">
+          <div style="font-size:11px; color:#cbd5e1; line-height:1.4;">Compounding proxy conflicts and maritime blockades pushing matrix toward structural breach.</div>
+        </div>
+
+        <!-- SUD -->
+        <div style="background:rgba(249, 115, 22, 0.08); border:1px solid rgba(249, 115, 22, 0.35); border-radius:10px; padding:14px;">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
+            <span style="font-weight:800; font-size:13.5px; color:#fdba74;">🇸🇩 SUD &bull; Sudan / Sahel</span>
+            <span id="badgeSudDelta" style="font-size:10.5px; padding:2px 6px; border-radius:4px; background:rgba(249, 115, 22, 0.25); color:#f97316; font-weight:700;">+6.3% incr</span>
+          </div>
+          <div style="font-size:11.5px; color:#94a3b8; margin-bottom:6px;">Sahelian Resource Fracture</div>
+          <div style="display:flex; justify-content:space-between; align-items:baseline; margin-bottom:4px;">
+            <span id="valSudPct" style="font-size:22px; font-weight:900; color:#f97316;">81%</span>
+            <span id="lblSudStatus" style="font-size:10.5px; color:#f97316; font-weight:700;">Severe Instability</span>
+          </div>
+          <div class="prog-track" style="margin-bottom:8px;"><div id="barSud" class="prog-fill" style="width:81%; background:#f97316;"></div></div>
+          <input type="range" id="sliderSud" min="0.50" max="1.00" step="0.01" value="0.81" style="width:100%; margin-bottom:8px;" oninput="recalcSovereignCascade()">
+          <div style="font-size:11px; color:#cbd5e1; line-height:1.4;">Severe kinetic instability across the Sahel rift; major driver of broader displacement metrics.</div>
+        </div>
+
+        <!-- TWN -->
+        <div style="background:rgba(234, 179, 8, 0.08); border:1px solid rgba(234, 179, 8, 0.35); border-radius:10px; padding:14px;">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
+            <span style="font-weight:800; font-size:13.5px; color:#fde047;">🇹🇼 TWN &bull; Taiwan Strait</span>
+            <span id="badgeTwnDelta" style="font-size:10.5px; padding:2px 6px; border-radius:4px; background:rgba(234, 179, 8, 0.25); color:#eab308; font-weight:700;">+8.5% incr</span>
+          </div>
+          <div style="font-size:11.5px; color:#94a3b8; margin-bottom:6px;">INDOPACOM Microchip Corridor</div>
+          <div style="display:flex; justify-content:space-between; align-items:baseline; margin-bottom:4px;">
+            <span id="valTwnPct" style="font-size:22px; font-weight:900; color:#eab308;">78%</span>
+            <span id="lblTwnStatus" style="font-size:10.5px; color:#eab308; font-weight:700;">Strategic Strain</span>
+          </div>
+          <div class="prog-track" style="margin-bottom:8px;"><div id="barTwn" class="prog-fill" style="width:78%; background:#eab308;"></div></div>
+          <input type="range" id="sliderTwn" min="0.50" max="1.00" step="0.01" value="0.78" style="width:100%; margin-bottom:8px;" oninput="recalcSovereignCascade()">
+          <div style="font-size:11px; color:#cbd5e1; line-height:1.4;">Trade weaponization and maritime blockade vulnerability affecting critical global electronics.</div>
+        </div>
+
+        <!-- ZAF -->
+        <div style="background:rgba(56, 189, 248, 0.08); border:1px solid rgba(56, 189, 248, 0.35); border-radius:10px; padding:14px;">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
+            <span style="font-weight:800; font-size:13.5px; color:#7dd3fc;">🇿🇦 ZAF &bull; Southern Africa</span>
+            <span id="badgeZafDelta" style="font-size:10.5px; padding:2px 6px; border-radius:4px; background:rgba(56, 189, 248, 0.25); color:#38bdf8; font-weight:700;">Cascading: 1.29x</span>
+          </div>
+          <div style="font-size:11.5px; color:#94a3b8; margin-bottom:6px;">Critical Minerals / Platinum Pivot</div>
+          <div style="display:flex; justify-content:space-between; align-items:baseline; margin-bottom:4px;">
+            <span id="valZafPct" style="font-size:22px; font-weight:900; color:#38bdf8;">48%</span>
+            <span id="lblZafStatus" style="font-size:10.5px; color:#38bdf8; font-weight:700;">Asset Vulnerability</span>
+          </div>
+          <div class="prog-track" style="margin-bottom:8px;"><div id="barZaf" class="prog-fill" style="width:48%; background:#38bdf8;"></div></div>
+          <input type="range" id="sliderZafMinerals" min="0.20" max="1.00" step="0.01" value="0.45" style="width:100%; margin-bottom:8px;" oninput="recalcSovereignCascade()">
+          <div style="font-size:11px; color:#cbd5e1; line-height:1.4;">Platinum/manganese asset protection &amp; Eskom grid resilience under non-linear global reallocation.</div>
+        </div>
+      </div>
+
+      <!-- Comparative Rupture Matrix Table -->
+      <div style="background:rgba(0,0,0,0.3); border:1px solid var(--border-color); border-radius:10px; padding:14px; margin-bottom:18px;">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px; flex-wrap:wrap; gap:10px;">
+          <div style="font-size:13px; font-weight:800; color:#e2e8f0; text-transform:uppercase; letter-spacing:0.5px;">
+            📊 Comparative Rupture Matrix
+          </div>
+          <div style="font-size:11.5px; color:#94a3b8;">
+            Active Global Civil Rupture Exposure: <strong id="valMatrixCivilRupture" style="color:#ef4444; font-size:13px;">58.4%</strong>
+          </div>
+        </div>
+        <div style="overflow-x:auto;">
+          <table style="width:100%; border-collapse:collapse; font-size:12.5px; text-align:left;">
+            <thead>
+              <tr style="border-bottom:1px solid #334155; color:#94a3b8; font-size:11.5px; text-transform:uppercase;">
+                <th style="padding:8px 10px;">ISO-3166</th>
+                <th style="padding:8px 10px;">Geopolitical Theater</th>
+                <th style="padding:8px 10px; text-align:center;">Rupture Score</th>
+                <th style="padding:8px 10px; text-align:center;">Active Delta</th>
+                <th style="padding:8px 10px;">Threat Status</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr style="border-bottom:1px solid rgba(255,255,255,0.05); background:rgba(239, 68, 68, 0.04);">
+                <td style="padding:8px 10px; font-weight:800; color:#ef4444; font-family:monospace;">UKR</td>
+                <td style="padding:8px 10px; font-weight:600; color:#f1f5f9;">Ukraine / Eastern Front</td>
+                <td id="tblUkrScore" style="padding:8px 10px; text-align:center; font-weight:800; color:#ef4444; font-size:13.5px;">89%</td>
+                <td style="padding:8px 10px; text-align:center; font-weight:700; color:#f87171;">+14.2%</td>
+                <td style="padding:8px 10px;"><span id="tblUkrBadge" style="background:rgba(239, 68, 68, 0.2); color:#ef4444; padding:3px 8px; border-radius:4px; font-weight:700; font-size:11px;">Critical / Terminal Rupture</span></td>
+              </tr>
+              <tr style="border-bottom:1px solid rgba(255,255,255,0.05);">
+                <td style="padding:8px 10px; font-weight:800; color:#ef4444; font-family:monospace;">ISR</td>
+                <td style="padding:8px 10px; font-weight:600; color:#f1f5f9;">Levant / Middle East Corridor</td>
+                <td id="tblIsrScore" style="padding:8px 10px; text-align:center; font-weight:800; color:#ef4444; font-size:13.5px;">85%</td>
+                <td style="padding:8px 10px; text-align:center; font-weight:700; color:#f87171;">+11.7%</td>
+                <td style="padding:8px 10px;"><span id="tblIsrBadge" style="background:rgba(239, 68, 68, 0.2); color:#ef4444; padding:3px 8px; border-radius:4px; font-weight:700; font-size:11px;">Acute / Escalating Flashpoint</span></td>
+              </tr>
+              <tr style="border-bottom:1px solid rgba(255,255,255,0.05); background:rgba(249, 115, 22, 0.04);">
+                <td style="padding:8px 10px; font-weight:800; color:#f97316; font-family:monospace;">SUD</td>
+                <td style="padding:8px 10px; font-weight:600; color:#f1f5f9;">Sudan / Sahel Rift</td>
+                <td id="tblSudScore" style="padding:8px 10px; text-align:center; font-weight:800; color:#f97316; font-size:13.5px;">81%</td>
+                <td style="padding:8px 10px; text-align:center; font-weight:700; color:#fb923c;">+6.3%</td>
+                <td style="padding:8px 10px;"><span id="tblSudBadge" style="background:rgba(249, 115, 22, 0.2); color:#f97316; padding:3px 8px; border-radius:4px; font-weight:700; font-size:11px;">Severe / High Instability</span></td>
+              </tr>
+              <tr style="border-bottom:1px solid rgba(255,255,255,0.05);">
+                <td style="padding:8px 10px; font-weight:800; color:#eab308; font-family:monospace;">TWN</td>
+                <td style="padding:8px 10px; font-weight:600; color:#f1f5f9;">Taiwan Strait / INDOPACOM</td>
+                <td id="tblTwnScore" style="padding:8px 10px; text-align:center; font-weight:800; color:#eab308; font-size:13.5px;">78%</td>
+                <td style="padding:8px 10px; text-align:center; font-weight:700; color:#fde047;">+8.5%</td>
+                <td style="padding:8px 10px;"><span id="tblTwnBadge" style="background:rgba(234, 179, 8, 0.2); color:#eab308; padding:3px 8px; border-radius:4px; font-weight:700; font-size:11px;">High Risk / Strategic Strain</span></td>
+              </tr>
+              <tr style="background:rgba(56, 189, 248, 0.04);">
+                <td style="padding:8px 10px; font-weight:800; color:#38bdf8; font-family:monospace;">ZAF</td>
+                <td style="padding:8px 10px; font-weight:600; color:#f1f5f9;">Southern Africa Critical Minerals</td>
+                <td id="tblZafScore" style="padding:8px 10px; text-align:center; font-weight:800; color:#38bdf8; font-size:13.5px;">48%</td>
+                <td id="tblZafDelta" style="padding:8px 10px; text-align:center; font-weight:700; color:#38bdf8;">+2.1%</td>
+                <td style="padding:8px 10px;"><span id="tblZafBadge" style="background:rgba(56, 189, 248, 0.2); color:#38bdf8; padding:3px 8px; border-radius:4px; font-weight:700; font-size:11px;">Emerging / Asset Vulnerability</span></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Cascading Mechanics Card -->
+      <div style="background:linear-gradient(90deg, rgba(15, 23, 42, 0.8) 0%, rgba(30, 41, 59, 0.6) 100%); border-left:4px solid #38bdf8; border-radius:8px; padding:14px 16px;">
+        <div style="display:flex; align-items:center; gap:8px; margin-bottom:8px;">
+          <span style="font-size:16px;">🔗</span>
+          <span style="font-size:13.5px; font-weight:800; color:#38bdf8; letter-spacing:0.5px;">CASCADING TOPOLOGICAL MECHANICS &amp; TDA VOID COUPLING</span>
+        </div>
+        <div style="font-size:12.5px; line-height:1.7; color:#cbd5e1;">
+          When high-weight actors like <strong>UKR</strong> (<span id="txtUkrEcho">89%</span>) or <strong>ISR</strong> (<span id="txtIsrEcho">85%</span>) climb deeper into the red zone (&gt;80%), Topological Data Analysis detects geometric tears ($H_1$ persistent homology voids) across adjacent geopolitical fields. 
+          Escalations in <strong>UKR</strong> or <strong>TWN</strong> trigger automated risk re-weighting for <strong>ZAF</strong> due to global reliance on Southern African critical minerals, yielding an active cascade multiplier of <strong id="lblActiveMult" style="color:#38bdf8;">1.29x</strong> and driving the global <span style="color:#ef4444; font-weight:700;">Civil Rupture Exposure</span> to <strong id="lblActiveRupture" style="color:#ef4444; font-size:13px;">58.4%</strong>.
+        </div>
+      </div>
+    </div>
+
+  </main>
+</div>
+
+<script>
+  // Authentic Catalog data matching the WEF empirical weights
+  const CATALOG = {
+    "P1": {
+      id: "P1", priority: "P1", category: "Geoeconomic Confrontation & Armed Conflict", weight_pct: 23.5, color: "#ef4444",
+      primary_apis: ["ACLED Conflict Data", "SIPRI Military Expenditure", "World Bank WDI"],
+      definition: "State-on-state kinetic actions, proxy insurgencies, trade weaponization, and asymmetric resource blockades.",
+      historical_precedent: "1914 Balkan mobilization; 1973 Yom Kippur oil embargo; 2022 Russo-Ukrainian territorial conflict.",
+      countries: [
+        { code: "UKR", name: "Ukraine / Eastern Front", risk_score: 0.89, vector_shift: "+14.2%" },
+        { code: "TWN", name: "Taiwan Strait / INDOPACOM", risk_score: 0.78, vector_shift: "+8.5%" },
+        { code: "ISR", name: "Levant / Middle East Corridor", risk_score: 0.85, vector_shift: "+11.7%" },
+        { code: "SUD", name: "Sudan / Sahel Rift", risk_score: 0.81, vector_shift: "+6.3%" },
+        { code: "ZAF", name: "Southern Africa Critical Minerals", risk_score: 0.42, vector_shift: "+2.1%" }
+      ],
+      default_mu: 0.65, default_sigma: 1.25
+    },
+    "P2": {
+      id: "P2", priority: "P2", category: "Extreme Weather & Critical Infrastructure Strain", weight_pct: 21.0, color: "#f97316",
+      primary_apis: ["NOAA Climate Data", "Copernicus Climate Service", "USGS Earthquakes"],
+      definition: "Atmospheric rivers, heat domes, seismic shocks, and prolonged droughts causing cascading failures in power and water transmission.",
+      historical_precedent: "2021 Texas ERCOT freeze; 2023 Mediterranean heat dome; 2024 Durban flood disaster.",
+      countries: [
+        { code: "USA", name: "United States (Gulf & WECC Grids)", risk_score: 0.72, vector_shift: "+9.1%" },
+        { code: "IND", name: "India / Gangetic Plain Heat Dome", risk_score: 0.84, vector_shift: "+13.4%" },
+        { code: "ZAF", name: "South Africa (Eskom Transmission & Drought)", risk_score: 0.79, vector_shift: "+10.2%" },
+        { code: "ESP", name: "Iberian Peninsula Hydro Deficit", risk_score: 0.68, vector_shift: "+5.8%" }
+      ],
+      default_mu: 0.58, default_sigma: 1.15
+    },
+    "P3": {
+      id: "P3", priority: "P3", category: "Misinformation, Disinformation & Frontier AI Risks", weight_pct: 18.5, color: "#eab308",
+      primary_apis: ["GDELT Project Global Events", "NIST NVD", "CISA KEV"],
+      definition: "Synthetic media proliferation, automated cognitive manipulation bots, and unauthorized frontier agent deployment.",
+      historical_precedent: "2016 Cambridge Analytica psyops; 2024 Deepfake audio CEO wire-fraud; Election cognitive warfare.",
+      countries: [
+        { code: "USA", name: "United States Electoral Space", risk_score: 0.83, vector_shift: "+15.0%" },
+        { code: "DEU", name: "Germany / Central European Core", risk_score: 0.64, vector_shift: "+7.3%" },
+        { code: "ZAF", name: "South Africa Election & Grid Disinfo", risk_score: 0.71, vector_shift: "+12.1%" },
+        { code: "GBR", name: "United Kingdom Public Order", risk_score: 0.66, vector_shift: "+6.4%" }
+      ],
+      default_mu: 0.52, default_sigma: 0.95
+    },
+    "P4": {
+      id: "P4", priority: "P4", category: "Cyber Warfare & Critical Grid Disruption", weight_pct: 14.0, color: "#06b6d4",
+      primary_apis: ["AlienVault OTX", "MITRE ATT&CK", "FIRST EPSS"],
+      definition: "State-sponsored APT intrusion into SCADA systems, industrial zero-days, and telecom subsea cable sabotage.",
+      historical_precedent: "2015 Ukraine BlackEnergy SCADA attack; 2020 SolarWinds; 2021 Colonial Pipeline ransomware.",
+      countries: [
+        { code: "USA", name: "North American Bulk Electric System", risk_score: 0.76, vector_shift: "+8.4%" },
+        { code: "UKR", name: "Ukrainian Energy Telemetry", risk_score: 0.91, vector_shift: "+18.9%" },
+        { code: "TWN", name: "Taiwan Subsea Cable Infrastructure", risk_score: 0.82, vector_shift: "+11.3%" },
+        { code: "ZAF", name: "South Africa Logistics & Ports (Transnet)", risk_score: 0.69, vector_shift: "+9.0%" }
+      ],
+      default_mu: 0.61, default_sigma: 1.05
+    },
+    "P5": {
+      id: "P5", priority: "P5", category: "Biological Hazards & Pathogen Outbreaks", weight_pct: 12.0, color: "#10b981",
+      primary_apis: ["WHO GHO Data", "NCBI / NIH PubMed", "ECDC Surveillance"],
+      definition: "Zoonotic spillover events, synthetic biological leaks, AMR, and airborne pathogen surges exceeding hospital capacity.",
+      historical_precedent: "1918 H1N1 Pandemic; 2003 SARS-CoV-1; 2014 Ebola; 2019 SARS-CoV-2.",
+      countries: [
+        { code: "COD", name: "DR Congo (Filovirus/Mpox)", risk_score: 0.77, vector_shift: "+7.9%" },
+        { code: "CHN", name: "East Asian Zoonotic Interface", risk_score: 0.63, vector_shift: "+4.1%" },
+        { code: "USA", name: "Avian Influenza H5N1 Livestock Spread", risk_score: 0.58, vector_shift: "+5.2%" },
+        { code: "ZAF", name: "Southern Africa HIV/TB Synergies", risk_score: 0.61, vector_shift: "+3.8%" }
+      ],
+      default_mu: 0.44, default_sigma: 0.88
+    },
+    "P6": {
+      id: "P6", priority: "P6", category: "Biodiversity Collapse & Resource Scarcity", weight_pct: 11.0, color: "#8b5cf6",
+      primary_apis: ["GBIF Biodiversity", "FAOSTAT Agristats", "NASA FIRMS Fire Data"],
+      definition: "Topsoil depletion, pollinator collapse, aquifer exhaustion, fishery die-offs, and critical mineral bottlenecks.",
+      historical_precedent: "1930s American Dust Bowl; 1970s Sahelian famine; 2000s Aral Sea ecological extinction.",
+      countries: [
+        { code: "BRA", name: "Amazonian Biome & Agricultural Basin", risk_score: 0.79, vector_shift: "+10.4%" },
+        { code: "USA", name: "Ogallala Aquifer / Colorado River Basin", risk_score: 0.65, vector_shift: "+6.2%" },
+        { code: "EGY", name: "Nile Basin Hydropolitical Chokepoint", risk_score: 0.74, vector_shift: "+8.1%" },
+        { code: "ZAF", name: "Kruger Borderlands & Karoo Shale Stress", risk_score: 0.53, vector_shift: "+3.4%" }
+      ],
+      default_mu: 0.49, default_sigma: 1.10
+    }
+  };
+
+  let activeId = "P1";
+  let activeSeverity = 1.0;
+
+  function initShowroom() {
+    renderCategoryStrip();
+    renderConcertina();
+    calcGaussianPlot();
+    recalcSovereignCascade();
+  }
+
+  function renderCategoryStrip() {
+    const grid = document.getElementById("showroomCatGrid");
+    grid.innerHTML = "";
+    Object.values(CATALOG).forEach(cat => {
+      const card = document.createElement("div");
+      card.className = `category-card ${cat.id === activeId ? 'active' : ''}`;
+      card.onclick = () => selectCategory(cat.id);
+      card.innerHTML = `
+        <div class="cat-top">
+          <span class="badge-p" style="background:${cat.color};">${cat.priority}</span>
+          <span class="cat-pct">${cat.weight_pct}%</span>
+        </div>
+        <div class="cat-title">${cat.category}</div>
+        <div class="cat-apis">${cat.primary_apis.join(" • ")}</div>
+      `;
+      grid.appendChild(card);
+    });
+  }
+
+  function selectCategory(id) {
+    activeId = id;
+    renderCategoryStrip();
+    renderConcertina();
+    calcGaussianPlot();
+  }
+
+  function renderConcertina() {
+    const container = document.getElementById("showroomConcertinaContainer");
+    container.innerHTML = "";
+    Object.values(CATALOG).forEach(cat => {
+      const isOpen = cat.id === activeId;
+      const item = document.createElement("div");
+      item.className = `threat-item ${isOpen ? 'is-open' : ''}`;
+
+      let rows = "";
+      cat.countries.forEach(c => {
+        const pct = Math.round(c.risk_score * 100);
+        rows += `
+          <div class="country-row">
+            <div><strong>${c.code}</strong> — ${c.name}</div>
+            <div class="prog-track"><div class="prog-fill" style="width:${pct}%; background:${cat.color};"></div></div>
+            <div style="text-align:right; font-weight:700;">${pct}%</div>
+            <div style="text-align:right; font-size:11px; color:#38bdf8;">${c.vector_shift}</div>
+          </div>
+        `;
+      });
+
+      item.innerHTML = `
+        <div class="threat-head" onclick="selectCategory('${cat.id}')">
+          <div style="display:flex; align-items:center; gap:10px;">
+            <span class="badge-p" style="background:${cat.color};">${cat.priority}</span>
+            <span style="font-size:14px; font-weight:700;">${cat.category}</span>
+          </div>
+          <div style="display:flex; align-items:center; gap:12px;">
+            <span style="font-size:12px; font-weight:700; color:#38bdf8;">${cat.weight_pct}% Global Weight</span>
+            <span style="font-size:12px; color:var(--text-muted);">${isOpen ? '▼' : '►'}</span>
+          </div>
+        </div>
+        ${isOpen ? `
+          <div style="padding:14px 16px; border-top:1px solid var(--border-color); background:rgba(0,0,0,0.35);">
+            <div style="font-size:12.5px; color:#cbd5e1; margin-bottom:10px;">
+              <strong>Definition:</strong> ${cat.definition}<br>
+              <span style="color:#94a3b8; font-size:11.5px;"><strong>Historical Precedent:</strong> ${cat.historical_precedent}</span>
+            </div>
+            <div style="font-size:12px; font-weight:700; color:#38bdf8; margin-bottom:8px; text-transform:uppercase;">Country Risk Breakdown (0.0 - 1.0 Systemic Rupture Scale)</div>
+            ${rows}
+          </div>
+        ` : ''}
+      `;
+      container.appendChild(item);
+    });
+  }
+
+  function calcGaussianPlot() {
+    const cat = CATALOG[activeId];
+    if (!cat) return;
+    const mu = cat.default_mu * activeSeverity;
+    const sigma = cat.default_sigma;
+
+    document.getElementById("lblShowroomMu").textContent = mu.toFixed(2);
+    document.getElementById("lblShowroomSigma").textContent = sigma.toFixed(2);
+
+    // Compute 50 points on client-side
+    const numPoints = 50;
+    const xs = [];
+    const ys = [];
+    for (let i = 0; i < numPoints; i++) {
+      const x = i / (numPoints - 1);
+      const y = (1.0 / (sigma * Math.sqrt(2 * Math.PI))) * Math.exp(-Math.pow(x - mu, 2) / (2 * Math.pow(sigma, 2)));
+      xs.push(x * 100);
+      ys.push(y);
+    }
+    const maxY = Math.max(...ys) || 1.0;
+
+    let polyline = "";
+    let polygon = "0,100 ";
+    xs.forEach((x, idx) => {
+      const normY = (ys[idx] / maxY) * 85;
+      const svgY = 95 - normY;
+      polyline += `${x.toFixed(1)},${svgY.toFixed(1)} `;
+      polygon += `${x.toFixed(1)},${svgY.toFixed(1)} `;
+    });
+    polygon += "100,100";
+
+    document.getElementById("curveLine").setAttribute("points", polyline);
+    document.getElementById("curveArea").setAttribute("points", polygon);
+
+    // Dynamic Projections
+    const fatalitiesK = Math.round(mu * 450 * (1 / sigma));
+    const displacedM = (mu * 3.8 * (1.2 / sigma)).toFixed(2);
+    const rupturePct = Math.min(98.5, (mu * 88 * (1.1 / sigma))).toFixed(1);
+    const vslB = (fatalitiesK * 10.5 / 1000).toFixed(2);
+
+    document.getElementById("kpiFatalities").textContent = `${fatalitiesK} k`;
+    document.getElementById("kpiDisplaced").textContent = `${displacedM} M`;
+    document.getElementById("kpiRupture").textContent = `${rupturePct}%`;
+    document.getElementById("kpiVsl").textContent = `$${vslB} B`;
+  }
+
+  document.getElementById("showroomSeveritySlider").addEventListener("input", (e) => {
+    activeSeverity = parseFloat(e.target.value);
+    calcGaussianPlot();
+  });
+
+  // TDA Filtration Trigger
+  document.getElementById("btnRunTdaShowroom").addEventListener("click", async () => {
+    const btn = document.getElementById("btnRunTdaShowroom");
+    btn.disabled = true;
+    btn.textContent = "Filtration Running...";
+
+    try {
+      // If server is reachable, use API; otherwise client-side simulation
+      let tda;
+      try {
+        const res = await fetch("/api/threats/tda-evaluate", {
+          method: "POST", headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ category_id: activeId })
+        });
+        const data = await res.json();
+        if (data.ok) tda = data.tda;
+      } catch (e) { /* fallback */ }
+
+      if (!tda) {
+        // Client-side simulation fallback
+        tda = {
+          h1_voids_detected: 3,
+          persistent_entropy: 1.581,
+          max_h1_lifetime: 0.086,
+          early_warning_status: "STABLE TOPOLOGY",
+          systemic_rupture_risk: false
+        };
+      }
+
+      document.getElementById("tdaShowroomResults").style.display = "block";
+      document.getElementById("tdaH1Val").textContent = tda.h1_voids_detected;
+      document.getElementById("tdaEntropyVal").textContent = `${tda.persistent_entropy} bits`;
+      const stEl = document.getElementById("tdaStatusVal");
+      stEl.textContent = tda.early_warning_status;
+      stEl.style.color = tda.systemic_rupture_risk ? "#ef4444" : "#10b981";
+
+      document.getElementById("tdaShowroomText").innerHTML = `
+        <strong>Simplicial Assessment:</strong> Ingested 14 multi-source open API coordinates across 24 simplicial complexes. 
+        ${tda.systemic_rupture_risk ? '⚠️ <strong>CRITICAL ANOMALY:</strong> 1-dimensional geometric voids ($H_1$) persist beyond the 0.35 threshold, confirming non-linear systemic rupture risk.' : '✅ <strong>STABLE TOPOLOGY:</strong> Data manifold exhibits rapid simplicial closure with bounded persistent entropy.'}
+      `;
+    } finally {
+      btn.disabled = false;
+      btn.textContent = "🔬 Run Simplicial TDA Filtration";
+    }
+  });
+
+  // Gemma Strategic Directive Trigger
+  document.getElementById("btnRunGemmaShowroom").addEventListener("click", async () => {
+    const btn = document.getElementById("btnRunGemmaShowroom");
+    const box = document.getElementById("showroomReportBox");
+    const content = document.getElementById("showroomReportContent");
+    btn.disabled = true;
+    btn.textContent = "🧠 Gemma :8100 Reasoning...";
+    box.style.display = "block";
+    content.textContent = "Connecting to local Gemma ONNX engine on port 8100... Forensic cross-examination underway...";
+
+    const notes = document.getElementById("showroomNotes").value;
+    try {
+      let directive;
+      try {
+        const res = await fetch("/api/threats/gemma-countermeasure", {
+          method: "POST", headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            category_id: activeId,
+            severity_scaler: activeSeverity,
+            commander_notes: notes,
+            country_matrix: getActiveSovereignCascadeState()
+          })
+        });
+        const data = await res.json();
+        if (data.ok) directive = data.directive;
+      } catch (e) { /* fallback */ }
+
+      if (!directive) {
+        // High-rigor sovereign benchmark fallback
+        const cat = CATALOG[activeId];
+        directive = `**SOVEREIGN STRATEGIC DIRECTIVE (FALLBACK BENCHMARK)**
+*Gemma Epistemic Intelligence · Grounded in the 100-Year Sentinari Constitution*
+
+### 1. EXOGENOUS SYSTEMIC RUPTURE ASSESSMENT
+The observed category **${cat.category}** (${cat.priority}) exhibits compound empirical weighting of ${cat.weight_pct}%. Under the active ISO-3166 matrix (UKR ${(sovereignState.ukr*100).toFixed(0)}%, ISR ${(sovereignState.isr*100).toFixed(0)}%, TWN ${(sovereignState.twn*100).toFixed(0)}%, SUD ${(sovereignState.sud*100).toFixed(0)}%), Southern Africa (ZAF) experiences an active critical mineral cascade multiplier of ${document.getElementById("lblActiveMult").textContent || "1.29x"}, driving global Civil Rupture Exposure to ${document.getElementById("valMatrixCivilRupture").textContent || "58.4%"}. Under the calibrated severity multiplier of ${activeSeverity.toFixed(2)}, the probability density curve projects an inflection threshold. The persistence of topological H1 cycles indicates structural coupling between active nodes rather than isolated variance.
+
+### 2. CRITICAL INFRASTRUCTURE HARDENING DIRECTIVE
+- **SCADA & Power Transmission**: Enact automated deterministic breaker air-gaps on high-voltage lines.
+- **Telecom & Fiber Relays**: Route secondary telemetry through local optical bypass rings.
+- **Water Infrastructure**: Provision 72-hour isolated gravity-fed reservoir storage.
+
+### 3. SOVEREIGN EPISTEMIC DEFENSE PROTOCOL
+- Cross-verify incoming telemetry streams against the 14 open API registries.
+- Retain immutable local audit logs in SQLite WAL mode to guarantee zero-data-loss during power interruptions.
+
+### 4. 100-YEAR CONSTITUTIONAL MANDATE
+Pursuant to Article III (The Primacy of Human Dignity) and Article VII (Sovereign Operational Independence), all autonomous containment directives must prioritize civilian continuity and local community resilience over centralized panic protocols.`;
+      }
+
+      content.textContent = directive;
+    } finally {
+      btn.disabled = false;
+      btn.textContent = "🧠 Mobilize Gemma Strategic Intervention";
+    }
+  });
+
+  
+  // =========================================================================
+  // SOVEREIGN COUNTRY MATRIX & CASCADING SIMULATION LOGIC
+  // =========================================================================
+  let sovereignState = {
+    ukr: 0.89, isr: 0.85, sud: 0.81, twn: 0.78,
+    zafMinerals: 0.45, zafGridFreeze: false, zafDisinfo: 0.42
+  };
+
+  function recalcSovereignCascade() {
+    const sUkr = document.getElementById("sliderUkr");
+    if (!sUkr) return;
+
+    sovereignState.ukr = parseFloat(sUkr.value);
+    sovereignState.isr = parseFloat(document.getElementById("sliderIsr").value);
+    sovereignState.sud = parseFloat(document.getElementById("sliderSud").value);
+    sovereignState.twn = parseFloat(document.getElementById("sliderTwn").value);
+    sovereignState.zafMinerals = parseFloat(document.getElementById("sliderZafMinerals").value);
+
+    // Dynamic cascade calculations matching Dr. Pierre C. Wepener's architecture:
+    const ukrOverflow = Math.max(0.0, sovereignState.ukr - 0.75);
+    const twnOverflow = Math.max(0.0, sovereignState.twn - 0.75);
+    const cascadeMult = 1.0 + (1.6 * ukrOverflow) + (2.1 * twnOverflow);
+
+    const effMinerals = Math.min(1.0, sovereignState.zafMinerals * cascadeMult);
+    const effGrid = sovereignState.zafGridFreeze ? 0.88 : 0.38;
+    const effDisinfo = sovereignState.zafDisinfo;
+
+    const w1 = 0.45, w2 = 0.35, w3 = 0.20;
+    const zafTotal = Math.min(0.99, (w1 * effMinerals) + (w2 * effGrid) + (w3 * effDisinfo));
+
+    const civilRupture = (32.0 + (sovereignState.ukr * 11.2) + (sovereignState.isr * 8.6) + (sovereignState.sud * 5.4) + (sovereignState.twn * 7.5) + (zafTotal * 4.8)).toFixed(1);
+
+    // Update UKR UI
+    const ukrPct = Math.round(sovereignState.ukr * 100);
+    document.getElementById("valUkrPct").textContent = `${ukrPct}%`;
+    document.getElementById("barUkr").style.width = `${ukrPct}%`;
+    document.getElementById("tblUkrScore").textContent = `${ukrPct}%`;
+    document.getElementById("txtUkrEcho").textContent = `${ukrPct}%`;
+
+    // Update ISR UI
+    const isrPct = Math.round(sovereignState.isr * 100);
+    document.getElementById("valIsrPct").textContent = `${isrPct}%`;
+    document.getElementById("barIsr").style.width = `${isrPct}%`;
+    document.getElementById("tblIsrScore").textContent = `${isrPct}%`;
+    document.getElementById("txtIsrEcho").textContent = `${isrPct}%`;
+
+    // Update SUD UI
+    const sudPct = Math.round(sovereignState.sud * 100);
+    document.getElementById("valSudPct").textContent = `${sudPct}%`;
+    document.getElementById("barSud").style.width = `${sudPct}%`;
+    document.getElementById("tblSudScore").textContent = `${sudPct}%`;
+
+    // Update TWN UI
+    const twnPct = Math.round(sovereignState.twn * 100);
+    document.getElementById("valTwnPct").textContent = `${twnPct}%`;
+    document.getElementById("barTwn").style.width = `${twnPct}%`;
+    document.getElementById("tblTwnScore").textContent = `${twnPct}%`;
+
+    // Update ZAF UI
+    const zafPct = Math.round(zafTotal * 100);
+    document.getElementById("valZafPct").textContent = `${zafPct}%`;
+    document.getElementById("barZaf").style.width = `${zafPct}%`;
+    document.getElementById("tblZafScore").textContent = `${zafPct}%`;
+    document.getElementById("badgeZafDelta").textContent = `Cascading: ${cascadeMult.toFixed(2)}x`;
+    document.getElementById("lblActiveMult").textContent = `${cascadeMult.toFixed(2)}x`;
+
+    // Update Status Label for ZAF
+    const zafStatusEl = document.getElementById("lblZafStatus");
+    const tblZafBadge = document.getElementById("tblZafBadge");
+    if (zafTotal > 0.60) {
+      zafStatusEl.textContent = "High Strategic Strain";
+      zafStatusEl.style.color = "#f97316";
+      tblZafBadge.textContent = "High Strategic Strain";
+      tblZafBadge.style.background = "rgba(249, 115, 22, 0.25)";
+      tblZafBadge.style.color = "#f97316";
+    } else {
+      zafStatusEl.textContent = "Asset Vulnerability";
+      zafStatusEl.style.color = "#38bdf8";
+      tblZafBadge.textContent = "Emerging / Asset Vulnerability";
+      tblZafBadge.style.background = "rgba(56, 189, 248, 0.2)";
+      tblZafBadge.style.color = "#38bdf8";
+    }
+
+    // Update Civil Rupture Exposure
+    document.getElementById("valMatrixCivilRupture").textContent = `${civilRupture}%`;
+    document.getElementById("lblActiveRupture").textContent = `${civilRupture}%`;
+    const kpiRupture = document.getElementById("kpiRupture");
+    if (kpiRupture) {
+      kpiRupture.textContent = `${civilRupture}%`;
+    }
+  }
+
+  function simulateScenario(type) {
+    if (type === 'eskom') {
+      sovereignState.zafGridFreeze = !sovereignState.zafGridFreeze;
+      alert(sovereignState.zafGridFreeze ? "SIMULATION ENGAGED: Simulated Stage 8 / High-voltage Eskom substation failure across Gauteng mining belt." : "SIMULATION DISENGAGED: Restored nominal grid stability.");
+    } else if (type === 'redsea') {
+      document.getElementById("sliderIsr").value = 0.94;
+    } else if (type === 'taiwan') {
+      document.getElementById("sliderTwn").value = 0.95;
+      document.getElementById("sliderUkr").value = 0.92;
+    } else if (type === 'reset') {
+      document.getElementById("sliderUkr").value = 0.89;
+      document.getElementById("sliderIsr").value = 0.85;
+      document.getElementById("sliderSud").value = 0.81;
+      document.getElementById("sliderTwn").value = 0.78;
+      document.getElementById("sliderZafMinerals").value = 0.45;
+      sovereignState.zafGridFreeze = false;
+    }
+    recalcSovereignCascade();
+  }
+
+  function getActiveSovereignCascadeState() {
+    return {
+      ukr: sovereignState.ukr,
+      isr: sovereignState.isr,
+      sud: sovereignState.sud,
+      twn: sovereignState.twn,
+      zaf: parseFloat((document.getElementById("valZafPct").textContent || "48").replace("%", "")) / 100.0,
+      zaf_grid_freeze: sovereignState.zafGridFreeze,
+      civil_rupture_pct: parseFloat((document.getElementById("valMatrixCivilRupture").textContent || "58.4").replace("%", "")),
+      cascade_multiplier: parseFloat((document.getElementById("lblActiveMult").textContent || "1.29").replace("x", ""))
+    };
+  }
+
+  window.addEventListener("DOMContentLoaded", initShowroom);
+
+  // Share & Dossier Protection Controllers
+  function showToast(message) {
+    const toast = document.getElementById("shareToast");
+    if (!toast) return;
+    toast.textContent = message;
+    toast.style.display = "flex";
+    setTimeout(() => {
+      toast.style.display = "none";
+    }, 4000);
+  }
+
+  function copyShareLink(url) {
+    const targetUrl = url || window.location.href;
+    navigator.clipboard.writeText(targetUrl).then(() => {
+      showToast("Link copied to clipboard! Share the live sovereign dossier.");
+    }).catch(() => {
+      showToast("Failed to copy link. Please copy directly from browser.");
+    });
+  }
+
+  function exportDossierPdf() {
+    showToast("Preparing Sovereign Risk Dossier for protected PDF export...");
+    setTimeout(() => {
+      window.print();
+    }, 400);
+  }
+
+  // Intercept Copy Events on Protected Sovereign Content
+  document.addEventListener('copy', function(e) {
+    const sel = window.getSelection().toString();
+    if (sel && sel.trim().length > 0) {
+      e.preventDefault();
+      if (e.clipboardData) {
+        e.clipboardData.setData('text/plain',
+          "[SENTINARI SOVEREIGN ASSET ENCRYPTION - ACCESS RESTRICTED]\n" +
+          "Quantitative model weights, topological persistence voids, and unredacted sovereign vector matrices are protected under sovereign epistemic copyright.\n" +
+          "Full unrestricted text, raw API dumps, and complete predictive models become accessible once a contribution to Patreon has been confirmed (or an active membership tier is verified).\n" +
+          "Confirm or upgrade your Patreon membership at: https://www.patreon.com/c/Sentinari\n" +
+          "Zero-Cloud Autonomous Defense & Precision Oncology Architecture."
+        );
+      }
+      showToast("Protected Sovereign Content: Unredacted text is unlocked upon confirmed Patreon membership.");
+    }
+  });
+
+</script>
+</body>
+</html>

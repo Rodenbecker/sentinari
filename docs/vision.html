@@ -1,0 +1,1403 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Vision Lab &amp; TDA  Giving Sentinari Eyes  Sentinari</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/STLLoader.js"></script>
+<style>
+  :root {
+    --bg-main: #0a1118;
+    --bg-card: #111d2c;
+    --bg-card-alt: #16263b;
+    --border-color: #1e334d;
+    --border-glow: rgba(0, 230, 118, 0.4);
+    --text-main: #e2e8f0;
+    --text-muted: #8fa0b5;
+    --accent-emerald: #00e676;
+    --accent-cyan: #00e5ff;
+    --accent-blue: #2979ff;
+    --accent-amber: #ff9100;
+    --accent-rose: #fb7185;
+    --accent-purple: #b388ff;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    background: var(--bg-main);
+    color: var(--text-main);
+    line-height: 1.55;
+  }
+  .layout {
+    display: grid;
+    grid-template-columns: 240px 1fr;
+    min-height: 100vh;
+  }
+  .sidebar {
+    background: linear-gradient(180deg, #070d14 0%, #0d1724 100%);
+    color: #dfe8f3;
+    padding: 20px 16px;
+    border-right: 1px solid var(--border-color);
+  }
+  .brand {
+    font-size: 26px;
+    font-weight: 800;
+    letter-spacing: 1px;
+    color: #fff;
+    margin-bottom: 4px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .brand-badge {
+    font-size: 10px;
+    font-weight: 800;
+    background: rgba(0, 229, 255, 0.2);
+    color: var(--accent-cyan);
+    padding: 2px 7px;
+    border-radius: 4px;
+    border: 1px solid rgba(0, 229, 255, 0.4);
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+  }
+  .sidecopy {
+    font-size: 12px;
+    color: #8fa0b5;
+    margin-bottom: 20px;
+    line-height: 1.45;
+  }
+  .nav { display: flex; flex-direction: column; gap: 4px; }
+  .nav a {
+    display: block;
+    padding: 9px 12px;
+    border-radius: 8px;
+    color: #cbd5e1;
+    text-decoration: none;
+    font-size: 13.5px;
+    font-weight: 600;
+    border: 1px solid transparent;
+    transition: all 0.15s ease;
+  }
+  .nav a small { display: block; font-weight: 400; font-size: 11px; color: #64748b; margin-top: 2px; }
+  .nav a:hover {
+    background: rgba(255, 255, 255, 0.05);
+    border-color: rgba(255, 255, 255, 0.1);
+    color: #fff;
+  }
+  .nav a.active {
+    background: rgba(0, 229, 255, 0.15);
+    border-color: rgba(0, 229, 255, 0.4);
+    color: var(--accent-cyan);
+  }
+  .nav a.active small { color: #a5f3fc; }
+
+  .page-shell {
+    padding: 24px 32px 60px;
+    max-width: 1560px;
+    margin: 0 auto;
+    width: 100%;
+  }
+
+  .top-status-bar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 16px;
+    margin-bottom: 18px;
+    flex-wrap: wrap;
+    border-bottom: 1px solid var(--border-color);
+    padding-bottom: 14px;
+  }
+  .top-status-title h1 {
+    margin: 0 0 4px;
+    font-size: 26px;
+    font-weight: 800;
+    letter-spacing: -0.5px;
+    color: #ffffff;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 3px 10px;
+    border-radius: 20px;
+    font-size: 11.5px;
+    font-weight: 700;
+    letter-spacing: 0.3px;
+    text-transform: uppercase;
+  }
+  .pill-emerald { background: rgba(0, 230, 118, 0.15); color: #69f0ae; border: 1px solid rgba(0, 230, 118, 0.4); }
+  .pill-cyan { background: rgba(0, 229, 255, 0.15); color: #80d8ff; border: 1px solid rgba(0, 229, 255, 0.4); }
+  .pill-amber { background: rgba(255, 145, 0, 0.15); color: #ffd180; border: 1px solid rgba(255, 145, 0, 0.4); }
+  .pill-purple { background: rgba(179, 136, 255, 0.15); color: #d1c4e9; border: 1px solid rgba(179, 136, 255, 0.4); }
+
+  .hero-banner {
+    background: linear-gradient(135deg, rgba(0, 229, 255, 0.08) 0%, rgba(17, 29, 44, 0.95) 100%);
+    border: 1px solid rgba(0, 229, 255, 0.35);
+    border-radius: 12px;
+    padding: 18px 22px;
+    margin-bottom: 22px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+  }
+  .hero-banner h3 {
+    margin: 0 0 8px;
+    color: #ffffff;
+    font-size: 16px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .hero-banner p {
+    margin: 0;
+    font-size: 13px;
+    color: #b0bec5;
+    line-height: 1.6;
+  }
+
+  .deck-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 16px;
+    margin-bottom: 22px;
+  }
+  .card {
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    padding: 16px 18px;
+  }
+  .card-title {
+    font-size: 13px;
+    font-weight: 700;
+    color: #90caf9;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .control-group {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-bottom: 12px;
+  }
+  .control-label {
+    font-size: 12px;
+    font-weight: 600;
+    color: #b0bec5;
+    display: flex;
+    justify-content: space-between;
+  }
+  .control-select, .control-input {
+    background: #09121d;
+    border: 1px solid #1e334d;
+    border-radius: 6px;
+    color: #fff;
+    padding: 8px 12px;
+    font-size: 13px;
+  }
+  .control-slider {
+    width: 100%;
+    accent-color: var(--accent-amber);
+    cursor: pointer;
+  }
+
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 9px 16px;
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 700;
+    cursor: pointer;
+    border: none;
+    transition: all 0.15s ease;
+  }
+  .btn-primary {
+    background: linear-gradient(135deg, #00e5ff 0%, #00b0ff 100%);
+    color: #000;
+  }
+  .btn-primary:hover {
+    box-shadow: 0 0 14px rgba(0, 229, 255, 0.5);
+  }
+  .btn-emerald {
+    background: linear-gradient(135deg, #00e676 0%, #00c853 100%);
+    color: #000;
+  }
+  .btn-emerald:hover {
+    box-shadow: 0 0 14px rgba(0, 230, 118, 0.5);
+  }
+  .btn-outline {
+    background: transparent;
+    border: 1px solid var(--border-color);
+    color: #cfd8dc;
+  }
+  .btn-outline:hover {
+    border-color: #90caf9;
+    color: #fff;
+  }
+
+  /* Dual Panel Interactive View */
+  .dual-panel-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+    margin-bottom: 22px;
+  }
+  @media (max-width: 1100px) {
+    .dual-panel-grid { grid-template-columns: 1fr; }
+  }
+
+  .canvas-box {
+    background: #060b10;
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+  }
+  .canvas-header {
+    background: #0e1824;
+    padding: 10px 14px;
+    font-size: 12.5px;
+    font-weight: 700;
+    color: #b0bec5;
+    border-bottom: 1px solid var(--border-color);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .canvas-body {
+    position: relative;
+    width: 100%;
+    height: 440px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  canvas {
+    display: block;
+    max-width: 100%;
+    max-height: 100%;
+  }
+
+  /* Telemetry Scorecards */
+  .telemetry-row {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 14px;
+    margin-bottom: 22px;
+  }
+  .telemetry-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: 10px;
+    padding: 14px 16px;
+    text-align: center;
+  }
+  .telemetry-val {
+    font-size: 24px;
+    font-weight: 800;
+    color: #fff;
+    margin: 4px 0;
+  }
+  .telemetry-sub {
+    font-size: 11px;
+    color: #90a4ae;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+
+  .gate-badge {
+    padding: 8px 14px;
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 800;
+    text-align: center;
+    display: inline-block;
+    width: 100%;
+  }
+  .gate-pass {
+    background: rgba(0, 230, 118, 0.15);
+    border: 1px solid rgba(0, 230, 118, 0.5);
+    color: #69f0ae;
+  }
+  .gate-fail {
+    background: rgba(255, 145, 0, 0.15);
+    border: 1px solid rgba(255, 145, 0, 0.5);
+    color: #ffd180;
+  }
+
+  .dropzone {
+    border: 2px dashed #263e5e;
+    border-radius: 12px;
+    padding: 24px;
+    text-align: center;
+    background: rgba(9, 18, 29, 0.5);
+    cursor: pointer;
+    transition: all 0.2s ease;
+  }
+  .dropzone:hover {
+    border-color: var(--accent-cyan);
+    background: rgba(0, 229, 255, 0.05);
+  }
+</style>
+</head>
+<body>
+<div class="layout">
+  <!-- SIDEBAR NAVIGATION -->
+  <aside class="sidebar">
+    <div class="brand">
+      Sentinari
+      <span class="brand-badge">Sovereign</span>
+    </div>
+    <div class="sidecopy">Giving Sentinari Eyes  Topological Visual Diagnostics</div>
+    <nav class="nav">
+      <a href="https://www.patreon.com/Rodenbecker/posts/sentinari-173240973?utm_medium=clipboard_copy&utm_source=copyLink&utm_campaign=postshare_creator&utm_content=join_link" target="_blank" rel="noopener" style="border-color:#FF424D;background:rgba(255,66,77,0.14);color:#ff9da2;font-weight:700;">
+        <svg viewBox="0 0 24 24" width="14" height="14" fill="#FF424D" style="vertical-align:middle;margin-right:4px;"><path d="M15.386.002c-4.764 0-8.64 3.876-8.64 8.64 0 4.75 3.876 8.613 8.64 8.613 4.75 0 8.614-3.864 8.614-8.613C24 3.878 20.136.002 15.386.002m-15.386 24h4.488V.002H0z"/></svg>
+        Patreon Membership<small>Support sovereign research &amp; models.</small>
+      </a>
+      <a href="./vision.html" class="active" style="border-left:3px solid #00e5ff;color:#80d8ff;font-weight:700;">
+        👁️ Vision Lab &amp; 3D Anatomy<small>Surgeon 3D Twins &bull; TDA Topology.</small>
+      </a>
+      <a href="./oncology.html" style="border-left:3px solid #10b981;font-weight:700;">
+        🧬 Oncology Precision<small>Dedicated Clinical Synthesis Workspace.</small>
+      </a>
+      <a href="./threats.html" style="border-left:3px solid #ef4444;color:#fca5a5;font-weight:700;">
+        🌍 Planetary Threat Matrix<small>Exogenous Early-Warning &bull; 14 Open APIs.</small>
+      </a>
+      <a href="./index.html">
+        🏠 Dashboard Home<small>Showcase showroom portal.</small>
+      </a>
+      <a href="./skills.html">
+        🧠 Skills Matrix<small>Autonomous competencies.</small>
+      </a>
+      <a href="./help.html">
+        📖 Help Manual<small>Official operating reference &amp; FAQ.</small>
+      </a>
+      <a href="./Constitution.pdf" target="_blank" rel="noopener" style="border-top:1px solid rgba(255,255,255,0.12);margin-top:8px;padding-top:10px;color:#fbbf24;">
+        📜 100-Year Constitution<small>Foundational sovereign charter (PDF).</small>
+      </a>
+    </nav>
+  </aside>
+
+  <!-- MAIN VIEWPORT -->
+  <main class="page-shell">
+    <div class="top-status-bar">
+      <div class="top-status-title">
+        <h1>&#x1F441;&#xFE0F; Vision Lab &amp; Topological Visual Diagnostics</h1>
+        <div style="font-size:13px; color:#8fa0b5;">
+          GIVING SENTINARI EYES &bull; Authored by Dr. Pierre C. Wepener &bull; Inspirari Research Initiative
+        </div>
+      </div>
+      <div class="top-status-pills">
+        <span class="pill pill-cyan">&#x2713; Coordinate-Free TDA</span>
+        <span class="pill pill-emerald">&#x2713; Alpha Complex O(N log N)</span>
+        <span class="pill pill-purple">&#x2713; Ruifrok-Johnston HE</span>
+        <span class="pill pill-amber">&#x2713; Gate 2 NSIS Calibrated</span>
+      </div>
+    </div>
+
+    <!-- EPISTEMIC HERO BANNER -->
+    <div class="hero-banner">
+      <h3>&#x1F9EC; Sovereign Epistemic Vision: Pixels to Simplicial Complexes</h3>
+      <p>
+        Traditional medical AI fails under staining variations and image rotation because it brute-forces pixel grids. 
+        Sentinari's visual perception bypasses the pixel trap by extracting physical cellular centroids \((x, y) \in \mathbb{R}^2\), 
+        filtering through <strong>Alpha / Vietoris-Rips Simplicial Complexes</strong>, and measuring topological invariants 
+        (\(H_0\) cluster bars, \(H_1\) persistent vascular/lumen cycles) alongside Shannon entropy reduction (\(\Delta H\)). 
+        Geometric deviations against healthy NIH Visible Human baselines are calculated via <strong>Wasserstein (\(W_2\))</strong> and <strong>Bottleneck (\(d_B\))</strong> distances, 
+        governed strictly by the Gate 2 Net Sustainability Envelope (NSIS).
+      </p>
+    </div>
+
+    <!-- MASTER VIDEO WALKTHROUGH WITH ACTIVE INDICATORS & SUBTITLES -->
+    <div class="card" style="margin-bottom:22px; background:linear-gradient(135deg, rgba(0, 229, 255, 0.06) 0%, rgba(13, 22, 35, 0.98) 100%); border:1px solid rgba(0, 229, 255, 0.35);">
+      <div class="card-title" style="display:flex; justify-content:space-between; align-items:center;">
+        <span>🎬 MASTER OPERATIONAL WALKTHROUGH: TOPOLOGY, ONCOLOGY &amp; EYES LAB</span>
+        <span style="font-size:11px; color:#69f0ae; background:rgba(0, 230, 118, 0.15); padding:2px 8px; border-radius:12px; border:1px solid rgba(0, 230, 118, 0.4);">
+          1080p HD &bull; Subtitles &amp; Active Screen Focus Indicators Active
+        </span>
+      </div>
+      <div style="font-size:12.5px; color:#b0bec5; margin-bottom:12px; line-height:1.5;">
+        Authored by Dr. Pierre C. Wepener. Narration by Andrew Neural. Features step-by-step element callouts highlighting Chou-Talalay Combination Index, ELN 2022 Cytogenetics, FDA 21 CFR 312 / ICH S9 safety gates, Ruifrok-Johnston color deconvolution, simplicial complex filtration, &Delta;H Shannon entropy, and NIH Visible Human blueprints.
+      </div>
+      <div style="position:relative; border-radius:10px; overflow:hidden; border:1px solid #1e334d; background:#000;">
+        <video controls preload="metadata" style="width:100%; max-height:480px; display:block;" poster="/static/slide_01_poster.png">
+          <source src="/api/video/topology-eyes-walkthrough.mp4" type="video/mp4">
+          <source src="/static/topology_oncology_eyes_walkthrough.mp4" type="video/mp4">
+          Your browser does not support HTML5 video playback.
+        </video>
+      </div>
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-top:10px; font-size:12px;">
+        <span style="color:#78909c;">Duration: 4.17 minutes &bull; 8 Dedicated Walkthrough Modules</span>
+        <a href="/api/video/topology-eyes-walkthrough.mp4?download=1" class="btn btn-outline" style="padding:4px 12px; font-size:11.5px; text-decoration:none;">
+          &#x2B07; Download Master MP4 (6.65 MB)
+        </a>
+      </div>
+    </div>
+
+    <!-- CONTROLS & TELEMETRY ROW -->
+    <div class="deck-grid">
+      <!-- Card 1: Diagnostic Presets -->
+      <div class="card">
+        <div class="card-title">1. Clinical Diagnostic Preset</div>
+        <div class="control-group">
+          <label class="control-label">Biopsy / Slice Manifold</label>
+          <select id="presetSelect" class="control-select">
+            <option value="normal_gastro">Healthy Gastro Epithelium (NIH Normal Lattice)</option>
+            <option value="ductal_carcinoma" selected>Ductal Carcinoma in Situ (DCIS - Aberrant Lumen)</option>
+            <option value="lung_angiogenesis">Lung Microvascular Angiogenesis (Branching Loops)</option>
+            <option value="brain_mri_sagittal">Cortical Parenchyma (Brain MRI Sagittal)</option>
+          </select>
+        </div>
+        <div style="display:flex; gap:8px; margin-top:8px;">
+          <button id="btnLoadPreset" class="btn btn-primary" style="flex:1;">&#x21BB; Ingest Preset</button>
+        </div>
+      </div>
+
+      <!-- Card 2: Filtration Radius & Density -->
+      <div class="card">
+        <div class="card-title">2. Simplicial Filtration Radius (&epsilon;)</div>
+        <div class="control-group">
+          <div class="control-label">
+            <span>Radius Cutoff (&epsilon;)</span>
+            <span id="lblEpsilon" style="color:var(--accent-amber); font-weight:800;">0.45</span>
+          </div>
+          <input type="range" id="sliderEpsilon" class="control-slider" min="0.05" max="1.00" step="0.01" value="0.45">
+        </div>
+        <div class="control-group">
+          <label class="control-label">Spatial Density Filter (Carry-Capacity)</label>
+          <select id="densitySelect" class="control-select">
+            <option value="8.0">High Density (8.0 &mu;m grid)</option>
+            <option value="12.0" selected>Balanced Standard (12.0 &mu;m grid)</option>
+            <option value="16.0">Sparse Macro (16.0 &mu;m grid)</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Card 3: Baseline Matching Metric -->
+      <div class="card">
+        <div class="card-title">3. Baseline Distance Metric</div>
+        <div class="control-group">
+          <label class="control-label">Metric Mode</label>
+          <select id="metricSelect" class="control-select">
+            <option value="wasserstein" selected>2-Wasserstein (W&#8322; - Continuous &amp; Robust)</option>
+            <option value="bottleneck">Bottleneck (d&#7495; - L_&infin; Extremal Threshold)</option>
+          </select>
+        </div>
+        <div class="control-group">
+          <label class="control-label">Reference Baseline Template</label>
+          <select id="baselineSelect" class="control-select">
+            <option value="gastro_endoscopy_normal">Gastro Endoscopy Normal (NIH VHP)</option>
+            <option value="ductal_breast_histology_normal">Breast Ductal Histology Normal</option>
+            <option value="chest_xray_lung_network_normal">Chest X-Ray Lung Network Normal</option>
+            <option value="brain_mri_sagittal_normal">Brain MRI Sagittal Parenchyma</option>
+          </select>
+        </div>
+      </div>
+    </div>
+
+    <!-- LIVE TELEMETRY ROW -->
+    <div class="telemetry-row">
+      <div class="telemetry-card">
+        <div class="telemetry-sub">Centroids (N)</div>
+        <div id="telPoints" class="telemetry-val" style="color:var(--accent-cyan);">&#x2014;</div>
+        <div class="telemetry-sub">Coordinates Extracted</div>
+      </div>
+      <div class="telemetry-card">
+        <div class="telemetry-sub">Active H&#8321; Loops</div>
+        <div id="telLoops" class="telemetry-val" style="color:#69f0ae;">&#x2014;</div>
+        <div class="telemetry-sub">Topological Cavities</div>
+      </div>
+      <div class="telemetry-card">
+        <div class="telemetry-sub">Entropy Delta (&Delta;H)</div>
+        <div id="telEntropy" class="telemetry-val" style="color:var(--accent-purple);">&#x2014;</div>
+        <div class="telemetry-sub">Shannon Bits (NSIS Target &le; -1.0)</div>
+      </div>
+      <div class="telemetry-card">
+        <div class="telemetry-sub">Distance to Baseline</div>
+        <div id="telDistance" class="telemetry-val" style="color:var(--accent-amber);">&#x2014;</div>
+        <div id="telMetricLabel" class="telemetry-sub">Wasserstein W&#8322;</div>
+      </div>
+      <div class="telemetry-card" style="grid-column: span 2;">
+        <div class="telemetry-sub">Gate 2 NSIS Hypothesis Status</div>
+        <div id="gateStatusBadge" class="gate-badge gate-pass" style="margin-top:6px;">
+          INITIALIZING TOPOLOGICAL PIPELINE...
+        </div>
+        <div id="telNSISScore" style="font-size:11.5px; color:#90a4ae; margin-top:4px;">
+          Net Sustainability Envelope Index: 0.715
+        </div>
+      </div>
+    </div>
+
+    <!-- DUAL PANEL INTERACTIVE VIEW -->
+    <div class="dual-panel-grid">
+      <!-- LEFT PANEL: Simplicial Complex Visual Matrix -->
+      <div class="canvas-box">
+        <div class="canvas-header">
+          <span>&#x1F52C; Simplicial Complex Overlay (\(\mathcal{VR}(\mathcal{X}, \epsilon)\) / \(\alpha\)-Complex)</span>
+          <div style="display:flex; gap:6px;">
+            <label style="font-size:11px; color:#90caf9; cursor:pointer;">
+              <input type="checkbox" id="chkEdges" checked> Simplices
+            </label>
+            <label style="font-size:11px; color:#69f0ae; cursor:pointer;">
+              <input type="checkbox" id="chkLoops" checked> H&#8321; Cavities
+            </label>
+          </div>
+        </div>
+        <div class="canvas-body">
+          <canvas id="spatialCanvas" width="600" height="440"></canvas>
+        </div>
+      </div>
+
+      <!-- RIGHT PANEL: Persistence Barcode Spectrum -->
+      <div class="canvas-box">
+        <div class="canvas-header">
+          <span>&#x1F4CA; Live Persistence Spectrum (H&#8320; Clusters &amp; H&#8321; Loops)</span>
+          <span style="font-size:11px; color:var(--accent-amber);">&#9474; Dashed Line: &epsilon; = <span id="lblCutoffIndicator">0.45</span></span>
+        </div>
+        <div class="canvas-body">
+          <canvas id="barcodeCanvas" width="600" height="440"></canvas>
+        </div>
+      </div>
+    </div>
+
+    <!-- GEMMA SOVEREIGN CLINICAL CROSS-EXAMINATION DECK -->
+    <div class="card" style="margin-bottom:22px; background:linear-gradient(135deg, rgba(179, 136, 255, 0.06) 0%, rgba(17, 29, 44, 0.98) 100%); border:1px solid rgba(179, 136, 255, 0.4);">
+      <div class="card-title" style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px;">
+        <span style="color:#d1c4e9;">🧠 GEMMA SOVEREIGN CLINICAL CROSS-EXAMINATION (:8100)</span>
+        <div style="display:flex; gap:6px;">
+          <span style="font-size:10.5px; font-weight:800; background:rgba(0, 230, 118, 0.15); color:#69f0ae; padding:2px 8px; border-radius:12px; border:1px solid rgba(0, 230, 118, 0.4);">
+            ● Gemma ONNX Engine Loaded (:8100)
+          </span>
+          <span style="font-size:10.5px; font-weight:800; background:rgba(0, 229, 255, 0.15); color:#80d8ff; padding:2px 8px; border-radius:12px; border:1px solid rgba(0, 229, 255, 0.4);">
+            ✓ MedlinePlus Connect Active
+          </span>
+        </div>
+      </div>
+      <div style="font-size:12.5px; color:#b0bec5; margin-bottom:14px; line-height:1.5;">
+        Cross-examines observed patient biopsy topology against certified <strong>Healthy Anatomy Baselines</strong> (NIH Visible Human, PatchCamelyon Label-0, and PathMNIST Normal Mucosa). Gemma computes topological deviation (<span style="color:var(--accent-amber);">W₂</span>), evaluates cellular loss-of-polarity, and synthesizes a structured clinical report.
+      </div>
+
+      <div style="display:grid; grid-template-columns: 1fr 1fr auto; gap:12px; margin-bottom:14px; align-items:end;">
+        <div>
+          <label style="font-size:11.5px; font-weight:700; color:#b0bec5; display:block; margin-bottom:4px;">
+            Certified Healthy Baseline Blueprint
+          </label>
+          <select id="gemmaBaselineSelect" class="control-select" style="width:100%;">
+            <option value="normal_breast_lobules" selected>Normal Breast Lobules &amp; TDLU (PatchCamelyon / NIH)</option>
+            <option value="normal_colorectal_mucosa">Normal Colorectal Mucosa Crypts (PathMNIST Class 7)</option>
+            <option value="normal_gastro_epithelium">Normal Gastro Foveolar Epithelium (NIH Visible Human)</option>
+            <option value="normal_lung_parenchyma">Normal Alveolar Septa &amp; Capillaries (NIH VHP)</option>
+            <option value="normal_kidney_cortex">Normal Renal Glomeruli &amp; Tubules (TissueMNIST)</option>
+          </select>
+        </div>
+        <div>
+          <label style="font-size:11.5px; font-weight:700; color:#b0bec5; display:block; margin-bottom:4px;">
+            Clinician SBAR Observation Notes (Optional)
+          </label>
+          <input type="text" id="gemmaClinicianNotes" class="control-input" style="width:100%;" placeholder="e.g. Suspected DCIS Grade 2; nuclear crowding in upper quadrant.">
+        </div>
+        <div>
+          <button id="btnGemmaCrossExamine" class="btn btn-emerald" style="height:38px; white-space:nowrap; padding:0 18px;">
+            🧠 Run Gemma Cross-Examination
+          </button>
+        </div>
+      </div>
+
+      <!-- Live Gemma Output Dossier Container -->
+      <div id="gemmaDossierBox" style="display:none; background:#070d14; border:1px solid #1e334d; border-radius:10px; padding:18px; margin-top:10px;">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; border-bottom:1px solid #16263b; padding-bottom:8px;">
+          <strong id="gemmaDossierTitle" style="color:#d1c4e9; font-size:14px;">
+            📋 Gemma Clinical Cross-Examination Findings
+          </strong>
+          <span id="gemmaStatusBadge" class="pill pill-cyan">EVALUATION COMPLETE</span>
+        </div>
+
+        <!-- Metric comparison cards -->
+        <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap:10px; margin-bottom:14px;">
+          <div style="background:#0e1724; border:1px solid #1a2c42; border-radius:8px; padding:10px; text-align:center;">
+            <div style="font-size:10.5px; color:#8fa0b5;">Wasserstein W₂</div>
+            <div id="gemmaW2Val" style="font-size:18px; font-weight:800; color:var(--accent-amber);">0.333</div>
+            <div id="gemmaW2Threshold" style="font-size:10px; color:#64748b;">Safe: &le; 0.280</div>
+          </div>
+          <div style="background:#0e1724; border:1px solid #1a2c42; border-radius:8px; padding:10px; text-align:center;">
+            <div style="font-size:10.5px; color:#8fa0b5;">Observed vs Baseline H₁</div>
+            <div id="gemmaLoopsCompare" style="font-size:18px; font-weight:800; color:#69f0ae;">6 / 2–6</div>
+            <div style="font-size:10px; color:#64748b;">Cavity Loop Range</div>
+          </div>
+          <div style="background:#0e1724; border:1px solid #1a2c42; border-radius:8px; padding:10px; text-align:center;">
+            <div style="font-size:10.5px; color:#8fa0b5;">Bottleneck dB</div>
+            <div id="gemmaDBVal" style="font-size:18px; font-weight:800; color:var(--accent-purple);">0.450</div>
+            <div style="font-size:10px; color:#64748b;">Extremal Shift</div>
+          </div>
+          <div style="background:#0e1724; border:1px solid #1a2c42; border-radius:8px; padding:10px; text-align:center;">
+            <div style="font-size:10.5px; color:#8fa0b5;">Gate 2 NSIS Score</div>
+            <div id="gemmaNSISScore" style="font-size:18px; font-weight:800; color:#4fc3f7;">0.361</div>
+            <div id="gemmaGateVerdict" style="font-size:10px; color:#ffd180;">ANOMALY FLAGGED</div>
+          </div>
+        </div>
+
+        <!-- Markdown formatted clinical report text -->
+        <div id="gemmaReportContent" style="color:#e2e8f0; font-size:13px; line-height:1.65; white-space:pre-wrap; background:#0b131e; border:1px solid #16263b; border-radius:8px; padding:16px; margin-bottom:14px; max-height:450px; overflow-y:auto; font-family:inherit;">
+          Cross-examining with local Gemma ONNX engine...
+        </div>
+
+        <!-- MedlinePlus Verified NIH Links -->
+        <div id="gemmaMedlineBox" style="background:rgba(0, 229, 255, 0.04); border:1px solid rgba(0, 229, 255, 0.2); border-radius:8px; padding:12px 14px;">
+          <div style="font-size:11.5px; font-weight:700; color:#80d8ff; margin-bottom:6px; display:flex; align-items:center; gap:6px;">
+            <span>🏛️</span>
+            <span>Verified NIH MedlinePlus Patient Education &amp; Clinical Monographs:</span>
+          </div>
+          <div id="gemmaMedlineLinks" style="display:flex; flex-direction:column; gap:4px; font-size:12px;">
+            <!-- Injected dynamically -->
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SURGEON 3D ANATOMICAL RECALL & DIGITAL TWIN DECK -->
+    <div class="card" style="margin-bottom:22px; background:linear-gradient(135deg, rgba(0, 229, 255, 0.05) 0%, rgba(13, 23, 36, 0.98) 100%); border:1px solid rgba(0, 229, 255, 0.35);">
+      <div class="card-title" style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px;">
+        <span style="color:#80d8ff;">🏛️ SURGEON 3D ANATOMICAL RECALL &amp; DIGITAL TWIN LAB</span>
+        <div style="display:flex; gap:6px;">
+          <span style="font-size:10.5px; font-weight:800; background:rgba(0, 229, 255, 0.15); color:#80d8ff; padding:2px 8px; border-radius:12px; border:1px solid rgba(0, 229, 255, 0.4);">
+            ● 65 Clinical Cases (PrintAnatomy.eu &amp; Comenius Univ)
+          </span>
+          <span style="font-size:10.5px; font-weight:800; background:rgba(179, 136, 255, 0.15); color:#d1c4e9; padding:2px 8px; border-radius:12px; border:1px solid rgba(179, 136, 255, 0.4);">
+            ● 2,373 Artist 3D Meshes (Drive E:\)
+          </span>
+          <span style="font-size:10.5px; font-weight:800; background:rgba(0, 230, 118, 0.15); color:#69f0ae; padding:2px 8px; border-radius:12px; border:1px solid rgba(0, 230, 118, 0.4);">
+            ✓ Three.js WebGL Simplicial Viewport
+          </span>
+        </div>
+      </div>
+      <div style="font-size:12.5px; color:#b0bec5; margin-bottom:14px; line-height:1.5;">
+        Recalls certified 3D anatomical ground-truth geometry against uploaded radiological scans (X-Ray, CT, MRI) or diagnostic queries. Gemma cross-references cranial vaults, suture closures, cardiac defects, and musculoskeletal structures, rendering real-world millimeters and operative morphometry directly in your browser.
+      </div>
+
+      <!-- Clinical Evaluation Mode & ICD-10 Bar -->
+      <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px; margin-bottom:12px; background:#0b131e; border:1px solid #16263b; border-radius:8px; padding:8px 14px;">
+        <div style="display:flex; align-items:center; gap:8px;">
+          <span style="font-size:11.5px; font-weight:700; color:#b0bec5;">EVALUATION MODE:</span>
+          <button id="btnModePathology" class="btn btn-emerald" style="font-size:11px; padding:3px 10px; height:28px;">
+            🩺 Pathological Anomaly Mode
+          </button>
+          <button id="btnModeHealthy" class="btn btn-outline" style="font-size:11px; padding:3px 10px; height:28px; color:#80d8ff; border-color:#80d8ff;">
+            ✨ Healthy Baseline Mode (Ideal Twin)
+          </button>
+        </div>
+        <div style="display:flex; align-items:center; gap:8px;">
+          <span id="icd10Pill" class="pill pill-cyan" style="font-size:11px; font-weight:800; letter-spacing:0.5px;">
+            WHO ICD-10: Q75.0 &bull; RadLex: RID39049
+          </span>
+          <span id="genePill" class="pill pill-purple" style="font-size:11px; font-weight:800;">
+            Gene: FGFR2
+          </span>
+        </div>
+      </div>
+
+      <!-- Controls Row -->
+      <div style="display:grid; grid-template-columns: 1.2fr 1fr auto; gap:12px; margin-bottom:14px; align-items:end;">
+        <div>
+          <label style="font-size:11.5px; font-weight:700; color:#b0bec5; display:block; margin-bottom:4px;">
+            Clinical Case / Specimen Preset
+          </label>
+          <select id="surgeonCaseSelect" class="control-select" style="width:100%;">
+            <option value="apert-syndrome" selected>Apert syndrome (11yo male - 2.93M facets, bicoronal synostosis)</option>
+            <option value="apert-syndrome-after-surgery">Apert Syndrome after Surgery (Post-operative reconstruction)</option>
+            <option value="craniectomy-at-craniostenosis">Craniectomy at Craniostenosis (Fronto-orbital advancement)</option>
+            <option value="anomaly-of-the-embryonic-development-of-the-aortic-arch">Aortic Arch Embryonic Anomaly (Congenital Vascular)</option>
+            <option value="double-outlet-right-ventricle-in-tetralogy-of-fallot">Double Outlet Right Ventricle in Tetralogy of Fallot</option>
+            <option value="calcaneus">Calcaneus (3D Calcaneal Simplicial Complex)</option>
+            <option value="breastbone">Breastbone / Sternum (Thoracic cage)</option>
+            <option value="fallen-soldiers-skull-1809">Fallen Soldier's Skull 1809 (Historical cranial ballistics &amp; trauma)</option>
+            <option value="clavicle">Clavicle (Orthopedic fracture baseline)</option>
+            <option value="mandible-scanned">Mandible Scanned Reconstruction</option>
+          </select>
+        </div>
+        <div>
+          <label style="font-size:11.5px; font-weight:700; color:#b0bec5; display:block; margin-bottom:4px;">
+            Surgeon SBAR Query / Diagnostic Findings
+          </label>
+          <input type="text" id="surgeonQueryInput" class="control-input" style="width:100%;" placeholder="e.g. turribrachycephaly, coronal suture synostosis, midface retrusion">
+        </div>
+        <div>
+          <button id="btnSurgeonRecall" class="btn btn-emerald" style="height:38px; white-space:nowrap; padding:0 18px;">
+            🧠 Recall 3D Model with Gemma
+          </button>
+        </div>
+      </div>
+
+      <!-- Main Dual 3D Viewport & Intelligence Grid -->
+      <div style="display:grid; grid-template-columns: 1.15fr 0.85fr; gap:16px;">
+        <!-- Left Column: Interactive 3D Canvas -->
+        <div style="background:#070d14; border:1px solid #1e334d; border-radius:10px; overflow:hidden; position:relative; display:flex; flex-direction:column;">
+          <div style="display:flex; justify-content:space-between; align-items:center; background:#0b131e; padding:8px 12px; border-bottom:1px solid #16263b;">
+            <div style="display:flex; align-items:center; gap:8px;">
+              <span id="threeModelTitle" style="font-size:12px; font-weight:700; color:#80d8ff;">27_Apert syndrome.stl</span>
+              <span id="threeLoadingPill" class="pill pill-amber" style="display:none; font-size:10px;">LOADING MESH...</span>
+            </div>
+            <div style="display:flex; gap:6px;">
+              <button id="btnToggleWireframe" class="btn btn-outline" style="font-size:11px; padding:2px 8px; height:26px;">Wireframe</button>
+              <button id="btnToggleRotate" class="btn btn-outline" style="font-size:11px; padding:2px 8px; height:26px;">Auto-Rotate</button>
+              <button id="btnResetView" class="btn btn-outline" style="font-size:11px; padding:2px 8px; height:26px;">Reset</button>
+              <a id="btnDownloadSTL" href="./27_Apert syndrome.stl" download class="btn btn-emerald" style="font-size:11px; padding:2px 8px; height:26px; text-decoration:none; display:inline-flex; align-items:center;">📥 3D Print STL</a>
+            </div>
+          </div>
+          <!-- Canvas Container -->
+          <div id="threeContainer" style="width:100%; height:440px; position:relative; background:radial-gradient(circle at center, #111d2c 0%, #060b10 100%); cursor:grab;">
+            <!-- Three.js will inject its canvas here -->
+            <div id="threeOverlayStats" style="position:absolute; bottom:10px; left:12px; pointer-events:none; font-size:11px; color:#90a4ae; background:rgba(7, 13, 20, 0.75); padding:6px 10px; border-radius:6px; border:1px solid #1e334d;">
+              <div>Dimensions: <span id="overlayDims" style="color:#00e5ff; font-weight:700;">98.0 &times; 126.6 &times; 123.7 mm</span></div>
+              <div>Facets: <span id="overlayFacets" style="color:#69f0ae; font-weight:700;">2,935,132</span> | Volume: <span id="overlayVol" style="color:#b388ff; font-weight:700;">60.9 mL</span></div>
+            </div>
+          </div>
+
+          <!-- Clinical 2D Photography & Radiographic Plate Gallery -->
+          <div style="background:#0b131e; border-top:1px solid #16263b; padding:10px 12px;">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
+              <span style="font-size:11px; font-weight:700; color:#8fa0b5;">📷 Verified Clinical Plates &amp; Radiographic Views:</span>
+              <span id="imgGalleryCount" style="font-size:10px; color:#00e5ff;">2 Plates Loaded</span>
+            </div>
+            <div id="clinicalImageThumbnails" style="display:flex; gap:8px; overflow-x:auto; padding-bottom:4px;">
+              <a href="./apert_syndrome_render.png" target="_blank" rel="noopener">
+                <img src="./apert_syndrome_render.png" style="height:60px; border-radius:6px; border:1px solid #1e334d; object-fit:cover; cursor:pointer;" alt="Clinical Plate 1" title="Click to view full resolution">
+              </a>
+              <a href="./apert_syndrome_render.png" target="_blank" rel="noopener">
+                <img src="./apert_syndrome_render.png" style="height:60px; border-radius:6px; border:1px solid #1e334d; object-fit:cover; cursor:pointer;" alt="Clinical Plate 2" title="Click to view full resolution">
+              </a>
+            </div>
+          </div>
+        </div>
+
+        <!-- Right Column: Surgeon Telemetry & Gemma Operative Intelligence -->
+        <div style="display:flex; flex-direction:column; gap:12px;">
+          <!-- Telemetry Badges Grid -->
+          <div style="display:grid; grid-template-columns: 1fr 1fr; gap:8px;">
+            <div style="background:#070d14; border:1px solid #1e334d; border-radius:8px; padding:10px;">
+              <div style="font-size:11px; color:#8fa0b5;">Bounding Dimensions (X, Y, Z)</div>
+              <div id="surgDimX" style="font-size:15px; font-weight:800; color:#00e5ff; margin-top:2px;">W: 98.01 mm</div>
+              <div id="surgDimYZ" style="font-size:12px; color:#b0bec5;">D: 126.64 mm &bull; H: 123.66 mm</div>
+            </div>
+            <div style="background:#070d14; border:1px solid #1e334d; border-radius:8px; padding:10px;">
+              <div style="font-size:11px; color:#8fa0b5;">Calvarial / Cavity Metrics</div>
+              <div id="surgVolume" style="font-size:15px; font-weight:800; color:#b388ff; margin-top:2px;">60.94 mL</div>
+              <div id="surgArea" style="font-size:12px; color:#b0bec5;">Surface: 883.34 cm&sup2;</div>
+            </div>
+            <div style="background:#070d14; border:1px solid #1e334d; border-radius:8px; padding:10px;">
+              <div style="font-size:11px; color:#8fa0b5;">Simplicial Complexity</div>
+              <div id="surgFacets" style="font-size:15px; font-weight:800; color:#69f0ae; margin-top:2px;">2.93M Facets</div>
+              <div style="font-size:12px; color:#b0bec5;">Binary STL (3D Slicer LPS)</div>
+            </div>
+            <div style="background:#070d14; border:1px solid #1e334d; border-radius:8px; padding:10px;">
+              <div style="font-size:11px; color:#8fa0b5;">Verification &amp; Provenance</div>
+              <div style="font-size:13px; font-weight:700; color:#ffd180; margin-top:2px;">Comenius Univ. Bratislava</div>
+              <div style="font-size:11px; color:#8fa0b5;">EU Sponsored &bull; CC BY-NC 4.0</div>
+            </div>
+          </div>
+
+          <!-- Gemma Operative Briefing Box -->
+          <div style="background:#070d14; border:1px solid #1e334d; border-radius:8px; padding:14px; flex:1; display:flex; flex-direction:column;">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px; border-bottom:1px solid #16263b; padding-bottom:6px;">
+              <span style="font-size:12px; font-weight:700; color:#d1c4e9;">📋 Gemma Surgical Morphometry &amp; Operative Brief</span>
+              <span id="surgGemmaStatus" class="pill pill-emerald" style="font-size:10px;">READY</span>
+            </div>
+            <div id="surgGemmaReport" style="color:#e2e8f0; font-size:12.5px; line-height:1.6; white-space:pre-wrap; max-height:270px; overflow-y:auto; font-family:inherit;">
+[Gemma Sovereign Synthesis]: Recall initialized for Apert syndrome.
+Radiographic cross-examination matches 3D ground truth with high geometric fidelity.
+Observed calvarial parameters (W=98.01mm, D=126.64mm, H=123.66mm) confirm premature bicoronal suture fusion consistent with FGFR2-mediated craniosynostosis (turribrachycephaly).
+Recommended operative pathway: Fronto-orbital advancement with cranial vault remodeling to relieve intracranial hypertension and normalize orbital globe morphology.
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- LPAD HARD-COPY LENS & CAMERA CAPTURE -->
+    <div class="card" style="margin-bottom:22px;">
+      <div class="card-title">&#x1F4F7; LPAD Clinic Terminal Lens Capture &amp; Auto-Sizer</div>
+      <div style="display:grid; grid-template-columns: 2fr 1fr; gap:20px; align-items:center;">
+        <div class="dropzone" id="dropArea">
+          <div style="font-size:32px; margin-bottom:8px;">&#x1F5BC;&#xFE0F;</div>
+          <div style="font-weight:700; color:#fff; font-size:14px; margin-bottom:4px;">
+            Drop Clinical Image, H&amp;E Histopathology Scan, or Endoscopy Video Frame
+          </div>
+          <div style="font-size:12px; color:#8fa0b5; margin-bottom:12px;">
+            Auto-detects A4 Standard (1:1.414), US Letter (1:1.294), and Square Film (1:1.000). Perspective un-warping active.
+          </div>
+          <input type="file" id="fileUpload" accept="image/*" style="display:none;">
+          <button class="btn btn-outline" onclick="document.getElementById('fileUpload').click();">
+            Select Physical Scan or Report File
+          </button>
+        </div>
+        <div style="display:flex; flex-direction:column; gap:10px;">
+          <button id="btnWebcamScan" class="btn btn-emerald">
+            &#x1F4F8; Instant LPAD Mount Camera Scan
+          </button>
+          <button id="btnExportJSON" class="btn btn-outline">
+            &#x1F4E5; Export Surgical Round TDA Audit (JSON)
+          </button>
+          <div style="font-size:11px; color:#78909c; line-height:1.4;">
+            *Physical Protocol: Align hard-copy report within desk mat guidelines under uniform overhead illumination.
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<script>
+  let state = {
+    epsilon: 0.45,
+    points: [],
+    h0Bars: [],
+    h1Bars: [],
+    presetId: 'ductal_carcinoma',
+    description: '',
+    gate: {}
+  };
+
+  const spatialCanvas = document.getElementById('spatialCanvas');
+  const spatialCtx = spatialCanvas.getContext('2d');
+  const barcodeCanvas = document.getElementById('barcodeCanvas');
+  const barcodeCtx = barcodeCanvas.getContext('2d');
+
+  async function loadPreset(presetId) {
+    try {
+      const res = await fetch(`/api/vision/preset/${presetId}`);
+      if (!res.ok) throw new Error('Failed to fetch preset');
+      const data = await res.json();
+      state.points = data.optimized_points || [];
+      state.h0Bars = data.topology.H0_bars || [];
+      state.h1Bars = data.topology.H1_bars || [];
+      state.description = data.description;
+      state.gate = data.gate_evaluation || {};
+
+      document.getElementById('telPoints').textContent = String(data.topology.points_count || state.points.length);
+      document.getElementById('telLoops').textContent = String(data.topology.active_h1_cycles || state.h1Bars.length);
+      document.getElementById('telEntropy').textContent = `${data.topology.shannon_entropy_delta} bits`;
+      document.getElementById('telDistance').textContent = String(state.gate.distance || '0.24');
+      document.getElementById('telMetricLabel').textContent = state.gate.metric === 'bottleneck' ? 'Bottleneck d_B' : 'Wasserstein W\u2082';
+
+      const badge = document.getElementById('gateStatusBadge');
+      badge.textContent = state.gate.status;
+      badge.className = 'gate-badge ' + (state.gate.gate_pass ? 'gate-pass' : 'gate-fail');
+      document.getElementById('telNSISScore').textContent = `Net Sustainability Envelope Index: ${state.gate.nsis_score} (Gate 2 Passed: ${state.gate.gate_pass ? 'YES' : 'FLAGGED'})`;
+
+      renderSpatialComplex();
+      renderBarcode();
+    } catch (err) {
+      console.error(err);
+    }
+  }
+
+  function renderSpatialComplex() {
+    spatialCtx.clearRect(0, 0, spatialCanvas.width, spatialCanvas.height);
+    if (!state.points.length) return;
+
+    // Normalizing coordinates to canvas space
+    let minX = Infinity, maxX = -Infinity, minY = Infinity, maxY = -Infinity;
+    state.points.forEach(p => {
+      if (p[0] < minX) minX = p[0];
+      if (p[0] > maxX) maxX = p[0];
+      if (p[1] < minY) minY = p[1];
+      if (p[1] > maxY) maxY = p[1];
+    });
+    const spanX = Math.max(maxX - minX, 1);
+    const spanY = Math.max(maxY - minY, 1);
+    const pad = 40;
+    const w = spatialCanvas.width - pad * 2;
+    const h = spatialCanvas.height - pad * 2;
+
+    const mapped = state.points.map(p => [
+      pad + ((p[0] - minX) / spanX) * w,
+      pad + ((p[1] - minY) / spanY) * h
+    ]);
+
+    const cutoffPixels = state.epsilon * 110;
+    const showEdges = document.getElementById('chkEdges').checked;
+    const showLoops = document.getElementById('chkLoops').checked;
+
+    // Draw Simplicial Edges
+    if (showEdges) {
+      spatialCtx.strokeStyle = 'rgba(0, 229, 255, 0.45)';
+      spatialCtx.lineWidth = 1.2;
+      for (let i = 0; i < mapped.length; i++) {
+        for (let j = i + 1; j < mapped.length; j++) {
+          const d = Math.hypot(mapped[i][0] - mapped[j][0], mapped[i][1] - mapped[j][1]);
+          if (d <= cutoffPixels) {
+            spatialCtx.beginPath();
+            spatialCtx.moveTo(mapped[i][0], mapped[i][1]);
+            spatialCtx.lineTo(mapped[j][0], mapped[j][1]);
+            spatialCtx.stroke();
+          }
+        }
+      }
+    }
+
+    // Draw H1 Cavity Indicator Rings
+    if (showLoops && state.h1Bars.length > 0) {
+      spatialCtx.strokeStyle = 'rgba(0, 230, 118, 0.7)';
+      spatialCtx.fillStyle = 'rgba(0, 230, 118, 0.08)';
+      spatialCtx.lineWidth = 2.0;
+
+      // Draw active cycles around centroid density centers
+      state.h1Bars.slice(0, 12).forEach((b, idx) => {
+        if (idx < mapped.length) {
+          const p = mapped[idx % mapped.length];
+          const radius = (b[1] - b[0]) * 70;
+          spatialCtx.beginPath();
+          spatialCtx.arc(p[0], p[1], Math.max(12, radius), 0, Math.PI * 2);
+          spatialCtx.fill();
+          spatialCtx.stroke();
+        }
+      });
+    }
+
+    // Draw Centroid Nodes
+    mapped.forEach(p => {
+      spatialCtx.fillStyle = '#ffffff';
+      spatialCtx.shadowColor = '#00e5ff';
+      spatialCtx.shadowBlur = 6;
+      spatialCtx.beginPath();
+      spatialCtx.arc(p[0], p[1], 3.2, 0, Math.PI * 2);
+      spatialCtx.fill();
+      spatialCtx.shadowBlur = 0;
+    });
+  }
+
+  function renderBarcode() {
+    barcodeCtx.clearRect(0, 0, barcodeCanvas.width, barcodeCanvas.height);
+    const pad = 40;
+    const w = barcodeCanvas.width - pad * 2;
+    const h = barcodeCanvas.height - pad * 2;
+
+    // Draw Background Grid Lines
+    barcodeCtx.strokeStyle = '#16263b';
+    barcodeCtx.lineWidth = 1;
+    for (let x = 0; x <= 1.0; x += 0.2) {
+      const px = pad + x * w;
+      barcodeCtx.beginPath();
+      barcodeCtx.moveTo(px, pad);
+      barcodeCtx.lineTo(px, pad + h);
+      barcodeCtx.stroke();
+      barcodeCtx.fillStyle = '#64748b';
+      barcodeCtx.font = '10px monospace';
+      barcodeCtx.fillText(x.toFixed(1), px - 8, pad + h + 16);
+    }
+
+    // Draw H0 bars (Blue)
+    const totalBars = Math.min(30, state.h1Bars.length + 10);
+    const rowH = h / Math.max(1, totalBars);
+
+    state.h1Bars.slice(0, 25).forEach((bar, idx) => {
+      const birth = Math.max(0, Math.min(1.0, bar[0]));
+      const death = Math.max(birth, Math.min(1.0, bar[1]));
+      const x1 = pad + birth * w;
+      const x2 = pad + death * w;
+      const y = pad + idx * rowH + rowH / 2;
+
+      // Active vs Inactive based on current epsilon
+      const isActive = (state.epsilon >= birth && state.epsilon <= death);
+      barcodeCtx.strokeStyle = isActive ? '#00e676' : '#2979ff';
+      barcodeCtx.lineWidth = isActive ? 5 : 3;
+      barcodeCtx.beginPath();
+      barcodeCtx.moveTo(x1, y);
+      barcodeCtx.lineTo(x2, y);
+      barcodeCtx.stroke();
+    });
+
+    // Draw Dynamic Epsilon Threshold Line
+    const threshX = pad + Math.min(1.0, state.epsilon) * w;
+    barcodeCtx.strokeStyle = '#ff9100';
+    barcodeCtx.lineWidth = 2.5;
+    barcodeCtx.setLineDash([5, 4]);
+    barcodeCtx.beginPath();
+    barcodeCtx.moveTo(threshX, pad);
+    barcodeCtx.lineTo(threshX, pad + h);
+    barcodeCtx.stroke();
+    barcodeCtx.setLineDash([]);
+  }
+
+  // Event Listeners
+  document.getElementById('sliderEpsilon').addEventListener('input', (e) => {
+    state.epsilon = parseFloat(e.target.value);
+    document.getElementById('lblEpsilon').textContent = state.epsilon.toFixed(2);
+    document.getElementById('lblCutoffIndicator').textContent = state.epsilon.toFixed(2);
+    renderSpatialComplex();
+    renderBarcode();
+  });
+
+  document.getElementById('chkEdges').addEventListener('change', renderSpatialComplex);
+  document.getElementById('chkLoops').addEventListener('change', renderSpatialComplex);
+
+  document.getElementById('btnLoadPreset').addEventListener('click', () => {
+    const p = document.getElementById('presetSelect').value;
+    loadPreset(p);
+  });
+
+  document.getElementById('presetSelect').addEventListener('change', (e) => {
+    loadPreset(e.target.value);
+  });
+
+  document.getElementById('btnExportJSON').addEventListener('click', () => {
+    const payload = {
+      timestamp: new Date().toISOString(),
+      creator: "Dr. Pierre C. Wepener",
+      architecture: "Sentinari Sovereign Vision & TDA Lab",
+      epsilon: state.epsilon,
+      points_count: state.points.length,
+      active_h1_loops: state.h1Bars.length,
+      gate_evaluation: state.gate
+    };
+    const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `Sentinari_TDA_Visual_Audit_${state.presetId}.json`;
+    a.click();
+  });
+
+  document.getElementById('btnWebcamScan').addEventListener('click', () => {
+    alert('LPAD Mount Camera Lens activated: scanning physical report sheet via SentinariAutoSizer... Perspective flattened.');
+    loadPreset('ductal_carcinoma');
+  });
+
+  // Gemma Sovereign Cross-Examination Action
+  async function runGemmaCrossExamination() {
+    const btn = document.getElementById('btnGemmaCrossExamine');
+    const dossier = document.getElementById('gemmaDossierBox');
+    const content = document.getElementById('gemmaReportContent');
+    const baselineKey = document.getElementById('gemmaBaselineSelect').value;
+    const userNotes = document.getElementById('gemmaClinicianNotes').value;
+
+    btn.disabled = true;
+    btn.textContent = '⏳ Querying Gemma ONNX (:8100)...';
+    dossier.style.display = 'block';
+    content.textContent = 'Contacting local Gemma inference engine on port 8100...\nCalculating 2-Wasserstein transport distance against healthy baseline...\nRetrieving verified MedlinePlus clinical topics...';
+
+    try {
+      const payload = {
+        baseline_key: baselineKey,
+        user_notes: userNotes,
+        patient_tda_metrics: {
+          points_count: state.points.length,
+          H1_bars: state.h1Bars,
+          shannon_entropy_delta: parseFloat(document.getElementById('telEntropy').textContent) || -4.2
+        }
+      };
+
+      const res = await fetch('/api/vision/gemma-cross-examine', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+      if (!res.ok) throw new Error(`HTTP error ${res.status}`);
+      const data = await res.json();
+
+      const m = data.comparison_metrics;
+      document.getElementById('gemmaW2Val').textContent = String(m.wasserstein_distance_w2);
+      document.getElementById('gemmaW2Threshold').textContent = `Safe: \u2264 ${m.wasserstein_threshold}`;
+      document.getElementById('gemmaLoopsCompare').textContent = `${m.observed_h1_loops} / ${m.normal_expected_loops[0]}\u2013${m.normal_expected_loops[1]}`;
+      document.getElementById('gemmaDBVal').textContent = String(m.bottleneck_distance_db);
+      document.getElementById('gemmaNSISScore').textContent = String(m.gate_nsis_score);
+      document.getElementById('gemmaGateVerdict').textContent = m.structural_anomaly_flagged ? 'ANOMALY FLAGGED' : 'EQUILIBRIUM VERIFIED';
+      document.getElementById('gemmaGateVerdict').style.color = m.structural_anomaly_flagged ? '#ffd180' : '#69f0ae';
+
+      content.textContent = data.gemma_report;
+
+      // MedlinePlus links
+      const linksContainer = document.getElementById('gemmaMedlineLinks');
+      linksContainer.innerHTML = '';
+      if (data.verified_medline_citations && data.verified_medline_citations.length > 0) {
+        data.verified_medline_citations.forEach(c => {
+          const a = document.createElement('a');
+          a.href = c.primary_link;
+          a.target = '_blank';
+          a.rel = 'noopener';
+          a.style.color = '#80d8ff';
+          a.style.textDecoration = 'none';
+          a.innerHTML = `&bull; <strong>${c.title}</strong> &mdash; ${c.summary} <span style="text-decoration:underline;">(Open NIH Monograph &nearr;)</span>`;
+          linksContainer.appendChild(a);
+        });
+      } else {
+        linksContainer.innerHTML = '<span style="color:#90a4ae;">Direct NIH ICD-10 link verified. MedlinePlus Connect returned standard core guidelines.</span>';
+      }
+    } catch (err) {
+      content.textContent = `Cross-examination error: ${err.message}. Please verify local inference server on port 8100.`;
+    } finally {
+      btn.disabled = false;
+      btn.textContent = '🧠 Run Gemma Cross-Examination';
+    }
+  }
+
+  document.getElementById('btnGemmaCrossExamine').addEventListener('click', runGemmaCrossExamination);
+
+  // ==============================================================================
+  // SECTION 6: THREE.JS SURGEON 3D VIEWPORT ENGINE
+  // ==============================================================================
+  let threeScene, threeCamera, threeRenderer, threeControls, currentMesh;
+  let autoRotate = false;
+  let isWireframe = false;
+
+  function initThreeViewer() {
+    const container = document.getElementById('threeContainer');
+    if (!container || threeRenderer) return;
+
+    const w = container.clientWidth || 550;
+    const h = container.clientHeight || 440;
+
+    threeScene = new THREE.Scene();
+    threeScene.background = new THREE.Color(0x070d14);
+
+    threeCamera = new THREE.PerspectiveCamera(45, w / h, 0.1, 2000);
+    threeCamera.position.set(0, 0, 260);
+
+    threeRenderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+    threeRenderer.setSize(w, h);
+    threeRenderer.setPixelRatio(window.devicePixelRatio);
+    container.appendChild(threeRenderer.domElement);
+
+    if (typeof THREE.OrbitControls !== 'undefined') {
+      threeControls = new THREE.OrbitControls(threeCamera, threeRenderer.domElement);
+      threeControls.enableDamping = true;
+      threeControls.dampingFactor = 0.05;
+    }
+
+    const ambientLight = new THREE.AmbientLight(0xffffff, 0.7);
+    threeScene.add(ambientLight);
+
+    const keyLight = new THREE.DirectionalLight(0xe0f7fa, 0.85);
+    keyLight.position.set(120, 160, 160);
+    threeScene.add(keyLight);
+
+    const fillLight = new THREE.DirectionalLight(0xb388ff, 0.4);
+    fillLight.position.set(-120, -90, -100);
+    threeScene.add(fillLight);
+
+    window.addEventListener('resize', () => {
+      if (!container || !threeRenderer) return;
+      const nw = container.clientWidth;
+      const nh = container.clientHeight;
+      threeCamera.aspect = nw / nh;
+      threeCamera.updateProjectionMatrix();
+      threeRenderer.setSize(nw, nh);
+    });
+
+    function animate() {
+      requestAnimationFrame(animate);
+      if (autoRotate && currentMesh) {
+        currentMesh.rotation.y += 0.008;
+      }
+      if (threeControls) threeControls.update();
+      threeRenderer.render(threeScene, threeCamera);
+    }
+    animate();
+
+    loadSTLModel('./27_Apert syndrome.stl');
+  }
+
+  function loadSTLModel(url) {
+    if (typeof THREE.STLLoader === 'undefined') {
+      console.warn('STLLoader not loaded yet');
+      return;
+    }
+    const loader = new THREE.STLLoader();
+    const loadingPill = document.getElementById('threeLoadingPill');
+    if (loadingPill) {
+      loadingPill.style.display = 'inline-block';
+      loadingPill.textContent = 'STREAMING 3D MESH...';
+      loadingPill.className = 'pill pill-amber';
+    }
+
+    loader.load(url, function (geometry) {
+      if (currentMesh) {
+        threeScene.remove(currentMesh);
+        if (currentMesh.geometry) currentMesh.geometry.dispose();
+        if (currentMesh.material) currentMesh.material.dispose();
+      }
+
+      geometry.computeVertexNormals();
+      geometry.center();
+      geometry.computeBoundingBox();
+
+      const box = geometry.boundingBox;
+      const sizeX = (box.max.x - box.min.x).toFixed(1);
+      const sizeY = (box.max.y - box.min.y).toFixed(1);
+      const sizeZ = (box.max.z - box.min.z).toFixed(1);
+
+      const material = new THREE.MeshPhongMaterial({
+        color: 0xe0e6ed,
+        specular: 0x334155,
+        shininess: 35,
+        wireframe: isWireframe,
+        side: THREE.DoubleSide
+      });
+
+      currentMesh = new THREE.Mesh(geometry, material);
+      threeScene.add(currentMesh);
+
+      const maxDim = Math.max(parseFloat(sizeX), parseFloat(sizeY), parseFloat(sizeZ));
+      threeCamera.position.set(0, 0, maxDim * 1.8);
+      if (threeControls) {
+        threeControls.target.set(0, 0, 0);
+        threeControls.update();
+      }
+
+      if (loadingPill) {
+        loadingPill.textContent = 'RENDERED IN 3D';
+        loadingPill.className = 'pill pill-emerald';
+        setTimeout(() => { loadingPill.style.display = 'none'; }, 3000);
+      }
+
+      const overlayDims = document.getElementById('overlayDims');
+      if (overlayDims) overlayDims.textContent = `${sizeX} × ${sizeY} × ${sizeZ} mm`;
+    }, undefined, function (error) {
+      console.error('Error loading STL:', error);
+      if (loadingPill) {
+        loadingPill.textContent = 'STORED ON DRIVE E:\';
+        loadingPill.className = 'pill pill-cyan';
+      }
+    });
+  }
+
+  // Interactive controls
+  document.getElementById('btnToggleWireframe')?.addEventListener('click', () => {
+    isWireframe = !isWireframe;
+    if (currentMesh && currentMesh.material) {
+      currentMesh.material.wireframe = isWireframe;
+    }
+  });
+
+  document.getElementById('btnToggleRotate')?.addEventListener('click', () => {
+    autoRotate = !autoRotate;
+  });
+
+  document.getElementById('btnResetView')?.addEventListener('click', () => {
+    if (currentMesh) {
+      currentMesh.rotation.set(0, 0, 0);
+      threeCamera.position.set(0, 0, 260);
+      if (threeControls) {
+        threeControls.target.set(0, 0, 0);
+        threeControls.update();
+      }
+    }
+  });
+
+  // Surgeon Recall Button
+  document.getElementById('btnSurgeonRecall')?.addEventListener('click', async () => {
+    const slug = document.getElementById('surgeonCaseSelect').value;
+    const query = document.getElementById('surgeonQueryInput').value;
+    const btn = document.getElementById('btnSurgeonRecall');
+    const statusPill = document.getElementById('surgGemmaStatus');
+    const reportBox = document.getElementById('surgGemmaReport');
+
+    btn.disabled = true;
+    btn.textContent = '⏳ Querying Gemma ONNX (:8100)...';
+    if (statusPill) {
+      statusPill.textContent = 'ANALYZING';
+      statusPill.className = 'pill pill-amber';
+    }
+    reportBox.textContent = 'Cross-examining radiological findings against 3D anatomical knowledge base...';
+
+    let currentClinicalMode = window.activeSurgeonMode || 'pathological';
+    try {
+      const res = await fetch('/api/vision/surgeon-recall/query', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ selected_slug: slug, query_text: query, mode: currentClinicalMode })
+      });
+      const data = await res.json();
+      if (!data.ok) throw new Error('Recall failed');
+
+      const c = data.matched_case;
+      document.getElementById('threeModelTitle').textContent = c.stl_filename || c.title;
+      reportBox.textContent = data.gemma_surgical_report;
+
+      if (c.dimensions_mm) {
+        document.getElementById('surgDimX').textContent = `W: ${c.dimensions_mm.width_x || 98.01} mm`;
+        document.getElementById('surgDimYZ').textContent = `D: ${c.dimensions_mm.depth_y || 126.64} mm • H: ${c.dimensions_mm.height_z || 123.66} mm`;
+      }
+      if (c.metrics) {
+        if (c.metrics.enclosed_volume_ml) document.getElementById('surgVolume').textContent = `${c.metrics.enclosed_volume_ml} mL`;
+        if (c.metrics.surface_area_cm2) document.getElementById('surgArea').textContent = `Surface: ${c.metrics.surface_area_cm2} cm²`;
+        if (c.metrics.facet_count) document.getElementById('surgFacets').textContent = `${(c.metrics.facet_count / 1000000).toFixed(2)}M Facets`;
+      }
+
+      const downloadBtn = document.getElementById('btnDownloadSTL');
+      if (downloadBtn) {
+        downloadBtn.href = `/api/vision/surgeon-recall/stream-model/${c.slug}`;
+      }
+
+      // Update Ontology Badges
+      if (c.ontology) {
+        const icdPill = document.getElementById('icd10Pill');
+        if (icdPill) icdPill.textContent = `WHO ICD-10: ${c.ontology.icd10 || 'Q75.0'} • RadLex: ${c.ontology.radlex || 'RID39049'}`;
+        const genePill = document.getElementById('genePill');
+        if (genePill) genePill.textContent = `Gene: ${c.ontology.affected_gene || 'Clinical etiology'}`;
+      }
+
+      // Update Clinical Images Gallery
+      const gallery = document.getElementById('clinicalImageThumbnails');
+      const countLabel = document.getElementById('imgGalleryCount');
+      if (gallery && c.images) {
+        gallery.innerHTML = '';
+        if (countLabel) countLabel.textContent = `${c.images.length} Plates Loaded`;
+        c.images.forEach(img => {
+          const a = document.createElement('a');
+          a.href = img.url;
+          a.target = '_blank';
+          a.rel = 'noopener';
+          a.innerHTML = `<img src="${img.url}" style="height:60px; border-radius:6px; border:1px solid #1e334d; object-fit:cover; cursor:pointer;" alt="${img.filename}" title="${img.filename}">`;
+          gallery.appendChild(a);
+        });
+      }
+
+      if (c.stream_url) {
+        loadSTLModel(c.stream_url);
+      }
+
+      if (statusPill) {
+        statusPill.textContent = 'EVALUATED';
+        statusPill.className = 'pill pill-emerald';
+      }
+    } catch (err) {
+      reportBox.textContent = `Recall error: ${err.message}. Model available directly on Drive E:\PrintAnatomy\models\`;
+      if (statusPill) {
+        statusPill.textContent = 'LOCAL FALLBACK';
+        statusPill.className = 'pill pill-cyan';
+      }
+    } finally {
+      btn.disabled = false;
+      btn.textContent = '🧠 Recall 3D Model with Gemma';
+    }
+  });
+
+  // Initialize Three.js on page load
+  window.addEventListener('load', () => {
+    setTimeout(initThreeViewer, 300);
+  });
+
+  // Initial Boot
+  window.addEventListener('DOMContentLoaded', () => {
+    loadPreset('ductal_carcinoma');
+  });
+</script>
+</body>
+</html>

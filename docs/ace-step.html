@@ -1,0 +1,861 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Sentinari - ACE-Step 1.5 Sovereign AI Music Studio</title>
+  <style>
+    :root {
+      --bg: #0b0f19;
+      --bg-card: #131b2e;
+      --bg-input: #0f1524;
+      --border: rgba(99, 102, 241, 0.22);
+      --border-bright: #6366f1;
+      --text: #f1f5f9;
+      --text-muted: #94a3b8;
+      --cyan: #38bdf8;
+      --purple: #c084fc;
+      --emerald: #34d399;
+      --amber: #fbbf24;
+      --rose: #f43f5e;
+      --glow: rgba(99, 102, 241, 0.35);
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--text);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+    header {
+      background: rgba(15, 23, 42, 0.85);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--border);
+      padding: 14px 24px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      text-decoration: none;
+      color: inherit;
+    }
+    .brand-title {
+      font-size: 1.15rem;
+      font-weight: 800;
+      letter-spacing: 0.06em;
+      background: linear-gradient(135deg, #c084fc, #6366f1, #38bdf8);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+    .badge {
+      font-size: 0.68rem;
+      padding: 3px 8px;
+      border-radius: 999px;
+      background: rgba(99, 102, 241, 0.15);
+      border: 1px solid rgba(99, 102, 241, 0.4);
+      color: #a5b4fc;
+      font-weight: 700;
+      letter-spacing: 0.05em;
+    }
+    .nav-links {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+    .nav-links a {
+      color: var(--text-muted);
+      text-decoration: none;
+      font-size: 0.88rem;
+      font-weight: 500;
+      transition: color 0.2s;
+    }
+    .nav-links a:hover { color: #ffffff; }
+    .btn-header {
+      padding: 7px 14px;
+      border-radius: 6px;
+      background: linear-gradient(135deg, #6366f1, #4f46e5);
+      color: #fff !important;
+      font-weight: 600;
+      box-shadow: 0 0 12px var(--glow);
+    }
+    main {
+      flex: 1;
+      max-width: 1480px;
+      width: 100%;
+      margin: 0 auto;
+      padding: 24px;
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+    .hero-banner {
+      background: linear-gradient(135deg, rgba(30, 27, 75, 0.6), rgba(15, 23, 42, 0.8));
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 20px 24px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 16px;
+    }
+    .hero-text h1 {
+      margin: 0 0 6px 0;
+      font-size: 1.55rem;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .hero-text p {
+      margin: 0;
+      color: var(--text-muted);
+      font-size: 0.92rem;
+      max-width: 860px;
+      line-height: 1.5;
+    }
+    .repo-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 14px;
+      background: rgba(15, 23, 42, 0.9);
+      border: 1px solid rgba(192, 132, 252, 0.4);
+      border-radius: 8px;
+      color: #e9d5ff;
+      text-decoration: none;
+      font-size: 0.84rem;
+      font-weight: 600;
+      transition: all 0.2s ease;
+    }
+    .repo-pill:hover {
+      border-color: #c084fc;
+      box-shadow: 0 0 16px rgba(192, 132, 252, 0.35);
+    }
+    .grid {
+      display: grid;
+      grid-template-columns: 460px 1fr;
+      gap: 22px;
+    }
+    @media (max-width: 1080px) {
+      .grid { grid-template-columns: 1fr; }
+    }
+    .card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+    .card-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+      padding-bottom: 12px;
+    }
+    .card-head h2 {
+      margin: 0;
+      font-size: 1.05rem;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .field {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+    .field label {
+      font-size: 0.82rem;
+      font-weight: 600;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+    input[type="text"], textarea, select {
+      background: var(--bg-input);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 9px 12px;
+      color: var(--text);
+      font-size: 0.9rem;
+      font-family: inherit;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+    input[type="text"]:focus, textarea:focus, select:focus {
+      border-color: var(--border-bright);
+    }
+    .row {
+      display: flex;
+      gap: 12px;
+      align-items: center;
+    }
+    .range-wrap {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex: 1;
+    }
+    .btn-action {
+      background: linear-gradient(135deg, #8b5cf6, #6366f1);
+      border: 0;
+      border-radius: 8px;
+      color: #ffffff;
+      padding: 12px 20px;
+      font-weight: 700;
+      font-size: 0.95rem;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      transition: all 0.2s ease;
+      box-shadow: 0 4px 14px rgba(139, 92, 246, 0.4);
+    }
+    .btn-action:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 6px 20px rgba(139, 92, 246, 0.6);
+    }
+    .btn-action:disabled {
+      opacity: 0.6;
+      cursor: wait;
+      transform: none;
+    }
+    /* Visualizer & Player */
+    .player-box {
+      background: #090d16;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 18px;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+    #visualizerCanvas {
+      width: 100%;
+      height: 120px;
+      background: #060910;
+      border-radius: 6px;
+      border: 1px solid rgba(255, 255, 255, 0.05);
+    }
+    .now-playing {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .track-meta strong {
+      font-size: 1.05rem;
+      color: #ffffff;
+    }
+    .track-meta p {
+      margin: 3px 0 0 0;
+      font-size: 0.8rem;
+      color: var(--cyan);
+    }
+    .player-controls {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .btn-play {
+      background: var(--border-bright);
+      border: 0;
+      width: 44px;
+      height: 44px;
+      border-radius: 50%;
+      color: #fff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      font-size: 1.1rem;
+      box-shadow: 0 0 14px var(--glow);
+    }
+    .btn-route-video {
+      background: linear-gradient(135deg, #10b981, #059669);
+      border: 0;
+      border-radius: 6px;
+      color: #ffffff;
+      padding: 8px 14px;
+      font-size: 0.85rem;
+      font-weight: 700;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      text-decoration: none;
+      box-shadow: 0 0 12px rgba(16, 185, 129, 0.4);
+    }
+    .tracks-list {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      max-height: 380px;
+      overflow-y: auto;
+    }
+    .track-item {
+      background: var(--bg-input);
+      border: 1px solid rgba(255, 255, 255, 0.06);
+      border-radius: 8px;
+      padding: 10px 14px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      transition: border-color 0.15s;
+    }
+    .track-item:hover {
+      border-color: rgba(99, 102, 241, 0.4);
+    }
+    .track-info {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+    .track-info-name {
+      font-size: 0.88rem;
+      font-weight: 600;
+      color: #f8fafc;
+    }
+    .track-info-file {
+      font-size: 0.74rem;
+      color: var(--text-muted);
+      font-family: monospace;
+    }
+    .track-actions {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .btn-sm {
+      padding: 5px 10px;
+      border-radius: 5px;
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      background: rgba(255, 255, 255, 0.05);
+      color: var(--text);
+      font-size: 0.78rem;
+      cursor: pointer;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+    }
+    .btn-sm:hover {
+      background: rgba(255, 255, 255, 0.1);
+      color: #ffffff;
+    }
+    .shell {
+      display: grid;
+      grid-template-columns: 260px minmax(0, 1fr);
+      min-height: 100vh;
+    }
+    @media (max-width: 980px) {
+      .shell { grid-template-columns: 1fr; }
+      .sidebar { display: none; }
+    }
+    .sidebar {
+      background: #090e1a;
+      border-right: 1px solid var(--border);
+      color: var(--text);
+      padding: 18px 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      height: 100vh;
+      position: sticky;
+      top: 0;
+    }
+    .sidebar .brand {
+      font-size: 22px;
+      font-weight: 800;
+      letter-spacing: 0.5px;
+      background: linear-gradient(135deg, #c084fc, #6366f1, #38bdf8);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      display: flex;
+      align-items: center;
+    }
+    .sidebar .brand-badge {
+      font-size: 10px;
+      background: rgba(99, 102, 241, 0.25);
+      border: 1px solid rgba(99, 102, 241, 0.5);
+      color: #a5b4fc;
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-weight: 700;
+      margin-left: 6px;
+    }
+    .sidebar .sidecopy {
+      font-size: 11.5px;
+      color: var(--text-muted);
+      line-height: 1.45;
+      margin-bottom: 8px;
+    }
+    .sidebar .nav {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      overflow-y: auto;
+      max-height: calc(100vh - 180px);
+    }
+    .sidebar .nav a {
+      display: block;
+      padding: 9px 12px;
+      border-radius: 8px;
+      color: #cbd5e1;
+      text-decoration: none;
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid rgba(255, 255, 255, 0.05);
+      font-size: 13.5px;
+      font-weight: 500;
+      transition: all 0.15s ease;
+    }
+    .sidebar .nav a:hover {
+      background: rgba(99, 102, 241, 0.15);
+      border-color: rgba(99, 102, 241, 0.4);
+      color: #ffffff;
+    }
+    .sidebar .nav a.active {
+      background: linear-gradient(135deg, rgba(99, 102, 241, 0.3), rgba(192, 132, 252, 0.2));
+      border-color: #c084fc;
+      color: #ffffff;
+      font-weight: 700;
+    }
+    .sidebar .nav a small {
+      display: block;
+      color: var(--text-muted);
+      font-size: 11px;
+      margin-top: 3px;
+      font-weight: 400;
+    }
+  </style>
+
+    <script>
+      window.API_BASE = (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') ? 'http://127.0.0.1:8099' : '';
+    </script>
+    
+</head>
+<body>
+    <div id="sentinariShowroomBanner" style="background:linear-gradient(90deg, rgba(15,23,42,0.95) 0%, rgba(30,41,59,0.95) 100%);border-bottom:1px solid rgba(99,102,241,0.35);padding:10px 18px;display:flex;align-items:center;justify-content:space-between;font-size:12.5px;color:#cbd5e1;flex-wrap:wrap;gap:10px;position:relative;z-index:99999;box-shadow:0 4px 16px rgba(0,0,0,0.4);">
+      <div style="display:flex;align-items:center;gap:10px;">
+        <span style="display:inline-block;width:9px;height:9px;border-radius:50%;background:#10b981;box-shadow:0 0 8px #10b981;"></span>
+        <span style="font-weight:700;color:#ffffff;letter-spacing:0.3px;">Sentinari Showroom &bull; ACE-Step 1.5 Sovereign AI Music Studio</span>
+        <span style="background:rgba(99,102,241,0.22);color:#a5b4fc;border:1px solid rgba(99,102,241,0.45);padding:2px 8px;border-radius:12px;font-size:11px;font-weight:700;">Interactive Demonstration</span>
+      </div>
+      <div style="display:flex;align-items:center;gap:14px;">
+        <a href="./index.html" style="color:#38bdf8;text-decoration:none;font-weight:700;display:inline-flex;align-items:center;gap:4px;">&larr; Frontpage Showroom</a>
+        <a href="./oncology.html" style="color:#6ee7b7;text-decoration:none;font-weight:700;">Oncology Studio</a>
+        <a href="./threats.html" style="color:#f87171;text-decoration:none;font-weight:700;">Threat Matrix</a>
+        <a href="http://127.0.0.1:8099/ui/ace-step" id="btnLocalSovereignConnect" target="_blank" rel="noopener" style="color:#6ee7b7;text-decoration:none;font-weight:700;background:rgba(16,185,129,0.18);padding:4px 12px;border-radius:14px;border:1px solid rgba(16,185,129,0.5);display:inline-flex;align-items:center;gap:6px;">
+          <span>&#x26A1;</span> <span>Connect Local Engine (:8099)</span>
+        </a>
+      </div>
+    </div>
+    
+  <div class="shell">
+    <aside class="sidebar">
+      <div class="brand">
+        <span>Sentinari</span>
+        <span class="brand-badge">ACE-STEP</span>
+      </div>
+      <div class="sidecopy">Sovereign Epistemic Intelligence & Creative Studios Architecture. Zero cloud leakage.</div>
+      <nav class="nav">
+        <a href="./playground.html">🌐 Dashboard Home<small>Curated scientific domains</small></a>
+        <a href="/ui/direct">💬 Chat Lab<small>Dedicated conversation workspace</small></a>
+        <a href="./qualia.html">⚖️ Qualia Lab<small>Courtroom deception audit</small></a>
+        <a href="/ui/learning">📈 Learning Index<small>HLE & SWE-Bench progress</small></a>
+        <a href="/ui/patterns">🔬 New Patterns<small>7-D Gaussian impact matrix</small></a>
+        <a href="./oncology.html" style="border-left:3px solid #10b981;color:#6ee7b7;font-weight:700;">
+          &#x1F9EC; Oncology Research
+          <small>FOR RESEARCH ONLY &bull; TDA &amp; Precision Oncology.</small>
+        </a>
+        <a href="./video.html">🎥 Video Studio<small>Workspace tours & narration</small></a>
+        <a href="./music.html" class="active">🎵 ACE-Step 1.5 Music<small>AI soundscape & music generation</small></a>
+        <a href="./wan21.html">🎬 Wan 2.1 T2V-14B<small>14B cinematic video diffusion</small></a>
+        <a href="./library.html">🔍 Search Library<small>Datasets ingested per field</small></a>
+        <a href="./help.html">📖 Help Manual<small>Official operating reference & FAQ</small></a>
+        <a href="/reports/the-constitution" target="_blank" rel="noopener">📜 100-Year Constitution<small>Charter PDF (Dr. Pierre C. Wepener)</small></a>
+        <a href="./index.html">🏠 Website Landing Page<small>Exit to Sentinari Frontpage</small></a>
+      </nav>
+      <div style="margin-top:auto;padding-top:14px;border-top:1px solid rgba(255,255,255,0.08);font-size:11px;color:#64748b;">
+        Conceived & Engineered by<br>
+        <strong style="color:#94a3b8;">Dr. Pierre C. Wepener</strong><br>
+        Inspirari Research Initiative
+      </div>
+    </aside>
+    <div style="display:flex;flex-direction:column;min-width:0;height:100vh;overflow-y:auto;">
+  <header>
+    <a href="/ui/start" class="brand">
+      <span class="brand-title">SENTINARI</span>
+      <span class="badge">ACE-STEP 1.5 STUDIO</span>
+    </a>
+    <div class="nav-links">
+      <a href="./index.html">Website Home</a>
+      <a href="/ui/start">Studio Cockpit</a>
+      <a href="./playground.html">Playground</a>
+      <a href="/ui/patterns">Patterns</a>
+      <a href="./qualia.html">Qualia Lab</a>
+      <a href="./video.html">Video Studio</a>
+      <a href="./wan21.html" style="color:#c084fc;font-weight:600;">Wan 2.1 T2V</a>
+      <a href="./help.html" style="color:#38bdf8;font-weight:600;">📖 Help Manual</a>
+      <a href="/ui/video?workspace=ace_step" class="btn-header">🎥 Record Tour</a>
+    </div>
+  </header>
+
+  <main>
+    <div class="hero-banner">
+      <div class="hero-text">
+        <h1><span>🎵</span> ACE-Step 1.5 Sovereign AI Music Studio</h1>
+        <p>Commercial-grade open-source music foundation model developed by ACE Studio and StepFun. Integrated locally by Dr. Pierre C. Wepener to synthesize high-fidelity acoustic soundscapes, ambient pads, and scientific multi-segment compositions with instant routing into the Sentinari Video Studio.</p>
+      </div>
+      <a href="https://github.com/ace-step/ACE-Step-1.5.git" target="_blank" rel="noopener" class="repo-pill">
+        <span>⭐</span> GitHub: ace-step/ACE-Step-1.5
+      </a>
+    </div>
+
+    <div class="grid">
+      <!-- LEFT COLUMN: Generator Controls & Presets -->
+      <div class="card">
+        <div class="card-head">
+          <h2><span>🎛️</span> Acoustic Composition Engine</h2>
+          <span class="badge" id="engineStatusBadge">LOCAL READY</span>
+        </div>
+
+        <div class="field">
+          <label for="selPreset">Curated Epistemic Preset</label>
+          <select id="selPreset">
+            <option value="epistemic_flow">Epistemic Flow (Am9 Synthesizer Pad)</option>
+            <option value="sovereign_clarity">Sovereign Clarity (Dmaj9 Space)</option>
+            <option value="forensic_cross_exam">Forensic Inquest (Minimalist Tension)</option>
+            <option value="gaussian_sustainability">Gaussian Synthesis (Harmonic Resonance)</option>
+            <option value="sentinel_awakening">Sentinel Awakening (Deep Analog Brass & Choir)</option>
+          </select>
+        </div>
+
+        <div class="field">
+          <label for="txtTitle">Track Title</label>
+          <input type="text" id="txtTitle" value="Epistemic Flow">
+        </div>
+
+        <div class="field">
+          <label for="txtPrompt">Acoustic Prompt</label>
+          <textarea id="txtPrompt" rows="4">Deep contemplative ambient synthesizer pad, warm slow-moving analog textures, Am9 chord progression, binaural harmonic drift, zero percussive clutter.</textarea>
+        </div>
+
+        <div class="row">
+          <div class="field" style="flex:1;">
+            <label for="selKey">Key Signature</label>
+            <select id="selKey">
+              <option value="Am">A Minor (Am9)</option>
+              <option value="Dm">D Minor (Dm)</option>
+              <option value="Em">E Minor (Em9)</option>
+              <option value="C">C Major</option>
+              <option value="D">D Major (Dmaj9)</option>
+              <option value="F">F Major (Fmaj7)</option>
+            </select>
+          </div>
+          <div class="field" style="flex:1;">
+            <label for="selGenre">Genre & Style</label>
+            <select id="selGenre">
+              <option value="Ambient / Drone">Ambient / Drone</option>
+              <option value="Neo-Classical">Neo-Classical</option>
+              <option value="Cinematic Pulse">Cinematic Pulse</option>
+              <option value="Algorithmic Synthesis">Algorithmic Synthesis</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="field">
+          <label>Tempo (BPM): <span id="lblBpm" style="color:var(--cyan);font-weight:700;">68 BPM</span></label>
+          <input type="range" id="rngBpm" min="40" max="140" value="68" step="1">
+        </div>
+
+        <div class="field">
+          <label>Duration: <span id="lblDuration" style="color:var(--purple);font-weight:700;">45 Seconds</span></label>
+          <input type="range" id="rngDuration" min="10" max="120" value="45" step="5">
+        </div>
+
+        <button type="button" id="btnGenerate" class="btn-action">
+          <span>⚡</span> Synthesize Soundscape
+        </button>
+
+        <div id="genStatus" style="font-size:0.85rem;color:var(--text-muted);text-align:center;">
+          Awaiting composition trigger...
+        </div>
+      </div>
+
+      <!-- RIGHT COLUMN: Player, Visualizer & Track Library -->
+      <div style="display:flex;flex-direction:column;gap:20px;">
+        <!-- Audio Player & Visualizer -->
+        <div class="player-box">
+          <div class="now-playing">
+            <div class="track-meta">
+              <strong id="activeTrackTitle">Ambient Epistemic Flow</strong>
+              <p id="activeTrackSubtitle">Am9 Harmonic Pad • 44.1kHz Stereo • Broadcast Grade</p>
+            </div>
+            <a href="./video.html" class="btn-route-video" id="btnUseInVideo" title="Set this track as the active ambient music for video tours">
+              <span>🎬</span> Use in Video Studio
+            </a>
+          </div>
+
+          <canvas id="visualizerCanvas" width="900" height="120"></canvas>
+
+          <div class="player-controls">
+            <button type="button" class="btn-play" id="btnPlayPause">▶</button>
+            <div class="range-wrap">
+              <input type="range" id="audioSeek" min="0" max="100" value="0" style="flex:1;">
+              <span id="timeDisplay" style="font-size:0.82rem;font-family:monospace;color:var(--text-muted);width:70px;">0:00 / 0:45</span>
+            </div>
+            <div class="range-wrap" style="max-width:140px;">
+              <span style="font-size:0.8rem;color:var(--text-muted);">Vol:</span>
+              <input type="range" id="audioVolume" min="0" max="1" step="0.05" value="0.75" style="flex:1;">
+            </div>
+          </div>
+
+          <audio id="mainAudio" src="/api/playground/video/file/ambient_epistemic_flow.mp3" preload="auto"></audio>
+        </div>
+
+        <!-- Track Library -->
+        <div class="card" style="flex:1;">
+          <div class="card-head">
+            <h2><span>📚</span> Sentinari Sovereign Soundscape Library</h2>
+            <button type="button" class="btn-sm" id="btnRefreshTracks">🔄 Refresh</button>
+          </div>
+          <div class="tracks-list" id="tracksContainer">
+            <div style="padding:20px;text-align:center;color:var(--text-muted);">Loading library tracks...</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+    </div>
+  </div>
+  <script>
+    const byId = (id) => document.getElementById(id);
+    const audio = byId('mainAudio');
+    const canvas = byId('visualizerCanvas');
+    const ctx = canvas.getContext('2d');
+
+    let isPlaying = false;
+    let animId = null;
+
+    // Presets data
+    const PRESETS = {
+      epistemic_flow: {
+        title: "Epistemic Flow",
+        prompt: "Deep contemplative ambient synthesizer pad, warm slow-moving analog textures, Am9 chord progression, binaural harmonic drift, zero percussive clutter.",
+        key: "Am", genre: "Ambient / Drone", bpm: 68, duration: 45
+      },
+      sovereign_clarity: {
+        title: "Sovereign Clarity",
+        prompt: "Lush wide-spectrum ethereal strings, gentle modular synth arpeggio in Dmaj9, subtle sub-bass warmth, crystal clear reverb space, uplifting scientific discovery atmosphere.",
+        key: "D", genre: "Neo-Classical", bpm: 60, duration: 50
+      },
+      forensic_cross_exam: {
+        title: "Forensic Inquest",
+        prompt: "Minimalist forensic procedural pulse, muted organic cello harmonics, low rhythmic thrum, subtle ticking clock resonance, high intellectual vigilance.",
+        key: "Dm", genre: "Cinematic Pulse", bpm: 80, duration: 40
+      },
+      gaussian_sustainability: {
+        title: "Gaussian Synthesis",
+        prompt: "Polyrhythmic crystal bells, gentle cascading resonance, 7-dimensional harmonic overtone series, warm ambient glow, mathematically tuned balance.",
+        key: "C", genre: "Algorithmic Synthesis", bpm: 72, duration: 45
+      },
+      sentinel_awakening: {
+        title: "Sentinel Awakening",
+        prompt: "Warm analog brass swell, soft vocal vocoder chorus in Fmaj7, deep sovereign ground tone, expansive stereophonic soundstage, inspiring scientific dawn.",
+        key: "F", genre: "Ambient / Drone", bpm: 64, duration: 60
+      }
+    };
+
+    byId('selPreset').addEventListener('change', (e) => {
+      const p = PRESETS[e.target.value];
+      if (!p) return;
+      byId('txtTitle').value = p.title;
+      byId('txtPrompt').value = p.prompt;
+      byId('selKey').value = p.key;
+      byId('selGenre').value = p.genre;
+      byId('rngBpm').value = p.bpm;
+      byId('lblBpm').textContent = `${p.bpm} BPM`;
+      byId('rngDuration').value = p.duration;
+      byId('lblDuration').textContent = `${p.duration} Seconds`;
+    });
+
+    byId('rngBpm').addEventListener('input', (e) => byId('lblBpm').textContent = `${e.target.value} BPM`);
+    byId('rngDuration').addEventListener('input', (e) => byId('lblDuration').textContent = `${e.target.value} Seconds`);
+
+    // Audio Playback & Visualizer
+    byId('btnPlayPause').addEventListener('click', togglePlay);
+    function togglePlay() {
+      if (audio.paused) {
+        audio.play().then(() => {
+          byId('btnPlayPause').textContent = '⏸';
+          startVisualizer();
+        }).catch(err => alert("Playback error: " + err));
+      } else {
+        audio.pause();
+        byId('btnPlayPause').textContent = '▶';
+        if (animId) cancelAnimationFrame(animId);
+      }
+    }
+
+    audio.addEventListener('timeupdate', () => {
+      if (!audio.duration) return;
+      const pct = (audio.currentTime / audio.duration) * 100;
+      byId('audioSeek').value = pct;
+      const cM = Math.floor(audio.currentTime / 60);
+      const cS = Math.floor(audio.currentTime % 60);
+      const dM = Math.floor(audio.duration / 60);
+      const dS = Math.floor(audio.duration % 60);
+      byId('timeDisplay').textContent = `${cM}:${cS < 10 ? '0' : ''}${cS} / ${dM}:${dS < 10 ? '0' : ''}${dS}`;
+    });
+
+    byId('audioSeek').addEventListener('input', (e) => {
+      if (audio.duration) {
+        audio.currentTime = (e.target.value / 100) * audio.duration;
+      }
+    });
+
+    byId('audioVolume').addEventListener('input', (e) => {
+      audio.volume = parseFloat(e.target.value);
+    });
+
+    function startVisualizer() {
+      function render() {
+        if (audio.paused) return;
+        ctx.fillStyle = '#060910';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+        const bars = 48;
+        const barWidth = canvas.width / bars;
+        const t = performance.now() * 0.003;
+
+        for (let i = 0; i < bars; i++) {
+          const h1 = Math.sin(t + i * 0.25) * 35;
+          const h2 = Math.cos(t * 1.3 + i * 0.18) * 25;
+          const barHeight = Math.max(6, Math.abs(h1 + h2) * (audio.volume || 0.7));
+
+          const grad = ctx.createLinearGradient(0, canvas.height, 0, 0);
+          grad.addColorStop(0, '#6366f1');
+          grad.addColorStop(0.5, '#c084fc');
+          grad.addColorStop(1, '#38bdf8');
+
+          ctx.fillStyle = grad;
+          ctx.fillRect(i * barWidth + 2, canvas.height - barHeight, barWidth - 4, barHeight);
+        }
+        animId = requestAnimationFrame(render);
+      }
+      render();
+    }
+
+    // Generate Audio Soundscape
+    byId('btnGenerate').addEventListener('click', async () => {
+      const btn = byId('btnGenerate');
+      const status = byId('genStatus');
+      btn.disabled = true;
+      btn.innerHTML = '<span>⏳</span> Synthesizing Neural Audio...';
+      status.textContent = 'Executing ACE-Step harmonic diffusion synthesis and ffmpeg master packaging...';
+
+      const payload = {
+        title: byId('txtTitle').value.trim(),
+        prompt: byId('txtPrompt').value.trim(),
+        key_signature: byId('selKey').value,
+        genre: byId('selGenre').value,
+        bpm: parseInt(byId('rngBpm').value),
+        duration_sec: parseInt(byId('rngDuration').value),
+      };
+
+      try {
+        const res = await fetch('/api/ace-step/generate', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+        const data = await res.json();
+        if (!res.ok || !data.ok) throw new Error(data.detail || 'Synthesis failed');
+
+        status.textContent = `✓ Generated: ${data.filename} (${data.duration}s)`;
+        byId('activeTrackTitle').textContent = data.title;
+        byId('activeTrackSubtitle').textContent = `${data.genre} • ${data.key} • ${data.bpm} BPM`;
+        byId('btnUseInVideo').href = `/ui/video?workspace=playground&track=${encodeURIComponent(data.filename)}`;
+
+        audio.src = data.file_url;
+        audio.load();
+        togglePlay();
+        loadTracks();
+      } catch (err) {
+        status.textContent = `❌ Error: ${err.message}`;
+      } finally {
+        btn.disabled = false;
+        btn.innerHTML = '<span>⚡</span> Synthesize Soundscape';
+      }
+    });
+
+    // Load Soundscape Tracks
+    async function loadTracks() {
+      const c = byId('tracksContainer');
+      try {
+        const res = await fetch('/api/playground/video/music-tracks');
+        if (!res.ok) return;
+        const data = await res.json();
+        const tracks = data.tracks || [];
+
+        if (tracks.length === 0) {
+          c.innerHTML = '<div style="padding:20px;text-align:center;color:var(--text-muted);">No soundscapes found.</div>';
+          return;
+        }
+
+        c.innerHTML = '';
+        tracks.forEach(t => {
+          const item = document.createElement('div');
+          item.className = 'track-item';
+          item.innerHTML = `
+            <div class="track-info">
+              <span class="track-info-name">🎵 ${t.title} ${t.is_custom ? '<span class="badge" style="font-size:0.6rem;padding:2px 6px;">CUSTOM</span>' : ''}</span>
+              <span class="track-info-file">${t.filename} &middot; ${(t.size_bytes / 1024).toFixed(0)} KB</span>
+            </div>
+            <div class="track-actions">
+              <button class="btn-sm" onclick="playTrack('${t.filename}', '${t.title}')">▶ Play</button>
+              <a class="btn-sm" href="/ui/video?workspace=playground&track=${encodeURIComponent(t.filename)}" style="color:var(--emerald);">🎬 Video</a>
+              <a class="btn-sm" href="/api/playground/video/file/${t.filename}" download>⬇ Save</a>
+            </div>
+          `;
+          c.appendChild(item);
+        });
+      } catch (err) {
+        c.innerHTML = `<div style="padding:20px;text-align:center;color:var(--rose);">Error loading library: ${err.message}</div>`;
+      }
+    }
+
+    window.playTrack = function(filename, title) {
+      byId('activeTrackTitle').textContent = title;
+      byId('activeTrackSubtitle').textContent = filename;
+      byId('btnUseInVideo').href = `/ui/video?workspace=playground&track=${encodeURIComponent(filename)}`;
+      audio.src = `/api/playground/video/file/${filename}`;
+      audio.load();
+      audio.play().then(() => {
+        byId('btnPlayPause').textContent = '⏸';
+        startVisualizer();
+      });
+    };
+
+    byId('btnRefreshTracks').addEventListener('click', loadTracks);
+
+    // Initial load
+    loadTracks();
+  </script>
+</body>
+</html>

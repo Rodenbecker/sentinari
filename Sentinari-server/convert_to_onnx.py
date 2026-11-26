@@ -63,20 +63,19 @@ if hasattr(argparse.ArgumentParser, '_check_help'):
     argparse.ArgumentParser._check_help = lambda self, action: None
 
 def _install_rope_compat():
-    """transformers>=5 collapses Gemma 3's per-attention RoPE dicts
-    (sliding/default theta 10000 + full/linear factor 8 theta 1e6) into a
-    NESTED config.rope_parameters, but this builder wants a FLAT rope_type
-    (or none at all) plus top-level rope_theta / rope_local_base_freq.
-    Normalize right after the builder's own config collapse so the theta
-    read (base.py:315) and make_rope_init (base.py:344) see the
-    pre-5.x shape. Non-nested configs pass through untouched."""
+    """Keep the legacy RoPE adjustment for old builders and enable Gemma4's
+    documented global-attribute access during base initialization."""
+    from importlib.metadata import version
+    from packaging.version import Version
     from onnxruntime_genai.models.builders import base as _base
+    from transformers import AutoConfig
+
+    native_gemma4 = Version(version("onnxruntime-genai")) >= Version("0.20.0")
     _orig = _base.Model.make_config_init
     def _patched(self, config):
         result = _orig(self, config)
         rp = getattr(config, 'rope_parameters', None)
-        print('[rope-compat] after collapse: rp =', str(rp)[:120], flush=True)
-        if isinstance(rp, dict) and 'rope_type' not in rp and isinstance(rp.get('sliding_attention'), dict):
+        if not native_gemma4 and isinstance(rp, dict) and 'rope_type' not in rp and isinstance(rp.get('sliding_attention'), dict):
             sliding = rp.get('sliding_attention') or {}
             full = rp.get('full_attention') or sliding
             if not getattr(config, 'rope_theta', None) and 'rope_theta' in full:
@@ -86,6 +85,41 @@ def _install_rope_compat():
             config.rope_parameters = None
         return result
     _base.Model.make_config_init = _patched
+    _orig_auto_config = AutoConfig.from_pretrained
+    def _patched_auto_config(cls, *args, **kwargs):
+        config = _orig_auto_config(*args, **kwargs)
+        architectures = getattr(config, 'architectures', None) or []
+        if architectures and architectures[0] in (
+            'Gemma4UnifiedForConditionalGeneration',
+            'Gemma4ForConditionalGeneration',
+        ):
+            config.allow_global_per_layer_attribute_access = True
+            text_config = getattr(config, 'text_config', None)
+            text_config = config if text_config is None else text_config
+            text_config.allow_global_per_layer_attribute_access = True
+            full_layers = [
+                text_config.per_layer_config[index]
+                for index, layer_type in enumerate(text_config.layer_types)
+                if layer_type == 'full_attention'
+            ]
+            if not full_layers:
+                raise ValueError('Gemma4 config has no full-attention layers')
+            global_geometry = {
+                (layer.head_dim, layer.num_key_value_heads)
+                for layer in full_layers
+            }
+            if len(global_geometry) != 1:
+                raise ValueError('Gemma4 full-attention layers have inconsistent geometry')
+            config.global_head_dim, config.num_global_key_value_heads = global_geometry.pop()
+            print('[rope-compat] enabled Gemma4 per-layer config access', flush=True)
+            print(
+                '[rope-compat] derived global geometry:',
+                config.global_head_dim,
+                config.num_global_key_value_heads,
+                flush=True,
+            )
+        return config
+    AutoConfig.from_pretrained = classmethod(_patched_auto_config)
     print('[rope-compat] patched Model id =', id(_base.Model), 'qualname:', _base.Model.make_config_init.__qualname__, flush=True)
     _orig_rope = _base.Model.make_rope_init
     def _rope_probe(self, config):
@@ -102,15 +136,17 @@ runpy.run_module('onnxruntime_genai.models.builder', run_name='__main__')
 def _ensure_rope_compat() -> None:
     """Idempotent source patch for onnxruntime-genai's builders/base.py.
 
-    transformers>=5 hands Gemma 3/4 a NESTED per-attention rope_parameters
-    ({sliding/full: {rope_type, rope_theta}}) while the builder wants a FLAT
-    rope_type plus top-level rope_theta / rope_local_base_freq — without the
-    normalization the build dies with KeyError 'rope_type' (learned 2026-10-06,
-    §75). Applied here so a venv reinstall re-earns the fix; no-op when the
-    marker comment is already present.
+    ORT GenAI 0.20 has native Gemma4 RoPE handling and must retain the nested
+    per-layer parameters. Keep the compatibility patch only for older builders.
     """
     try:
+        import importlib.metadata
         import importlib.util
+        from packaging.version import Version
+
+        if Version(importlib.metadata.version("onnxruntime-genai")) >= Version("0.20.0"):
+            print("[rope-compat] using native Gemma4 RoPE handling")
+            return
 
         spec = importlib.util.find_spec("onnxruntime_genai.models.builders.base")
         if not spec or not spec.origin:

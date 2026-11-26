@@ -1048,6 +1048,51 @@ def find_candidates(payload: FindRequest) -> dict[str, Any]:
         except Exception:
             return []
 
+    eu_data_portal_error: str | None = None
+
+    def _eu_data_portal_search() -> list[dict[str, Any]]:
+        nonlocal eu_data_portal_error
+        try:
+            from .eu_portal_search import search_eu_datasets
+
+            result = search_eu_datasets(
+                query,
+                page=batch_page - 1,
+                limit=min(50, payload.limit),
+                from_year=payload.from_year,
+            )
+            candidates = []
+            for dataset in result.get("datasets") or []:
+                details = [
+                    str(dataset.get("description") or "").strip(),
+                    f"Publisher: {dataset.get('publisher')}" if dataset.get("publisher") else "",
+                    f"Catalogue: {dataset.get('catalogue')}" if dataset.get("catalogue") else "",
+                    f"Issued: {dataset.get('issued')}" if dataset.get("issued") else "",
+                ]
+                candidates.append(
+                    {
+                        "source_type": "eu_data_portal",
+                        "source_url": str(dataset.get("source_url") or ""),
+                        "title": str(dataset.get("title") or "Untitled EU dataset")[:500],
+                        "description": " · ".join(part for part in details if part)[:3000],
+                        "scientific_field": field_text,
+                        "target_persona": "gemma",
+                        "license": str(dataset.get("license") or ""),
+                        "authors": [str(dataset.get("publisher") or "European Data Portal")],
+                        "dataset_id": str(dataset.get("dataset_id") or ""),
+                        "publisher": str(dataset.get("publisher") or ""),
+                        "catalogue": str(dataset.get("catalogue") or ""),
+                        "issued": str(dataset.get("issued") or ""),
+                        "modified": str(dataset.get("modified") or ""),
+                        "distributions": dataset.get("distributions") or [],
+                        "search_query": query.lower(),
+                    }
+                )
+            return candidates
+        except Exception as exc:
+            eu_data_portal_error = str(exc)[:200] or "European Data Portal search failed."
+            return []
+
     def _pubmed_search() -> list[dict[str, Any]]:
         try:
             from .pubmed_worker import search_pubmed_papers
@@ -1140,9 +1185,10 @@ def find_candidates(payload: FindRequest) -> dict[str, Any]:
         except Exception:
             return []
 
-    pool = ThreadPoolExecutor(max_workers=13)
+    pool = ThreadPoolExecutor(max_workers=14)
     try:
         openalex_future = pool.submit(_openalex_search)
+        eu_data_portal_future = pool.submit(_eu_data_portal_search)
         pubmed_future = pool.submit(_pubmed_search)
         worldbank_future = pool.submit(_worldbank_search)
         eurostat_future = pool.submit(_intl_stat_search, "eurostat")
@@ -1157,6 +1203,7 @@ def find_candidates(payload: FindRequest) -> dict[str, Any]:
         hf_future = pool.submit(_huggingface_search)
         candidates = [
             *_lane_result(openalex_future),
+            *_lane_result(eu_data_portal_future),
             *_lane_result(pubmed_future),
             *_lane_result(worldbank_future),
             *_lane_result(eurostat_future),
@@ -1224,7 +1271,7 @@ def find_candidates(payload: FindRequest) -> dict[str, Any]:
     # Official statistical catalogues, NLM/PubMed E-utilities matches, and
     # Scraped Contemporary Sources are already scoped by their upstream search
     # engines and kept intact.
-    _EXEMPT_SOURCES = {"worldbank", "oecd", "eurostat", "imf", "ecb", "bis", "undata", "bea", "pubmed", "contemporary"}
+    _EXEMPT_SOURCES = {"eu_data_portal", "worldbank", "oecd", "eurostat", "imf", "ecb", "bis", "undata", "bea", "pubmed", "contemporary"}
     terms = _precision_terms(query)
     phrase = _normalize_for_match(query)
     scored: list[dict[str, Any]] = []
@@ -1264,6 +1311,7 @@ def find_candidates(payload: FindRequest) -> dict[str, Any]:
 
     primary_quotas = [
         ("openalex", 3),
+        ("eu_data_portal", 2),
         ("pubmed", 2),
         ("worldbank", 2),
         ("eurostat", 2),
@@ -1425,6 +1473,8 @@ def find_candidates(payload: FindRequest) -> dict[str, Any]:
             ),
         },
         "openalex_count": sum(1 for c in candidates if c["source_type"] == "openalex"),
+        "eu_data_portal_count": sum(1 for c in candidates if c["source_type"] == "eu_data_portal"),
+        "eu_data_portal_error": eu_data_portal_error,
         "pubmed_count": sum(1 for c in candidates if c["source_type"] == "pubmed"),
         "worldbank_count": sum(1 for c in candidates if c["source_type"] == "worldbank"),
         "eurostat_count": sum(1 for c in candidates if c["source_type"] == "eurostat"),
@@ -1677,6 +1727,7 @@ def _ingest_candidate_impl(candidate_id: int, rep: Any) -> dict[str, Any]:
         "github": "GitHub",
         "huggingface": "Hugging Face",
         "openalex": "OpenAlex",
+        "eu_data_portal": "European Data Portal",
         "pubmed": "NLM / NHLBI / PubMed",
         "worldbank": "World Bank (Official Indicators & DBnomics)",
         "eurostat": "Eurostat (European Union Statistics SDMX 2.1)",
@@ -1729,6 +1780,12 @@ def _ingest_candidate_impl(candidate_id: int, rep: Any) -> dict[str, Any]:
             max_papers=1,
         )
         result["source_type"] = "pubmed"
+    elif source_type == "eu_data_portal":
+        load_progress.stage("download", "Preparing the selected EU dataset metadata for the research library...")
+        from .eu_portal_search import ingest_eu_dataset_metadata_into_field
+
+        result = ingest_eu_dataset_metadata_into_field(field, metadata)
+        result["source_type"] = "eu_data_portal"
     elif source_type == "worldbank":
         load_progress.stage("download", "Fetching the dataset from World Bank Official API / DBnomics...")
         from .worldbank_worker import load_dbnomics_dataset_into_field

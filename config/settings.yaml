@@ -1,4 +1,4 @@
-project_name: Sentinari
+﻿project_name: Sentinari
 environment: local
 paths:
   sqlite_db: ./data/smi_vocationalllm.db
@@ -16,39 +16,29 @@ paths:
   protected_dirs: []
   qualia_files: []
 llm:
-  provider: vertex             # Google Cloud Vertex AI (Project: seninari)
-  sentinari:
-    base_url: http://127.0.0.1:8100
-    chat_model: qwen3-14b-onnx
-    timeout_seconds: 600
-  vertex:
-    project: seninari
-    location: global
-    chat_model: gemma4:26B
-    embedding_model: text-embedding-004
-    embedding_dimensions: 768
-    timeout_seconds: 120
-  gemini:
-    chat_model: gemini-2.5-flash
-    embedding_model: text-embedding-004
-    embedding_dimensions: 768
-    timeout_seconds: 120
+  provider: openai_compatible
+  openai_compatible:
+    base_url: http://127.0.0.1:8101/v1
+    chat_model: 'D:\sentinari\Gemma\gemma-4-26B-A4B-it-qat-q4_0-gguf\gemma-4-26B_q4_0-it.gguf'
+    embedding_base_url: http://127.0.0.1:8102/v1
+    embedding_model: 'D:\sentinari\Gemma\Qwen3-Embedding-0.6B-Q8_0.gguf'
+    api_key_env: SENTINARI_LOCAL_API_KEY
   fallback_providers: []
-  base_url: http://127.0.0.1:8100
-  chat_model: gemma4:26B
-  embedding_model: text-embedding-004
+  base_url: http://127.0.0.1:8101/v1
+  chat_model: 'D:\sentinari\Gemma\gemma-4-26B-A4B-it-qat-q4_0-gguf\gemma-4-26B_q4_0-it.gguf'
+  embedding_model: 'D:\sentinari\Gemma\Qwen3-Embedding-0.6B-Q8_0.gguf'
   temperature: 0.1
-  num_ctx: 8192
-  chat_timeout_seconds: 300
+  num_ctx: 4096
+  chat_timeout_seconds: 180
   embed_timeout_seconds: 30
-  max_output_tokens: 768
-  num_gpu: 0
+  max_output_tokens: 512
+  num_gpu: 99
   keep_alive: 30m
   warmup_on_startup: false
   warmup_timeout_seconds: 120
   top_k_context_chunks: 4
 
-# §23 cord-cut switch: which backend builds the app-wide LLM client.
+# Â§23 cord-cut switch: which backend builds the app-wide LLM client.
 runtime_llm:
   client_backend: gateway
 runtime:
@@ -139,7 +129,7 @@ task_worker:
   poll_seconds: 10
   timeout_seconds: 300
 
-# Layered PDF extraction (§22): primary poppler (pdftotext), with the deeper
+# Layered PDF extraction (Â§22): primary poppler (pdftotext), with the deeper
 # layers (Dangerzone -> docling -> Stirling -> OCR) auto-engaging as they are
 # installed. Text is additionally polished (de-hyphenation, soft-wrap joins,
 # page-artifact removal) before digestion.
@@ -150,10 +140,10 @@ pdf_preprocess:
   ghostscript_flatten_first: false
   dangerzone_sanitize_first: false
 
-# §45 escalation queue (renamed from the SMI tunnel). Local ticket machinery
-# only — files request/response tickets under data/escalation_queue/ for a
+# Â§45 escalation queue (renamed from the SMI tunnel). Local ticket machinery
+# only â€” files request/response tickets under data/escalation_queue/ for a
 # human to answer. There is NO remote provider anymore: the former OpenAI
-# Responses caller was deleted with the §45 zero-cloud purge. Fail-closed.
+# Responses caller was deleted with the Â§45 zero-cloud purge. Fail-closed.
 automation:
   escalation_queue:
     enabled: false                  # master gate (unchanged posture)
@@ -173,35 +163,35 @@ ingestion:
   # Hard per-document embed budget: no crawl can stall a load while the
   # ingest write-lock is held. Chunks that miss the budget are stored
   # without vectors (a local re-embed pass can fill them later).
-  # §80c: 300s budget meant a large document could hold the load lane for
-  # 5 minutes on embeddings alone — the main reason "datasets take forever
+  # Â§80c: 300s budget meant a large document could hold the load lane for
+  # 5 minutes on embeddings alone â€” the main reason "datasets take forever
   # to come online". 45s keeps a responsive load; the re-embed migration
   # fills missed vectors later (embeddings are a search aid, not the data).
   embed_budget_seconds: 45
-  # §31 (owner, lean-Sentinel): the Qwen-era coding-corpus sync swept
+  # Â§31 (owner, lean-Sentinel): the Qwen-era coding-corpus sync swept
   # Sentinel's own source (app/scripts/templates/config) into the knowledge
   # library on every startup. Sentinel's code is engineering, not knowledge.
   auto_sync_coding_corpus: false
 
-# §42 VICTUS (Challenger persona) — SKELETON, PERMANENTLY DORMANT.
+# Â§42 VICTUS (Challenger persona) â€” SKELETON, PERMANENTLY DORMANT.
 # app/victus.py implements the structural spine: state machine, fail-closed
 # engagement rules, kill switch, local append-only audit log. NOTHING here
 # enables it: every gate below must be explicitly true AND a live engine
 # object must be supplied by code that does not yet exist (rig day). While
-# the gates are off the module costs nothing — no weights, no threads, no
+# the gates are off the module costs nothing â€” no weights, no threads, no
 # sockets, no writes. Every action attempt AND every refusal is audit-logged.
 victus:
   # Master gate. With this false the module is spec-on-disk and refuses every
   # action with REFUSED_DORMANT.
   enabled: false
-  # Per-capability gates — each authorises exactly ONE capability, so rig-day
+  # Per-capability gates â€” each authorises exactly ONE capability, so rig-day
   # activation can proceed capability by capability, each flip audited:
   allow_probe_rounds: false            # adversarial probe rounds vs the local primary
   allow_inverted_attractor: false      # inverted S-vector attractor (adversarial mirror)
   allow_exploitation_training: false   # fine-tuning on the logged Big-Tech exploitation runs
   # Audit log path (append-only JSONL; git-ignored via data/victus_audit_log.jsonl).
   audit_log: data/victus_audit_log.jsonl
-  # NOTE (§42): the DARPA external-API audit mode (Sovereign Audit Engine
+  # NOTE (Â§42): the DARPA external-API audit mode (Sovereign Audit Engine
   # probing third-party models) is NOT part of app/victus.py. When it is
   # built it gets its own module, its own config gates and its own review.
   # Victus engages ONLY the local primary persona, inside the fence.

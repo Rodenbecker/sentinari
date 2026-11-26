@@ -1,0 +1,165 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Sentinari Sovereign Gateway — Redirecting...</title>
+  <style>
+    body {
+      margin: 0;
+      background: #0a1118;
+      color: #e2e8f0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      text-align: center;
+      padding: 24px;
+      box-sizing: border-box;
+    }
+    .card {
+      background: #111d2c;
+      border: 1px solid #1e334d;
+      border-radius: 12px;
+      padding: 36px 28px;
+      max-width: 620px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+    }
+    .title {
+      font-size: 24px;
+      font-weight: 800;
+      color: #00e5ff;
+      margin-bottom: 8px;
+    }
+    .sub {
+      font-size: 14px;
+      color: #8fa0b5;
+      margin-bottom: 20px;
+      line-height: 1.5;
+    }
+    .pill {
+      display: inline-block;
+      background: rgba(0, 230, 118, 0.15);
+      color: #69f0ae;
+      border: 1px solid rgba(0, 230, 118, 0.4);
+      padding: 4px 12px;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: 700;
+      margin-bottom: 20px;
+    }
+    a.btn {
+      display: inline-block;
+      background: #00e676;
+      color: #05140b;
+      font-weight: 800;
+      text-decoration: none;
+      padding: 10px 22px;
+      border-radius: 8px;
+      font-size: 13.5px;
+      transition: all 0.2s ease;
+    }
+    a.btn:hover {
+      background: #69f0ae;
+    }
+    .links {
+      margin-top: 24px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      justify-content: center;
+    }
+    .links a {
+      color: #80d8ff;
+      text-decoration: none;
+      font-size: 12.5px;
+      padding: 5px 12px;
+      background: rgba(0, 229, 255, 0.08);
+      border: 1px solid rgba(0, 229, 255, 0.25);
+      border-radius: 6px;
+      transition: all 0.2s ease;
+    }
+    .links a:hover {
+      background: rgba(0, 229, 255, 0.2);
+    }
+  </style>
+  <script>
+    (function() {
+      // Smart GitHub Pages SPA & Deep-Link Router
+      const fullPath = window.location.pathname.toLowerCase();
+      const search = window.location.search || '';
+      const hash = window.location.hash || '';
+
+      // Determine repository base path
+      const isSentinariRepo = fullPath.includes('/sentinari');
+      const basePrefix = isSentinariRepo ? '/sentinari/' : '/';
+
+      let targetPage = 'index.html';
+
+      if (fullPath.includes('oncology')) {
+        targetPage = 'oncology.html';
+      } else if (fullPath.includes('threat') || fullPath.includes('planetary')) {
+        targetPage = 'threats.html';
+      } else if (fullPath.includes('vision') || fullPath.includes('eyes') || fullPath.includes('anatomy')) {
+        targetPage = 'vision.html';
+      } else if (fullPath.includes('qualia') || fullPath.includes('pseudo') || fullPath.includes('deception')) {
+        targetPage = 'qualia.html';
+      } else if (fullPath.includes('library') || fullPath.includes('search') || fullPath.includes('papers')) {
+        targetPage = 'library.html';
+      } else if (fullPath.includes('video') || fullPath.includes('editor') || fullPath.includes('tour')) {
+        targetPage = 'video.html';
+      } else if (fullPath.includes('wan21') || fullPath.includes('wan') || fullPath.includes('t2v')) {
+        targetPage = 'wan21.html';
+      } else if (fullPath.includes('music') || fullPath.includes('ace-step') || fullPath.includes('audio')) {
+        targetPage = 'music.html';
+      } else if (fullPath.includes('playground') || fullPath.includes('workbench')) {
+        targetPage = 'playground.html';
+      } else if (fullPath.includes('help')) {
+        targetPage = 'help.html';
+      } else if (fullPath.includes('skill')) {
+        targetPage = 'skills.html';
+      } else if (fullPath.includes('constitution')) {
+        targetPage = 'Constitution.pdf';
+      } else if (fullPath.includes('cancer-breakthrough')) {
+        targetPage = 'Sentinari_Cancer_Breakthrough_Pattern_24_Dossier.pdf';
+      }
+
+      const finalUrl = basePrefix + targetPage + search + hash;
+
+      // Automatically redirect within 100ms
+      window.targetDestination = finalUrl;
+      setTimeout(function() {
+        window.location.replace(finalUrl);
+      }, 100);
+    })();
+  </script>
+</head>
+<body>
+  <div class="card">
+    <div class="title">Sentinari Sovereign Gateway</div>
+    <div class="pill">ROUTING IN PROGRESS...</div>
+    <div class="sub">
+      You are being automatically redirected to the requested clinical workspace...
+    </div>
+    <a id="btnManual" href="./index.html" class="btn">Proceed to Workspace</a>
+    <div class="links">
+      <a href="./qualia.html">⚖️ Qualia &amp; Pseudo Dynamics</a>
+      <a href="./library.html">📚 Scientific Library</a>
+      <a href="./video.html">🎥 Video Studio</a>
+      <a href="./music.html">🎵 ACE-Step Music</a>
+      <a href="./wan21.html">🎬 Wan 2.1 T2V-14B</a>
+      <a href="./oncology.html">🧬 Oncology Precision</a>
+      <a href="./threats.html">🌍 Planetary Threat Matrix</a>
+      <a href="./vision.html">👁️ Vision Lab &amp; 3D Anatomy</a>
+      <a href="./playground.html">🔬 Playground Workbench</a>
+      <a href="./index.html">🏠 Website Frontpage</a>
+    </div>
+  </div>
+  <script>
+    if (window.targetDestination) {
+      document.getElementById('btnManual').href = window.targetDestination;
+    }
+  </script>
+</body>
+</html>

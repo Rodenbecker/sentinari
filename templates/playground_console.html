@@ -623,6 +623,7 @@
         </a>
         <a href="#sentinel-grid">Knowledge Domains<small>Scientific fields feeding the engine.</small></a>
         <a href="/ui/patterns">New Patterns<small>Scientific Patterns Discovery workspace.</small></a>
+        <a href="/ui/gci">Global Competitiveness 2026<small>Local IMD country rankings and reports.</small></a>
         <a href="/ui/threats" style="border-left:3px solid #ef4444;color:#f87171;font-weight:700;">
           &#x1F30D; Planetary Threat Matrix
           <small>Exogenous Early-Warning &bull; 14 Open APIs &amp; TDA Voids.</small>
@@ -2001,7 +2002,7 @@
           <div class="sentinel-sourcing" data-role="sourcing">
             <div class="row" style="align-items:flex-end; gap:8px;">
               <div class="field" style="flex:2 1 240px; margin:0;">
-                <label class="hint" for="sourcing-query-${fieldSlug}">Find datasets for this field (GitHub + Hugging Face + OpenAlex + PubMed searched together)</label>
+                <label class="hint" for="sourcing-query-${fieldSlug}">Find datasets for this field (GitHub + Hugging Face + OpenAlex + EU Portal + PubMed searched together)</label>
                 <input type="text" id="sourcing-query-${fieldSlug}" data-role="sourcing-query" value="${escapeAttr(String(field?.field_name || fieldName))}" placeholder="e.g. ${escapeAttr(String(field?.field_name || fieldName))}" aria-label="Dataset query for ${fieldName}">
               </div>
               <div class="field" style="flex:0 1 130px; margin:0;">
@@ -2019,7 +2020,7 @@
               <button class="ghost" type="button" data-role="sourcing-find" data-field="${fieldSlug}">Find datasets</button>
               <button class="ghost" type="button" data-role="sourcing-clear" data-field="${fieldSlug}">Clear</button>
             </div>
-            <div class="hint" data-role="sourcing-status">The sourcing worker searches GitHub, Hugging Face, OpenAlex, and PubMed at the same time using the field's own name, and lines the results up for Approve / Reject / Test. OpenAlex leads the lineup (2020–current, most-cited first). PubMed participates only for Health, Medicine, Psychology and Neuroscience. Nothing is ingested until you Load. Clear wipes this field's un-loaded candidates when you switch sciences.</div>
+            <div class="hint" data-role="sourcing-status">The sourcing worker searches GitHub, Hugging Face, OpenAlex, the European Data Portal, and PubMed at the same time using the field's own name, and lines the results up for Approve / Reject / Test. OpenAlex leads the lineup (2020–current, most-cited first). EU Portal results preserve dataset metadata and resource links; linked files are not downloaded automatically. Nothing is ingested until you Load. Clear wipes this field's un-loaded candidates when you switch sciences.</div>
             <div data-role="sourcing-results"></div>
             <div class="sentinel-loaded">
               <div class="loaded-head">Loaded datasets — kept in the searchable library</div>
@@ -2453,6 +2454,7 @@
 
     const SOURCE_LABELS = {
       openalex: 'OpenAlex (Primary R&D)',
+      eu_data_portal: 'European Data Portal (EU datasets)',
       pubmed: 'NLM / NHLBI / PubMed',
       worldbank: 'World Bank (Official Indicators)',
       eurostat: 'Eurostat (EU Statistics SDMX 2.1)',
@@ -2533,24 +2535,39 @@
           badges.push('Official Statistical API');
           if (item.agency || item.provider) badges.push(`Authority: ${item.agency || item.provider}`);
         }
+        if (stLow === 'eu_data_portal') badges.push('EU dataset metadata · files remain at source');
         if (isContemporarySource(stLow) && item.published_date) {
           badges.push(`Published: ${item.published_date}`);
         }
         const isOa = stLow === 'openalex' && item.is_oa ? ' · open access' : '';
         const detail = String(item.abstract || item.description || 'No description available.').slice(0, 700);
         const href = String(item.landing_page_url || item.source_url || (item.doi ? `https://doi.org/${item.doi}` : '') || '');
+        const distributionLinks = stLow === 'eu_data_portal' && Array.isArray(item.distributions)
+          ? item.distributions.slice(0, 4).map((distribution, index) => {
+            const url = String(distribution?.url || '');
+            if (!url) return '';
+            const title = String(distribution?.title || `Resource ${index + 1}`);
+            const format = distribution?.format ? ` (${distribution.format})` : '';
+            return `<a href="${escapeAttr(url)}" target="_blank" rel="noopener noreferrer">${escapeHtml(title + format)}</a>`;
+          }).filter(Boolean).join(' · ')
+          : '';
+        const downloadLabel = stLow === 'eu_data_portal' ? '⬇ Download metadata .pdf' : '⬇ Download .pdf';
+        const downloadTitle = stLow === 'eu_data_portal'
+          ? 'Downloads the catalogue metadata record, not the linked dataset files.'
+          : 'One click: loads it into the library, then hands you the .pdf';
         return `
         <div class="sourcing-result${isLoaded ? ' already-loaded' : ''}" data-candidate-id="${cid}">
           <strong>${escapeHtml(item.title || 'Untitled work')}${pmcPill}${isLoaded ? loadedBadgeHtml() : ''}</strong>
           <div class="hint">${escapeHtml(label)}${item.authors ? ' · ' + escapeHtml(String(item.authors)) : ''}${isOa}${badges.length ? ' · ' + badges.map(escapeHtml).join(' · ') : ''}</div>
           <div class="hint">${escapeHtml(detail)}</div>
           ${href ? `<a href="${escapeAttr(href)}" target="_blank" rel="noreferrer">${escapeHtml(href)}</a>` : ''}
+          ${distributionLinks ? `<div class="hint">Dataset resources: ${distributionLinks}</div>` : ''}
           <div class="actions">
             <button type="button" data-role="sourcing-save" data-field="${fieldSlug}" data-candidate-id="${cid}"${isLoaded ? ' disabled' : ''}>Approve</button>
             <button type="button" class="ghost" data-role="sourcing-reject" data-field="${fieldSlug}" data-candidate-id="${cid}"${isLoaded ? ' disabled' : ''}>Reject</button>
             <button type="button" class="ghost" data-role="sourcing-test" data-field="${fieldSlug}" data-candidate-id="${cid}"${isLoaded ? ' disabled' : ''}>Test</button>
             <button type="button" class="ghost" data-role="sourcing-preview" data-field="${fieldSlug}" data-candidate-id="${cid}">Preview</button>
-            <button type="button" class="ghost" data-role="sourcing-download" data-field="${fieldSlug}" data-candidate-id="${cid}"${isLoaded ? ' disabled' : ''} title="One click: loads it into the library, then hands you the .pdf">⬇ Download .pdf</button>
+            <button type="button" class="ghost" data-role="sourcing-download" data-field="${fieldSlug}" data-candidate-id="${cid}"${isLoaded ? ' disabled' : ''} title="${escapeAttr(downloadTitle)}">${downloadLabel}</button>
             ${isLoaded
               ? `<button type="button" class="approve-picked" disabled>Loaded ✓</button>`
               : `<button type="button" data-role="sourcing-load" data-field="${fieldSlug}" data-candidate-id="${cid}">Load into field</button>`}
@@ -2570,7 +2587,7 @@
       if (curatedSlice.length) {
         groupedHtml += groupHeaderHtml(
           'Curated Scholarly &amp; Official Statistical Sources',
-          `OpenAlex · NLM/PubMed · World Bank · Eurostat · IMF · ECB · BIS · UN Data · U.S. BEA · OECD (${curatedSlice.length})`,
+          `OpenAlex · European Data Portal · NLM/PubMed · World Bank · Eurostat · IMF · ECB · BIS · UN Data · U.S. BEA · OECD (${curatedSlice.length})`,
           '#eef5fc', '#c7dbf0', '#143a63'
         ) + curatedSlice.map(renderOneSourcingCard).join('');
       }
@@ -2619,7 +2636,7 @@
       }
       const isNextBatch = Boolean(opts && opts.nextBatch);
       const batchPage = isNextBatch ? ((sentinelFieldBatchPages[fieldSlug] || 1) + 1) : 1;
-      if (statusEl) statusEl.textContent = `Sourcing worker running unified scan (batch #${batchPage}) across OpenAlex, NLM/PubMed, World Bank, Eurostat, IMF, ECB, BIS, UN Data, U.S. BEA, OECD, Scraped Contemporary Sources, GitHub, and Hugging Face...`;
+      if (statusEl) statusEl.textContent = `Sourcing worker running unified scan (batch #${batchPage}) across OpenAlex, European Data Portal, NLM/PubMed, World Bank, Eurostat, IMF, ECB, BIS, UN Data, U.S. BEA, OECD, Scraped Contemporary Sources, GitHub, and Hugging Face...`;
       try {
         const fullTextOnly = Boolean(fieldWrap.querySelector('[data-role="sourcing-fulltext-only"]')?.checked);
         const freshOnly = Boolean(fieldWrap.querySelector('[data-role="sourcing-fresh-only"]')?.checked);
@@ -2655,7 +2672,8 @@
         }
         renderSourcingResults(fieldSlug, pubmedFullTextOnlyActive() || fullTextOnly ? hideAbstractOnly(sentinelFieldSourcingResults[fieldSlug] || []) : (sentinelFieldSourcingResults[fieldSlug] || []));
         if (statusEl) {
-          statusEl.innerHTML = `Batch #${batchPage}: Found ${formatInt(data.count)} candidates (OpenAlex ${formatInt(data.openalex_count)} · NLM/PubMed ${formatInt(data.pubmed_count || 0)} · World Bank ${formatInt(data.worldbank_count || 0)} · Eurostat ${formatInt(data.eurostat_count || 0)} · IMF ${formatInt(data.imf_count || 0)} · ECB ${formatInt(data.ecb_count || 0)} · BIS ${formatInt(data.bis_count || 0)} · UN Data ${formatInt(data.undata_count || 0)} · U.S. BEA ${formatInt(data.bea_count || 0)} · OECD ${formatInt(data.oecd_count || 0)} · <strong>Scraped Contemporary ${formatInt(data.contemporary_count || 0)}</strong> · GitHub ${formatInt(data.github_count)} · HF ${formatInt(data.huggingface_count)}).`;
+          const euPortalError = data.eu_data_portal_error ? ` · EU Portal: ${escapeHtml(data.eu_data_portal_error)}` : '';
+          statusEl.innerHTML = `Batch #${batchPage}: Found ${formatInt(data.count)} candidates (OpenAlex ${formatInt(data.openalex_count)} · EU Portal ${formatInt(data.eu_data_portal_count || 0)} · NLM/PubMed ${formatInt(data.pubmed_count || 0)} · World Bank ${formatInt(data.worldbank_count || 0)} · Eurostat ${formatInt(data.eurostat_count || 0)} · IMF ${formatInt(data.imf_count || 0)} · ECB ${formatInt(data.ecb_count || 0)} · BIS ${formatInt(data.bis_count || 0)} · UN Data ${formatInt(data.undata_count || 0)} · U.S. BEA ${formatInt(data.bea_count || 0)} · OECD ${formatInt(data.oecd_count || 0)} · <strong>Scraped Contemporary ${formatInt(data.contemporary_count || 0)}</strong> · GitHub ${formatInt(data.github_count)} · HF ${formatInt(data.huggingface_count)}${euPortalError}).`;
         }
       } catch (error) {
         if (statusEl) statusEl.textContent = `Dataset search failed: ${error.message || error}`;
@@ -3770,6 +3788,7 @@
           : '';
         const pmNote = ` · NLM/PubMed ${formatInt(data.pubmed_count || 0)}${Number(data.pubmed_fulltext_count || 0) > 0 ? ` (${formatInt(data.pubmed_fulltext_count)} full text)` : ''}`;
         const intlCounts = [
+          `European Data Portal ${formatInt(data.eu_data_portal_count || 0)}`,
           `World Bank ${formatInt(data.worldbank_count || 0)}`,
           `Eurostat ${formatInt(data.eurostat_count || 0)}`,
           `IMF ${formatInt(data.imf_count || 0)}`,

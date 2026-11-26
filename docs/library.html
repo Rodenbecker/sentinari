@@ -1,0 +1,1650 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Sentinari - Sovereign Knowledge Search Library</title>
+  <style>
+    :root {
+      --bg: #07090e;
+      --bg-panel: #0d1322;
+      --bg-card: #101627;
+      --bg-input: #080b12;
+      --border: rgba(99, 102, 241, 0.22);
+      --border-bright: #6366f1;
+      --text: #f1f5f9;
+      --text-muted: #94a3b8;
+      --cyan: #38bdf8;
+      --purple: #c084fc;
+      --emerald: #34d399;
+      --amber: #fbbf24;
+      --rose: #f43f5e;
+      --glow: rgba(99, 102, 241, 0.35);
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--text);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      min-height: 100vh;
+    }
+    .shell {
+      display: grid;
+      grid-template-columns: 260px minmax(0, 1fr);
+      min-height: 100vh;
+    }
+    @media (max-width: 980px) {
+      .shell { grid-template-columns: 1fr; }
+      .sidebar { display: none; }
+    }
+    /* LEFT SIDEBAR NAVIGATION */
+    .sidebar {
+      background: #090e1a;
+      border-right: 1px solid var(--border);
+      color: var(--text);
+      padding: 18px 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      position: sticky;
+      top: 0;
+      height: 100vh;
+    }
+    .sidebar .brand {
+      font-size: 22px;
+      font-weight: 800;
+      letter-spacing: 0.5px;
+      background: linear-gradient(135deg, #38bdf8, #818cf8, #c084fc);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      display: flex;
+      align-items: center;
+    }
+    .sidebar .brand-badge {
+      font-size: 10px;
+      background: rgba(99, 102, 241, 0.25);
+      border: 1px solid rgba(99, 102, 241, 0.5);
+      color: #a5b4fc;
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-weight: 700;
+      margin-left: 6px;
+    }
+    .sidebar .sidecopy {
+      font-size: 11.5px;
+      color: var(--text-muted);
+      line-height: 1.45;
+      margin-bottom: 8px;
+    }
+    .sidebar .nav {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      overflow-y: auto;
+      max-height: calc(100vh - 180px);
+    }
+    .sidebar .nav a {
+      display: block;
+      padding: 9px 12px;
+      border-radius: 8px;
+      color: #cbd5e1;
+      text-decoration: none;
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid rgba(255, 255, 255, 0.05);
+      font-size: 13.5px;
+      font-weight: 500;
+      transition: all 0.15s ease;
+    }
+    .sidebar .nav a:hover {
+      background: rgba(99, 102, 241, 0.15);
+      border-color: rgba(99, 102, 241, 0.4);
+      color: #ffffff;
+    }
+    .sidebar .nav a.active {
+      background: linear-gradient(135deg, rgba(99, 102, 241, 0.3), rgba(56, 189, 248, 0.2));
+      border-color: #38bdf8;
+      color: #ffffff;
+      font-weight: 700;
+    }
+    .sidebar .nav a small {
+      display: block;
+      color: var(--text-muted);
+      font-size: 11px;
+      margin-top: 3px;
+      font-weight: 400;
+    }
+    /* MAIN PAGE CONTENT */
+    .page-shell {
+      padding: 24px 32px 48px;
+      max-width: 1380px;
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+    header.search-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 16px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+      padding-bottom: 16px;
+    }
+    .search-header h1 {
+      margin: 0 0 4px 0;
+      font-size: 1.6rem;
+      font-weight: 800;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      color: #ffffff;
+    }
+    .search-header p {
+      margin: 0;
+      font-size: 0.88rem;
+      color: var(--text-muted);
+    }
+    /* GLOBAL SEARCH BAR */
+    .global-search-card {
+      background: linear-gradient(135deg, #0e1526, #121b33);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 20px 24px;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+    }
+    .search-input-wrap {
+      display: flex;
+      gap: 12px;
+      align-items: center;
+      position: relative;
+    }
+    .search-input-wrap input {
+      flex: 1;
+      background: #080b14;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 13px 18px 13px 44px;
+      font-size: 1rem;
+      color: #ffffff;
+      outline: none;
+      transition: all 0.2s ease;
+      box-shadow: inset 0 2px 6px rgba(0, 0, 0, 0.5);
+    }
+    .search-input-wrap input:focus {
+      border-color: var(--cyan);
+      box-shadow: 0 0 16px rgba(56, 189, 248, 0.35);
+    }
+    .search-icon-pos {
+      position: absolute;
+      left: 15px;
+      font-size: 1.2rem;
+      color: var(--text-muted);
+      pointer-events: none;
+    }
+    .btn-search-go {
+      background: linear-gradient(135deg, #6366f1, #38bdf8);
+      border: 0;
+      border-radius: 10px;
+      color: #ffffff;
+      padding: 13px 26px;
+      font-weight: 700;
+      font-size: 0.95rem;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      box-shadow: 0 0 14px var(--glow);
+      transition: all 0.2s;
+      white-space: nowrap;
+    }
+    .btn-search-go:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 0 22px rgba(56, 189, 248, 0.5);
+    }
+    .stat-ribbon {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+    .pill {
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 999px;
+      padding: 5px 14px;
+      font-size: 0.82rem;
+      font-weight: 600;
+      color: #cbd5e1;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .pill.accent {
+      background: rgba(56, 189, 248, 0.12);
+      border-color: rgba(56, 189, 248, 0.3);
+      color: #7dd3fc;
+    }
+    /* RESULTS VIEW */
+    #globalResultsContainer {
+      display: none;
+      flex-direction: column;
+      gap: 12px;
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 20px;
+    }
+    .results-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+      padding-bottom: 10px;
+    }
+    .results-head h2 {
+      margin: 0;
+      font-size: 1.1rem;
+      color: #ffffff;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    /* HIERARCHICAL DOMAIN CONTAINERS */
+    .domain-tree {
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+    .domain {
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      background: var(--bg-card);
+      overflow: hidden;
+      transition: border-color 0.15s;
+    }
+    .domain:hover {
+      border-color: rgba(99, 102, 241, 0.45);
+    }
+    .dhead {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 14px 18px;
+      cursor: pointer;
+      user-select: none;
+      background: rgba(255, 255, 255, 0.02);
+      transition: background 0.15s;
+    }
+    .dhead:hover {
+      background: rgba(255, 255, 255, 0.05);
+    }
+    .dtoggle {
+      font-size: 14px;
+      color: var(--cyan);
+      width: 18px;
+      display: inline-block;
+      transition: transform 0.2s ease;
+    }
+    .domain.open .dtoggle {
+      transform: rotate(90deg);
+    }
+    .dname {
+      font-size: 1.02rem;
+      font-weight: 700;
+      color: #ffffff;
+      flex: 1;
+    }
+    .dsmall {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+    }
+    .dbody {
+      display: none;
+      border-top: 1px solid rgba(255, 255, 255, 0.06);
+      padding: 14px 18px 18px;
+      background: #090e1a;
+    }
+    .domain.open .dbody {
+      display: block;
+    }
+    /* FIELD BOX */
+    .fieldbox {
+      border: 1px solid rgba(255, 255, 255, 0.06);
+      border-radius: 8px;
+      margin-top: 10px;
+      background: var(--bg-panel);
+      overflow: hidden;
+    }
+    .fhead {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 14px;
+      cursor: pointer;
+      user-select: none;
+      transition: background 0.15s;
+    }
+    .fhead:hover {
+      background: rgba(255, 255, 255, 0.04);
+    }
+    .ftoggle {
+      font-size: 12px;
+      color: var(--purple);
+      width: 16px;
+      display: inline-block;
+      transition: transform 0.2s ease;
+    }
+    .fieldbox.open .ftoggle {
+      transform: rotate(90deg);
+    }
+    .fname {
+      font-size: 0.92rem;
+      font-weight: 700;
+      color: #f1f5f9;
+      flex: 1;
+    }
+    .fstats {
+      font-size: 0.78rem;
+      color: var(--text-muted);
+    }
+    .fbody {
+      display: none;
+      padding: 12px 14px 16px;
+      border-top: 1px solid rgba(255, 255, 255, 0.06);
+      background: #070a12;
+    }
+    .fieldbox.open .fbody {
+      display: block;
+    }
+    /* DOCUMENT ITEMS */
+    .doclist {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      margin-top: 10px;
+    }
+    .docitem {
+      border: 1px solid rgba(255, 255, 255, 0.06);
+      border-radius: 8px;
+      background: #0b0f19;
+      padding: 12px 16px;
+      transition: border-color 0.15s;
+    }
+    .docitem:hover {
+      border-color: rgba(99, 102, 241, 0.35);
+    }
+    .di-title {
+      font-size: 0.94rem;
+      font-weight: 600;
+      color: #f8fafc;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+    .di-meta {
+      font-size: 0.78rem;
+      color: var(--text-muted);
+      margin-top: 4px;
+      line-height: 1.4;
+    }
+    .di-actions {
+      display: flex;
+      gap: 8px;
+      margin-top: 8px;
+    }
+    .btn-sm {
+      padding: 4px 10px;
+      border-radius: 5px;
+      font-size: 0.76rem;
+      font-weight: 600;
+      cursor: pointer;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      background: rgba(255, 255, 255, 0.05);
+      color: var(--text);
+      transition: all 0.15s;
+    }
+    .btn-sm:hover {
+      background: rgba(255, 255, 255, 0.12);
+      color: #fff;
+    }
+    .btn-sm.cyan {
+      border-color: rgba(56, 189, 248, 0.4);
+      color: var(--cyan);
+      background: rgba(56, 189, 248, 0.08);
+    }
+    .badge-tag {
+      padding: 2px 7px;
+      border-radius: 999px;
+      font-size: 0.68rem;
+      font-weight: 700;
+      letter-spacing: 0.04em;
+    }
+    .badge-tag.ok {
+      background: rgba(16, 185, 129, 0.15);
+      color: #6ee7b7;
+      border: 1px solid rgba(16, 185, 129, 0.4);
+    }
+    .badge-tag.warn {
+      background: rgba(245, 158, 11, 0.15);
+      color: #fcd34d;
+      border: 1px solid rgba(245, 158, 11, 0.4);
+    }
+    
+    /* ==========================================================================
+       SOVEREIGN E-BOOK READER & DRM PROTECTION STYLES
+       ========================================================================== */
+    .ebook-backdrop {
+      position: fixed;
+      inset: 0;
+      background: rgba(3, 6, 12, 0.88);
+      backdrop-filter: blur(10px);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 2000;
+      padding: 16px;
+    }
+    .ebook-backdrop.show { display: flex; }
+
+    .ebook-modal {
+      background: #0c1220;
+      border: 1px solid rgba(99, 102, 241, 0.3);
+      border-radius: 18px;
+      width: min(1040px, 96vw);
+      height: 92vh;
+      display: flex;
+      flex-direction: column;
+      box-shadow: 0 25px 80px rgba(0, 0, 0, 0.9), 0 0 40px rgba(99, 102, 241, 0.2);
+      overflow: hidden;
+      position: relative;
+      transition: background 0.3s ease, color 0.3s ease;
+    }
+
+    /* Themes */
+    .ebook-modal.theme-dark {
+      background: #080d1a;
+      color: #e2e8f0;
+      border-color: rgba(99, 102, 241, 0.35);
+    }
+    .ebook-modal.theme-sepia {
+      background: #fbf7ee;
+      color: #2b2723;
+      border-color: #dcd0b3;
+    }
+    .ebook-modal.theme-slate {
+      background: #0f172a;
+      color: #cbd5e1;
+      border-color: #334155;
+    }
+
+    /* Progress bar */
+    .ebook-progress-track {
+      width: 100%;
+      height: 4px;
+      background: rgba(255, 255, 255, 0.08);
+      position: relative;
+    }
+    .ebook-progress-bar {
+      height: 100%;
+      width: 0%;
+      background: linear-gradient(90deg, #6366f1, #06b6d4, #10b981);
+      transition: width 0.25s ease;
+    }
+
+    /* Header */
+    .ebook-header {
+      padding: 14px 24px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+      background: rgba(0, 0, 0, 0.15);
+    }
+    .theme-sepia .ebook-header {
+      border-bottom-color: rgba(0, 0, 0, 0.08);
+      background: rgba(0, 0, 0, 0.03);
+    }
+    .ebook-title-group {
+      flex: 1;
+      min-width: 0;
+    }
+    .ebook-domain-badge {
+      display: inline-block;
+      font-size: 0.68rem;
+      font-weight: 800;
+      letter-spacing: 0.8px;
+      text-transform: uppercase;
+      padding: 2px 8px;
+      border-radius: 4px;
+      background: rgba(99, 102, 241, 0.2);
+      color: #818cf8;
+      margin-bottom: 4px;
+    }
+    .theme-sepia .ebook-domain-badge {
+      background: #ebe0c7;
+      color: #785a28;
+    }
+    .ebook-title {
+      font-size: 1.12rem;
+      font-weight: 700;
+      margin: 0;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      letter-spacing: -0.3px;
+    }
+    .theme-sepia .ebook-title { color: #1c1814; }
+    .ebook-byline {
+      font-size: 0.78rem;
+      opacity: 0.75;
+      margin-top: 2px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .ebook-header-actions {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .ebook-btn-close {
+      background: rgba(255, 255, 255, 0.07);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      color: inherit;
+      border-radius: 8px;
+      padding: 6px 14px;
+      font-size: 0.82rem;
+      font-weight: 600;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      transition: all 0.2s;
+    }
+    .ebook-btn-close:hover {
+      background: rgba(244, 63, 94, 0.2);
+      border-color: #f43f5e;
+      color: #f43f5e;
+    }
+
+    /* Toolbar */
+    .ebook-toolbar {
+      padding: 10px 24px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 12px;
+      background: rgba(0, 0, 0, 0.25);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+      font-size: 0.82rem;
+    }
+    .theme-sepia .ebook-toolbar {
+      background: #f4ecdc;
+      border-bottom-color: rgba(0, 0, 0, 0.06);
+    }
+    .tb-group {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .tb-label {
+      font-size: 0.72rem;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      opacity: 0.65;
+      font-weight: 700;
+      margin-right: 2px;
+    }
+    .tb-btn {
+      background: rgba(255, 255, 255, 0.06);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      color: inherit;
+      border-radius: 6px;
+      padding: 4px 10px;
+      font-size: 0.78rem;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+    .theme-sepia .tb-btn {
+      background: #ebe0c7;
+      border-color: #d8cbb0;
+      color: #2b2723;
+    }
+    .tb-btn:hover {
+      background: rgba(99, 102, 241, 0.2);
+      border-color: #6366f1;
+    }
+    .tb-btn.active {
+      background: #4f46e5;
+      border-color: #6366f1;
+      color: #fff;
+      font-weight: 700;
+    }
+    .theme-sepia .tb-btn.active {
+      background: #855f2b;
+      border-color: #6b4c20;
+      color: #fff;
+    }
+
+    /* Page navigation */
+    .pager-pill {
+      font-family: Consolas, monospace;
+      font-size: 0.8rem;
+      padding: 4px 8px;
+      background: rgba(0, 0, 0, 0.3);
+      border-radius: 6px;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+    }
+    .theme-sepia .pager-pill {
+      background: #ebe0c7;
+      border-color: #d8cbb0;
+    }
+
+    /* Viewport & Book Page */
+    .ebook-viewport {
+      flex: 1;
+      overflow-y: auto;
+      padding: 32px 24px;
+      display: flex;
+      justify-content: center;
+      position: relative;
+      scroll-behavior: smooth;
+    }
+
+    .ebook-page {
+      width: 100%;
+      max-width: 780px;
+      background: rgba(255, 255, 255, 0.02);
+      border-radius: 12px;
+      padding: 36px 44px;
+      min-height: 100%;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.25);
+      line-height: 1.85;
+      font-size: 1.05rem;
+      letter-spacing: 0.1px;
+      transition: all 0.2s;
+    }
+    .theme-sepia .ebook-page {
+      background: #fffdf9;
+      box-shadow: 0 4px 25px rgba(120, 100, 70, 0.15);
+      border: 1px solid #e8dec7;
+    }
+    .theme-slate .ebook-page {
+      background: #131d33;
+      box-shadow: 0 4px 25px rgba(0, 0, 0, 0.4);
+      border: 1px solid #1e293b;
+    }
+
+    .ebook-page.font-serif {
+      font-family: Georgia, "Palatino Linotype", "Book Antiqua", Palatino, serif;
+    }
+    .ebook-page.font-sans {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    }
+
+    .ebook-chunk-card {
+      margin-bottom: 28px;
+      padding-bottom: 24px;
+      border-bottom: 1px dashed rgba(255, 255, 255, 0.1);
+    }
+    .theme-sepia .ebook-chunk-card {
+      border-bottom-color: rgba(0, 0, 0, 0.12);
+    }
+    .ebook-chunk-card:last-child {
+      border-bottom: none;
+      margin-bottom: 0;
+      padding-bottom: 0;
+    }
+
+    .ebook-chunk-header {
+      font-size: 0.72rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: #06b6d4;
+      margin-bottom: 12px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .theme-sepia .ebook-chunk-header {
+      color: #8c6328;
+    }
+    .ebook-chunk-text {
+      white-space: pre-wrap;
+      word-break: break-word;
+    }
+
+    /* DRM Protection Classes */
+    .drm-restricted {
+      -webkit-user-select: none !important;
+      -moz-user-select: none !important;
+      -ms-user-select: none !important;
+      user-select: none !important;
+      -webkit-touch-callout: none !important;
+    }
+    .drm-restricted::selection { background: transparent !important; }
+    .drm-restricted::-moz-selection { background: transparent !important; }
+
+    /* DRM Toast */
+    .drm-toast-hud {
+      position: fixed;
+      bottom: 28px;
+      right: 28px;
+      background: #0f172a;
+      color: #f8fafc;
+      border: 1px solid #f43f5e;
+      border-radius: 12px;
+      padding: 14px 20px;
+      font-size: 0.85rem;
+      box-shadow: 0 15px 40px rgba(0, 0, 0, 0.6), 0 0 20px rgba(244, 63, 94, 0.3);
+      z-index: 99999;
+      display: none;
+      align-items: center;
+      gap: 12px;
+      max-width: 440px;
+      line-height: 1.5;
+      animation: hudSlideIn 0.25s ease-out;
+    }
+    .drm-toast-hud.show { display: flex; }
+    @keyframes hudSlideIn {
+      from { transform: translateY(20px); opacity: 0; }
+      to { transform: translateY(0); opacity: 1; }
+    }
+
+    /* Badges */
+    .drm-pill-status {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 4px 10px;
+      border-radius: 6px;
+      font-size: 0.74rem;
+      font-weight: 700;
+      letter-spacing: 0.3px;
+    }
+    .drm-pill-status.locked {
+      background: rgba(244, 63, 94, 0.15);
+      border: 1px solid rgba(244, 63, 94, 0.3);
+      color: #fb7185;
+    }
+    .drm-pill-status.unlocked {
+      background: rgba(245, 158, 11, 0.15);
+      border: 1px solid rgba(245, 158, 11, 0.4);
+      color: #fbbf24;
+    }
+
+    .btn-dl-architect {
+      background: linear-gradient(135deg, #d97706 0%, #b45309 100%);
+      color: #fff !important;
+      font-weight: 700;
+      border: 1px solid #f59e0b;
+      border-radius: 6px;
+      padding: 4px 12px;
+      font-size: 0.78rem;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .btn-dl-architect:hover {
+      box-shadow: 0 0 12px rgba(245, 158, 11, 0.5);
+    }
+    .btn-unlock-modal {
+      background: rgba(99, 102, 241, 0.15);
+      border: 1px solid rgba(99, 102, 241, 0.35);
+      color: #a5b4fc;
+      border-radius: 6px;
+      padding: 4px 10px;
+      font-size: 0.78rem;
+      cursor: pointer;
+    }
+    .btn-unlock-modal:hover {
+      background: #4f46e5;
+      color: #fff;
+    }
+
+    /* Architect unlock prompt modal */
+    .architect-modal-backdrop {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.75);
+      backdrop-filter: blur(6px);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 10000;
+    }
+    .architect-modal-backdrop.show { display: flex; }
+    .architect-modal-box {
+      background: #0d1424;
+      border: 1px solid rgba(245, 158, 11, 0.4);
+      border-radius: 14px;
+      padding: 24px;
+      width: min(440px, 92vw);
+      color: #f8fafc;
+      box-shadow: 0 25px 60px rgba(0, 0, 0, 0.8), 0 0 30px rgba(245, 158, 11, 0.2);
+    }
+
+    /* Footer */
+    .ebook-footer {
+      padding: 10px 24px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-top: 1px solid rgba(255, 255, 255, 0.08);
+      font-size: 0.74rem;
+      opacity: 0.75;
+      background: rgba(0, 0, 0, 0.15);
+    }
+    .theme-sepia .ebook-footer {
+      border-top-color: rgba(0, 0, 0, 0.08);
+      background: rgba(0, 0, 0, 0.03);
+    }
+
+    /* PREVIEW MODAL */
+    .modal-backdrop {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.75);
+      backdrop-filter: blur(6px);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+    }
+    .modal-backdrop.show { display: flex; }
+    .modal {
+      background: #0f1524;
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      width: min(920px, 94vw);
+      max-height: 86vh;
+      display: flex;
+      flex-direction: column;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.8), 0 0 25px rgba(99, 102, 241, 0.25);
+    }
+    .modal header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 16px 20px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+      background: #131b2e;
+    }
+    .modal header .mtitle {
+      font-weight: 700;
+      font-size: 1.05rem;
+      color: #ffffff;
+      flex: 1;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+    .modal .mmeta {
+      font-size: 0.8rem;
+      color: var(--cyan);
+      padding: 10px 20px 0;
+    }
+    .modal .mbody {
+      overflow-y: auto;
+      padding: 16px 20px 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    .chunk-box {
+      background: #080c14;
+      border: 1px solid rgba(255, 255, 255, 0.06);
+      border-radius: 8px;
+      padding: 12px 14px;
+      font-size: 0.86rem;
+      line-height: 1.55;
+      color: #cbd5e1;
+      white-space: pre-wrap;
+    }
+    .chunk-idx {
+      font-size: 0.74rem;
+      font-weight: 700;
+      color: var(--purple);
+      margin-bottom: 4px;
+      display: block;
+    }
+    .btn-close-modal {
+      background: transparent;
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      border-radius: 6px;
+      color: var(--text-muted);
+      padding: 5px 12px;
+      cursor: pointer;
+      font-size: 0.85rem;
+    }
+    .btn-close-modal:hover { color: #fff; border-color: #fff; }
+  </style>
+
+    <script>
+      window.API_BASE = (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') ? 'http://127.0.0.1:8099' : '';
+    </script>
+    
+</head>
+<body>
+    <div id="sentinariShowroomBanner" style="background:linear-gradient(90deg, rgba(15,23,42,0.95) 0%, rgba(30,41,59,0.95) 100%);border-bottom:1px solid rgba(99,102,241,0.35);padding:10px 18px;display:flex;align-items:center;justify-content:space-between;font-size:12.5px;color:#cbd5e1;flex-wrap:wrap;gap:10px;position:relative;z-index:99999;box-shadow:0 4px 16px rgba(0,0,0,0.4);">
+      <div style="display:flex;align-items:center;gap:10px;">
+        <span style="display:inline-block;width:9px;height:9px;border-radius:50%;background:#10b981;box-shadow:0 0 8px #10b981;"></span>
+        <span style="font-weight:700;color:#ffffff;letter-spacing:0.3px;">Sentinari Showroom &bull; Sovereign Knowledge Search Library</span>
+        <span style="background:rgba(99,102,241,0.22);color:#a5b4fc;border:1px solid rgba(99,102,241,0.45);padding:2px 8px;border-radius:12px;font-size:11px;font-weight:700;">Interactive Demonstration</span>
+      </div>
+      <div style="display:flex;align-items:center;gap:14px;">
+        <a href="./index.html" style="color:#38bdf8;text-decoration:none;font-weight:700;display:inline-flex;align-items:center;gap:4px;">&larr; Frontpage Showroom</a>
+        <a href="./oncology.html" style="color:#6ee7b7;text-decoration:none;font-weight:700;">Oncology Studio</a>
+        <a href="./threats.html" style="color:#f87171;text-decoration:none;font-weight:700;">Threat Matrix</a>
+        <a href="http://127.0.0.1:8099/ui/search" id="btnLocalSovereignConnect" target="_blank" rel="noopener" style="color:#6ee7b7;text-decoration:none;font-weight:700;background:rgba(16,185,129,0.18);padding:4px 12px;border-radius:14px;border:1px solid rgba(16,185,129,0.5);display:inline-flex;align-items:center;gap:6px;">
+          <span>&#x26A1;</span> <span>Connect Local Engine (:8099)</span>
+        </a>
+      </div>
+    </div>
+    
+  <div class="shell">
+    <!-- LEFT SIDEBAR -->
+    <aside class="sidebar">
+      <div class="brand">
+        <span>Sentinari</span>
+        <span class="brand-badge">SEARCH</span>
+      </div>
+      <div class="sidecopy">Searchable Ingested Knowledge Library across 21 Sentinel scientific disciplines and 15,041+ scholarly works.</div>
+      <nav class="nav">
+        <a href="./playground.html">🌐 Dashboard Home<small>Curated scientific domains</small></a>
+        <a href="./library.html" class="active">🔍 Search Library<small>Datasets ingested per field</small></a>
+        <a href="/ui/direct">💬 Chat Lab<small>Dedicated conversation workspace</small></a>
+        <a href="./qualia.html">⚖️ Qualia Lab<small>Courtroom deception audit</small></a>
+        <a href="/ui/learning">📈 Learning Index<small>HLE & SWE-Bench progress</small></a>
+        <a href="./vision.html" style="border-left:3px solid #00e5ff;color:#00e5ff;font-weight:700;">
+          👁️ Vision Lab &amp; TDA
+          <small>Giving Sentinari Eyes • Simplicial Complexes</small>
+        </a>
+        <a href="/ui/patterns">🔬 New Patterns<small>7-D Gaussian impact matrix</small></a>
+        <a href="./oncology.html" style="border-left:3px solid #10b981;color:#6ee7b7;font-weight:700;">
+          &#x1F9EC; Oncology Research
+          <small>FOR RESEARCH ONLY &bull; TDA &amp; Precision Oncology.</small>
+        </a>
+        <a href="./video.html">🎥 Video Studio<small>Workspace tours & narration</small></a>
+        <a href="./music.html">🎵 ACE-Step 1.5 Music<small>AI soundscape & music generation</small></a>
+        <a href="./wan21.html">🎬 Wan 2.1 T2V-14B<small>14B cinematic video diffusion</small></a>
+        <a href="./help.html">📖 Help Manual<small>Official operating reference & FAQ</small></a>
+        <a href="/reports/the-constitution" target="_blank" rel="noopener">📜 100-Year Constitution<small>Charter PDF (Dr. Pierre C. Wepener)</small></a>
+        <a href="./index.html">🏠 Website Landing Page<small>Exit to Sentinari Frontpage</small></a>
+      </nav>
+      <div style="margin-top:auto;padding-top:14px;border-top:1px solid rgba(255,255,255,0.08);font-size:11px;color:#64748b;">
+        Conceived & Engineered by<br>
+        <strong style="color:#94a3b8;">Dr. Pierre C. Wepener</strong><br>
+        Inspirari Research Initiative
+      </div>
+    </aside>
+
+    <!-- MAIN PAGE -->
+    <main class="page-shell">
+      <header class="search-header">
+        <div>
+          <h1><span>🔍</span> Sovereign Search Library</h1>
+          <p>Instant Full-Text & Semantic Inquest across 15,041+ Curated Datasets • SQLite WAL Vector Store</p>
+        </div>
+        <div style="display:flex;gap:10px;align-items:center;">
+          <button type="button" class="btn-sm" id="btnRefresh" style="padding:8px 14px;">🔄 Refresh Telemetry</button>
+          <a href="/ui/video?workspace=playground" class="btn-sm cyan" style="padding:8px 14px;">🎥 Record Video Tour</a>
+        </div>
+      </header>
+
+      <!-- GLOBAL SEARCH CARD -->
+      <section class="global-search-card">
+        <div class="search-input-wrap">
+          <span class="search-icon-pos">🔍</span>
+          <input type="text" id="globalSearchInput" placeholder="Search across all 15,041+ datasets (topics, quantum, medicine, economics, authors, citations)..." autofocus>
+          <button type="button" class="btn-search-go" id="btnGlobalSearch">
+            <span>⚡</span> Search Library
+          </button>
+        </div>
+
+        <div class="stat-ribbon">
+          <div class="pill accent"><span>📚</span> <span id="statDatasets">15,041+ datasets</span></div>
+          <div class="pill"><span>🧩</span> <span id="statChunks">445,000+ chunks</span></div>
+          <div class="pill"><span>🧠</span> <span id="statEmbedded">Vectorized Embeddings</span></div>
+          <div class="pill"><span>🛡️</span> Zero Cloud Leakage</div>
+        </div>
+      </section>
+
+      <!-- GLOBAL SEARCH RESULTS CONTAINER (AUTO-POPS ON QUERY) -->
+      <section id="globalResultsContainer">
+        <div class="results-head">
+          <h2 id="resultsHeading"><span>📄</span> Search Results</h2>
+          <button type="button" class="btn-close-modal" onclick="closeGlobalResults()">Close Results ✕</button>
+        </div>
+        <div class="doclist" id="globalResultsList"></div>
+      </section>
+
+      <!-- HIERARCHICAL SENTINEL DOMAIN EXPLORER -->
+      <section>
+        <div style="margin-bottom:12px;display:flex;justify-content:space-between;align-items:center;">
+          <h2 style="margin:0;font-size:1.15rem;color:#ffffff;">🏛️ Curated Sentinel Knowledge Domains (5 Clusters)</h2>
+          <span style="font-size:0.8rem;color:var(--text-muted);">Click any cluster or discipline container to expand datasets</span>
+        </div>
+        <div class="domain-tree" id="domainRoot">
+          <div style="padding:30px;text-align:center;color:var(--text-muted);">Loading curated knowledge domains...</div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <!-- SOVEREIGN E-BOOK READER MODAL -->
+  <div class="ebook-backdrop" id="ebookBackdrop">
+    <div class="ebook-modal theme-dark" id="ebookModal">
+      <!-- Progress Bar -->
+      <div class="ebook-progress-track">
+        <div class="ebook-progress-bar" id="ebookProgressBar"></div>
+      </div>
+
+      <!-- Header -->
+      <header class="ebook-header">
+        <div class="ebook-title-group">
+          <span class="ebook-domain-badge" id="ebDomainBadge">Sovereign Library</span>
+          <h2 class="ebook-title" id="ebTitle">Dataset E-Book</h2>
+          <div class="ebook-byline" id="ebByline">Ingested Dataset Archive &bull; Sentinari Sovereign Library</div>
+        </div>
+        <div class="ebook-header-actions">
+          <div id="ebArchitectStatus"></div>
+          <button type="button" class="ebook-btn-close" id="ebCloseBtn">✕ Close Reader</button>
+        </div>
+      </header>
+
+      <!-- Reader Controls Toolbar -->
+      <div class="ebook-toolbar">
+        <!-- Theme Controls -->
+        <div class="tb-group">
+          <span class="tb-label">Theme:</span>
+          <button type="button" class="tb-btn active" data-theme="dark" id="btnThemeDark">Obsidian</button>
+          <button type="button" class="tb-btn" data-theme="sepia" id="btnThemeSepia">Sepia</button>
+          <button type="button" class="tb-btn" data-theme="slate" id="btnThemeSlate">Slate</button>
+        </div>
+
+        <!-- Typography Controls -->
+        <div class="tb-group">
+          <span class="tb-label">Type:</span>
+          <button type="button" class="tb-btn active" id="btnFontToggle">Serif Book</button>
+          <button type="button" class="tb-btn" id="btnFontDown" title="Decrease font size">A-</button>
+          <span class="tb-label" id="fontSizeLabel" style="min-width:38px;text-align:center;">100%</span>
+          <button type="button" class="tb-btn" id="btnFontUp" title="Increase font size">A+</button>
+        </div>
+
+        <!-- View Mode: Pages vs Scroll -->
+        <div class="tb-group">
+          <button type="button" class="tb-btn active" id="btnViewMode">📖 Book Pages</button>
+        </div>
+
+        <!-- Page Turning Navigation -->
+        <div class="tb-group" id="ebPagerGroup">
+          <button type="button" class="tb-btn" id="btnPrevPage">&laquo; Prev Page</button>
+          <span class="pager-pill" id="ebPageIndicator">Page 1 of 1</span>
+          <button type="button" class="tb-btn" id="btnNextPage">Next Page &raquo;</button>
+        </div>
+
+        <!-- Download Action -->
+        <div class="tb-group" id="ebDownloadGroup">
+          <!-- Dynamically filled: either locked DRM notice or Chief Architect Download button -->
+        </div>
+      </div>
+
+      <!-- Viewport / Page Container -->
+      <div class="ebook-viewport drm-restricted" id="ebViewport">
+        <div class="ebook-page font-serif" id="ebPage">
+          <div id="ebPageContent">Select a document to begin reading.</div>
+        </div>
+      </div>
+
+      <!-- Footer -->
+      <footer class="ebook-footer">
+        <div id="ebFooterLeft">0 Chunks &bull; 0 Characters</div>
+        <div id="ebFooterCenter">Use &larr; &rarr; arrow keys to turn pages &bull; Space to scroll</div>
+        <div id="ebFooterRight">Sentinari Sovereign Knowledge Library &bull; Dr. Pierre C. Wepener</div>
+      </footer>
+    </div>
+  </div>
+
+  <!-- DRM HUD TOAST -->
+  <div class="drm-toast-hud" id="drmToast">
+    <span style="font-size:1.4rem;">🔒</span>
+    <div>
+      <b style="color:#fb7185;">Sentinari Sovereign DRM Active:</b><br>
+      Document text is copy-protected to preserve proprietary research integrity. In-system reading authorized.
+    </div>
+  </div>
+
+  <!-- CHIEF ARCHITECT PASSKEY UNLOCK MODAL -->
+  <div class="architect-modal-backdrop" id="architectModal">
+    <div class="architect-modal-box">
+      <h3 style="margin-top:0;margin-bottom:8px;font-size:1.15rem;color:#f8fafc;display:flex;align-items:center;gap:8px;">
+        <span>🔑</span> Chief Architect DRM Bypass
+      </h3>
+      <p style="font-size:0.82rem;color:#94a3b8;margin-bottom:16px;line-height:1.5;">
+        Dr. Pierre C. Wepener verification. Entering your passkey unlocks unrestricted text selection, copying, and original PDF downloads across the entire Sentinari library.
+      </p>
+      <div style="margin-bottom:16px;">
+        <label style="display:block;font-size:0.75rem;font-weight:700;color:#cbd5e1;text-transform:uppercase;margin-bottom:6px;">Architect Passkey / PIN</label>
+        <input type="password" id="architectPassInput" placeholder="Enter passkey (e.g. wepener2026)" style="width:100%;box-sizing:border-box;padding:10px 12px;background:#1e293b;border:1px solid #475569;border-radius:8px;color:#fff;font-size:0.95rem;">
+      </div>
+      <div id="architectPassError" style="color:#f43f5e;font-size:0.8rem;margin-bottom:12px;display:none;"></div>
+      <div style="display:flex;justify-content:flex-end;gap:10px;">
+        <button type="button" class="tb-btn" id="btnCancelArchitect">Cancel</button>
+        <button type="button" class="btn-dl-architect" id="btnSubmitArchitect" style="cursor:pointer;padding:8px 16px;">Unlock Unrestricted Access</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    /*__ARCHITECT_INJECT__*/
+    const byId = (id) => document.getElementById(id);
+    const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+    const attr = (s) => esc(s).replace(/\n/g, ' ');
+    const fmt = (n) => Number(n || 0).toLocaleString('en-US');
+
+    // Document Card HTML
+    const docItemHtml = (doc) => {
+      const embedded = Number(doc.embedded_chunks || 0);
+      const total = Number(doc.chunk_count || 0);
+      const badge = total > 0 && embedded === total
+        ? '<span class="badge-tag ok">Vector Ready</span>'
+        : '<span class="badge-tag warn">Embedding Ready</span>';
+
+      return `
+        <div class="docitem">
+          <div class="di-title">
+            <span>📄 ${esc(doc.title || 'Untitled Dataset')}</span>
+            ${badge}
+            ${doc.scientific_field ? `<span class="badge-tag" style="background:rgba(99,102,241,0.15);color:#a5b4fc;">${esc(doc.scientific_field)}</span>` : ''}
+          </div>
+          <div class="di-meta">
+            ${doc.source_type ? esc(doc.source_type) + ' &bull; ' : ''}
+            ${doc.authors ? esc(doc.authors) + ' &bull; ' : ''}
+            ${doc.published_date ? esc(String(doc.published_date).slice(0, 10)) + ' &bull; ' : ''}
+            ${fmt(doc.chunk_count)} chunks &bull; Added ${esc(String(doc.created_at || '').slice(0, 16).replace('T', ' '))}
+          </div>
+          <div class="di-actions">
+            <button type="button" class="btn-sm cyan" data-act="ebook" data-id="${Number(doc.id)}">📖 Read E-Book</button>
+            ${window.__IS_ARCHITECT__
+              ? `<a class="btn-sm gold" href="/api/skill-review/documents/${Number(doc.id)}/download" target="_blank" download>⬇ Download PDF (Architect)</a>`
+              : `<span class="btn-sm" style="opacity:0.65;cursor:not-allowed;background:rgba(255,255,255,0.04);border-color:rgba(255,255,255,0.08);" title="Raw PDF download restricted to Chief Architect. Please read via the online sovereign E-Book reader.">🔒 In-System Reading Only</span>`
+            }
+          </div>
+        </div>`;
+    };
+
+    // Global Search Execution
+    async function runGlobalSearch() {
+      const q = byId('globalSearchInput').value.trim();
+      const container = byId('globalResultsContainer');
+      const listEl = byId('globalResultsList');
+      const heading = byId('resultsHeading');
+
+      if (!q) {
+        container.style.display = 'none';
+        return;
+      }
+
+      container.style.display = 'flex';
+      listEl.innerHTML = '<div style="padding:20px;text-align:center;color:var(--text-muted);">Executing sovereign library search across 15,041+ datasets...</div>';
+      heading.innerHTML = `<span>⚡</span> Search Results for "${esc(q)}"`;
+
+      try {
+        const res = await fetch(`/api/search-library/documents?q=${encodeURIComponent(q)}&limit=100`);
+        const data = await res.json();
+        if (!res.ok || data.ok === false) throw new Error(data.detail || 'Search query failed.');
+
+        const docs = data.documents || [];
+        heading.innerHTML = `<span>⚡</span> Found ${fmt(docs.length)} Datasets matching "${esc(q)}"`;
+
+        if (docs.length === 0) {
+          listEl.innerHTML = `<div style="padding:24px;text-align:center;color:var(--text-muted);">No datasets directly matching "${esc(q)}". Try a broader keyword (e.g., "quantum", "neural", "physics", "law").</div>`;
+        } else {
+          listEl.innerHTML = docs.map(docItemHtml).join('');
+        }
+        container.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      } catch (err) {
+        listEl.innerHTML = `<div style="padding:20px;text-align:center;color:var(--rose);">Search query error: ${esc(err.message)}</div>`;
+      }
+    }
+
+    function closeGlobalResults() {
+      byId('globalResultsContainer').style.display = 'none';
+    }
+
+    byId('btnGlobalSearch').addEventListener('click', runGlobalSearch);
+    byId('globalSearchInput').addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') runGlobalSearch();
+    });
+
+    // Field Box HTML
+    const fieldHtml = (field) => `
+      <div class="fieldbox" data-field="${attr(field.slug)}">
+        <div class="fhead">
+          <span class="ftoggle">▶</span>
+          <span class="fname">${esc(field.name || field.slug)}</span>
+          <span class="fstats">${fmt(field.dataset_count)} datasets &bull; ${fmt(field.chunk_count)} chunks</span>
+        </div>
+        <div class="fbody">
+          <div style="display:flex;gap:8px;align-items:center;margin-bottom:10px;">
+            <input type="text" data-role="fsearch" placeholder="Filter inside ${attr(field.name)}..." style="flex:1;">
+            <button type="button" class="btn-sm cyan" data-act="fsearch-go">Filter</button>
+          </div>
+          <div class="doclist" data-role="doclist"><div style="color:var(--text-muted);font-size:0.82rem;">Click to expand and load datasets.</div></div>
+        </div>
+      </div>`;
+
+    // Domain Box HTML
+    const domainHtml = (domain) => `
+      <div class="domain" data-domain="${attr(domain.slug)}">
+        <div class="dhead">
+          <span class="dtoggle">▶</span>
+          <span class="dname">${esc(domain.name)}</span>
+          <span class="dsmall">${fmt(domain.dataset_count)} datasets &bull; ${fmt(domain.chunk_count)} chunks</span>
+        </div>
+        <div class="dbody">
+          <div style="font-size:0.82rem;color:var(--text-muted);margin-bottom:10px;line-height:1.5;">${esc(domain.description || '')}</div>
+          ${(domain.fields || []).map(fieldHtml).join('') || '<div style="color:var(--text-muted);">No fields recorded.</div>'}
+        </div>
+      </div>`;
+
+    // Field container dataset loader
+    const loadDocs = async (fieldbox) => {
+      const field = fieldbox.dataset.field || '';
+      const phrase = fieldbox.querySelector('[data-role="fsearch"]')?.value || '';
+      const listEl = fieldbox.querySelector('[data-role="doclist"]');
+      if (!listEl) return;
+      listEl.innerHTML = '<div style="color:var(--text-muted);font-size:0.82rem;padding:6px 0;">Loading datasets...</div>';
+      try {
+        const params = new URLSearchParams({ field, limit: '150' });
+        if (phrase.trim()) params.set('q', phrase.trim());
+        const response = await fetch(`/api/search-library/documents?${params}`);
+        const data = await response.json();
+        if (!response.ok || data.ok === false) throw new Error(data.detail || 'Search failed.');
+        listEl.innerHTML = (data.documents || []).length
+          ? data.documents.map(docItemHtml).join('')
+          : `<div style="color:var(--text-muted);font-size:0.82rem;padding:6px 0;">No datasets in this field match query.</div>`;
+      } catch (error) {
+        listEl.innerHTML = `<div style="color:var(--rose);font-size:0.82rem;">Could not list datasets: ${esc(error.message)}</div>`;
+      }
+    };
+
+    // =========================================================================
+    // SOVEREIGN E-BOOK READER ENGINE & DRM SUBSYSTEM
+    // =========================================================================
+    let isArchitect = Boolean(window.__IS_ARCHITECT__);
+    let currentDoc = null;
+    let currentChunks = [];
+    let currentPage = 1;
+    let totalPages = 1;
+    let chunksPerPage = 2;
+    let viewMode = 'book'; // 'book' or 'flow'
+    let currentTheme = 'dark'; // 'dark', 'sepia', 'slate'
+    let fontScale = 100;
+    let isSerif = true;
+
+    function showDrmToast() {
+      const t = byId('drmToast');
+      if (!t) return;
+      t.classList.add('show');
+      setTimeout(() => { t.classList.remove('show'); }, 3800);
+    }
+
+    function applyDrmState() {
+      const viewport = byId('ebViewport');
+      const statusPill = byId('ebArchitectStatus');
+      const dlGroup = byId('ebDownloadGroup');
+      if (!viewport) return;
+
+      if (isArchitect) {
+        viewport.classList.remove('drm-restricted');
+        if (statusPill) {
+          statusPill.innerHTML = '<span class="drm-pill-status unlocked" title="Chief Architect Session active">🔓 Chief Architect: Dr. Pierre C. Wepener</span>';
+        }
+        if (dlGroup && currentDoc) {
+          dlGroup.innerHTML = `<a class="btn-dl-architect" href="/api/skill-review/documents/${Number(currentDoc.id)}/download" target="_blank" download>⬇ Download PDF (Architect)</a>`;
+        }
+      } else {
+        viewport.classList.add('drm-restricted');
+        if (statusPill) {
+          statusPill.innerHTML = '<span class="drm-pill-status locked" title="Intellectual property protected">🛡️ Sovereign DRM Protected</span> <button type="button" class="btn-unlock-modal" id="btnOpenUnlockModal">🔑 Architect Unlock</button>';
+          byId('btnOpenUnlockModal')?.addEventListener('click', openArchitectModal);
+        }
+        if (dlGroup) {
+          dlGroup.innerHTML = '<span class="tb-label" style="color:var(--text-muted);cursor:not-allowed;" title="Direct PDF download restricted. In-system reading authorized.">🔒 In-System Reading Only</span> <a class="tb-btn" href="https://patreon.com/Rodenbecker?utm_medium=unknown&utm_source=join_link&utm_campaign=creatorshare_creator&utm_content=copyLink" target="_blank" rel="noopener noreferrer" style="background:rgba(255,66,77,0.15);border-color:rgba(255,66,77,0.4);color:#ff424d;font-weight:700;">💖 Sponsor on Patreon</a>';
+        }
+      }
+    }
+
+    function renderEbookPage() {
+      if (!currentDoc) return;
+      const container = byId('ebPageContent');
+      const indicator = byId('ebPageIndicator');
+      const progBar = byId('ebookProgressBar');
+      const footerLeft = byId('ebFooterLeft');
+
+      if (currentChunks.length === 0) {
+        container.innerHTML = '<div style="text-align:center;padding:40px;color:var(--text-muted);">No chunk content available for this dataset.</div>';
+        indicator.textContent = 'Page 0 of 0';
+        progBar.style.width = '0%';
+        return;
+      }
+
+      if (viewMode === 'book') {
+        const startIdx = (currentPage - 1) * chunksPerPage;
+        const pageChunks = currentChunks.slice(startIdx, startIdx + chunksPerPage);
+        container.innerHTML = pageChunks.map((c, i) => `
+          <article class="ebook-chunk-card">
+            <div class="ebook-chunk-header">
+              <span>Section ${startIdx + i + 1} of ${currentChunks.length}</span>
+              <span style="opacity:0.6;">&bull; Chunk #${Number(c.index) + 1}</span>
+            </div>
+            <div class="ebook-chunk-text">${esc(c.text || '')}</div>
+          </article>
+        `).join('');
+        indicator.textContent = `Page ${currentPage} of ${totalPages}`;
+        progBar.style.width = `${Math.min(100, Math.round((currentPage / totalPages) * 100))}%`;
+      } else {
+        // Continuous Flow
+        container.innerHTML = currentChunks.map((c, i) => `
+          <article class="ebook-chunk-card">
+            <div class="ebook-chunk-header">
+              <span>Section ${i + 1} of ${currentChunks.length}</span>
+              <span style="opacity:0.6;">&bull; Chunk #${Number(c.index) + 1}</span>
+            </div>
+            <div class="ebook-chunk-text">${esc(c.text || '')}</div>
+          </article>
+        `).join('');
+        indicator.textContent = `Continuous View &bull; ${currentChunks.length} Chunks`;
+        progBar.style.width = '100%';
+      }
+
+      const totalChars = currentChunks.reduce((acc, c) => acc + (c.text || '').length, 0);
+      footerLeft.textContent = `${currentChunks.length} Ingested Chunks &bull; ~${fmt(totalChars)} Characters &bull; Field: ${currentDoc.scientific_field || 'Sentinel'}`;
+      byId('ebViewport').scrollTop = 0;
+    }
+
+    const openEbook = async (docId) => {
+      try {
+        const response = await fetch(`/api/skill-review/documents/${docId}/preview?all_chunks=1`);
+        const data = await response.json();
+        if (!response.ok) throw new Error(data.detail || 'Could not load dataset.');
+
+        currentDoc = data.document || {};
+        currentChunks = data.preview_chunks || [];
+        if (typeof data.is_admin === 'boolean') {
+          isArchitect = data.is_admin;
+          window.__IS_ARCHITECT__ = isArchitect;
+        }
+
+        totalPages = Math.max(1, Math.ceil(currentChunks.length / chunksPerPage));
+        currentPage = 1;
+
+        byId('ebTitle').textContent = currentDoc.title || 'Sovereign Dataset E-Book';
+        byId('ebDomainBadge').textContent = currentDoc.scientific_field || currentDoc.source_type || 'Sentinel Library';
+        byId('ebByline').textContent = [
+          currentDoc.authors ? `By ${currentDoc.authors}` : '',
+          currentDoc.published_date ? `Published ${String(currentDoc.published_date).slice(0, 10)}` : '',
+          currentDoc.source_type ? `Source: ${currentDoc.source_type.toUpperCase()}` : '',
+          currentDoc.source_url ? `(${currentDoc.source_url})` : ''
+        ].filter(Boolean).join(' • ');
+
+        applyDrmState();
+        renderEbookPage();
+        byId('ebookBackdrop').classList.add('show');
+      } catch (ex) {
+        alert(`Failed to open sovereign E-Book: ${ex.message || ex}`);
+      }
+    };
+
+    function prevPage() {
+      if (viewMode !== 'book') return;
+      if (currentPage > 1) {
+        currentPage--;
+        renderEbookPage();
+      }
+    }
+
+    function nextPage() {
+      if (viewMode !== 'book') return;
+      if (currentPage < totalPages) {
+        currentPage++;
+        renderEbookPage();
+      }
+    }
+
+    // Theme Switchers
+    function setTheme(theme) {
+      currentTheme = theme;
+      const modal = byId('ebookModal');
+      modal.classList.remove('theme-dark', 'theme-sepia', 'theme-slate');
+      modal.classList.add(`theme-${theme}`);
+      byId('btnThemeDark').classList.toggle('active', theme === 'dark');
+      byId('btnThemeSepia').classList.toggle('active', theme === 'sepia');
+      byId('btnThemeSlate').classList.toggle('active', theme === 'slate');
+    }
+
+    byId('btnThemeDark').addEventListener('click', () => setTheme('dark'));
+    byId('btnThemeSepia').addEventListener('click', () => setTheme('sepia'));
+    byId('btnThemeSlate').addEventListener('click', () => setTheme('slate'));
+
+    // Font Controls
+    byId('btnFontToggle').addEventListener('click', () => {
+      isSerif = !isSerif;
+      const pageEl = byId('ebPage');
+      pageEl.classList.toggle('font-serif', isSerif);
+      pageEl.classList.toggle('font-sans', !isSerif);
+      byId('btnFontToggle').textContent = isSerif ? 'Serif Book' : 'Clean Sans';
+    });
+
+    byId('btnFontUp').addEventListener('click', () => {
+      if (fontScale < 160) {
+        fontScale += 10;
+        byId('fontSizeLabel').textContent = `${fontScale}%`;
+        byId('ebPage').style.fontSize = `${(fontScale / 100) * 1.05}rem`;
+      }
+    });
+
+    byId('btnFontDown').addEventListener('click', () => {
+      if (fontScale > 75) {
+        fontScale -= 10;
+        byId('fontSizeLabel').textContent = `${fontScale}%`;
+        byId('ebPage').style.fontSize = `${(fontScale / 100) * 1.05}rem`;
+      }
+    });
+
+    // View Mode Toggle
+    byId('btnViewMode').addEventListener('click', () => {
+      viewMode = viewMode === 'book' ? 'flow' : 'book';
+      byId('btnViewMode').textContent = viewMode === 'book' ? '📖 Book Pages' : '📜 Continuous Flow';
+      byId('ebPagerGroup').style.display = viewMode === 'book' ? 'flex' : 'none';
+      renderEbookPage();
+    });
+
+    // Navigation buttons
+    byId('btnPrevPage').addEventListener('click', prevPage);
+    byId('btnNextPage').addEventListener('click', nextPage);
+
+    // Keyboard Page Turning & DRM intercept
+    window.addEventListener('keydown', (e) => {
+      if (!byId('ebookBackdrop').classList.contains('show')) return;
+
+      // Page Navigation
+      if (e.key === 'ArrowLeft') {
+        prevPage();
+      } else if (e.key === 'ArrowRight' || e.key === ' ') {
+        if (e.key === ' ') e.preventDefault();
+        nextPage();
+      } else if (e.key === 'Escape') {
+        byId('ebookBackdrop').classList.remove('show');
+      }
+
+      // DRM Keyboard Trapping for non-architects
+      if (!isArchitect) {
+        const isMod = e.ctrlKey || e.metaKey;
+        const k = e.key.toLowerCase();
+        if (isMod && ['c', 'x', 'a', 'p', 's', 'u'].includes(k)) {
+          e.preventDefault();
+          showDrmToast();
+          return false;
+        }
+        if (e.key === 'F12') {
+          e.preventDefault();
+          showDrmToast();
+          return false;
+        }
+      }
+    });
+
+    // DRM Mouse Event Listeners on Viewport
+    const viewportEl = byId('ebViewport');
+    viewportEl.addEventListener('contextmenu', (e) => {
+      if (!isArchitect) {
+        e.preventDefault();
+        showDrmToast();
+        return false;
+      }
+    });
+    viewportEl.addEventListener('copy', (e) => {
+      if (!isArchitect) {
+        e.preventDefault();
+        showDrmToast();
+        return false;
+      }
+    });
+    viewportEl.addEventListener('cut', (e) => {
+      if (!isArchitect) {
+        e.preventDefault();
+        showDrmToast();
+        return false;
+      }
+    });
+    viewportEl.addEventListener('selectstart', (e) => {
+      if (!isArchitect) {
+        e.preventDefault();
+        return false;
+      }
+    });
+
+    // Architect Unlock Modal Controls
+    function openArchitectModal() {
+      const m = byId('architectModal');
+      if (m) {
+        m.classList.add('show');
+        byId('architectPassInput').value = '';
+        byId('architectPassError').style.display = 'none';
+        byId('architectPassInput').focus();
+      }
+    }
+    function closeArchitectModal() {
+      byId('architectModal')?.classList.remove('show');
+    }
+
+    byId('btnCancelArchitect').addEventListener('click', closeArchitectModal);
+    byId('btnSubmitArchitect').addEventListener('click', async () => {
+      const key = byId('architectPassInput').value.trim();
+      const err = byId('architectPassError');
+      if (!key) {
+        err.textContent = 'Please enter your Chief Architect passkey.';
+        err.style.display = 'block';
+        return;
+      }
+      try {
+        const res = await fetch('/api/security/architect-unlock', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ passkey: key })
+        });
+        const d = await res.json();
+        if (!res.ok) throw new Error(d.detail || 'Passkey verification failed.');
+
+        isArchitect = true;
+        window.__IS_ARCHITECT__ = true;
+        applyDrmState();
+        closeArchitectModal();
+        alert('🔓 Chief Architect Mode Unlocked for Dr. Pierre C. Wepener! Unrestricted text selection, copying, and PDF downloads are now active.');
+      } catch (ex) {
+        err.textContent = ex.message || 'Passkey verification failed.';
+        err.style.display = 'block';
+      }
+    });
+
+    byId('ebCloseBtn').addEventListener('click', () => byId('ebookBackdrop').classList.remove('show'));
+    byId('ebookBackdrop').addEventListener('click', (e) => {
+      if (e.target === byId('ebookBackdrop')) byId('ebookBackdrop').classList.remove('show');
+    });
+
+    // Load Overall Knowledge Stats & Tree
+    const loadOverview = async () => {
+      try {
+        const response = await fetch('/api/search-library/overview');
+        const data = await response.json();
+        if (!response.ok || data.ok === false) throw new Error(data.detail || 'Could not load library overview.');
+        byId('statDatasets').textContent = `${fmt(data.total_datasets)} Datasets`;
+        byId('statChunks').textContent = `${fmt(data.total_chunks)} Searchable Chunks`;
+        const embedded = (data.domains || []).reduce((acc, d) => acc + (d.fields || []).reduce((a, f) => a + Number(f.embedded_chunks || 0), 0), 0);
+        byId('statEmbedded').textContent = `${fmt(embedded)} Vectorized Chunks`;
+        byId('domainRoot').innerHTML = (data.domains || []).map(domainHtml).join('');
+      } catch (error) {
+        byId('domainRoot').innerHTML = `<div style="padding:20px;text-align:center;color:var(--rose);">Could not load library tree: ${esc(error.message)}</div>`;
+      }
+    };
+
+    // Click Handlers
+    document.addEventListener('click', async (event) => {
+      const target = event.target.closest('button, .dhead, .fhead');
+      if (!target) return;
+
+      if (target.matches('.dhead')) {
+        target.closest('.domain')?.classList.toggle('open');
+        return;
+      }
+      if (target.matches('.fhead')) {
+        const fieldbox = target.closest('.fieldbox');
+        const opening = !fieldbox.classList.contains('open');
+        fieldbox.classList.toggle('open');
+        if (opening && fieldbox.querySelector('[data-role="doclist"]')?.dataset.loaded !== '1') {
+          await loadDocs(fieldbox);
+          const listEl = fieldbox.querySelector('[data-role="doclist"]');
+          if (listEl) listEl.dataset.loaded = '1';
+        }
+        return;
+      }
+
+      const act = target.dataset.act;
+      if (act === 'ebook' || act === 'preview') {
+        await openEbook(Number(target.dataset.id));
+      } else if (act === 'fsearch-go') {
+        const fieldbox = target.closest('.fieldbox');
+        await loadDocs(fieldbox);
+        const listEl = fieldbox?.querySelector('[data-role="doclist"]');
+        if (listEl) listEl.dataset.loaded = '1';
+      }
+    });
+
+    byId('btnRefresh').addEventListener('click', loadOverview);
+
+    // Initial boot
+    loadOverview();
+  </script>
+</body>
+</html>

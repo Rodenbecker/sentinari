@@ -5,9 +5,10 @@
 # rig, install requirements-inference.txt only. That keeps the roadmap's
 # promise: no HF library code executes at inference time.
 #
-# Verified working versions on Python 3.14 / Windows (2026-09-27):
-onnxruntime-genai==0.17.0
-onnxruntime==1.30.0
+# Gemma 4 builder dispatch verified with ORT GenAI 0.20.0 on Python 3.12 /
+# Windows (2026-11-26). GenAI 0.20 requires the ORT 1.32 API.
+onnxruntime-genai==0.20.0
+onnxruntime==1.32.0
 onnx
 onnx-ir
 torch

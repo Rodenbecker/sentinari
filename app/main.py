@@ -340,8 +340,10 @@ _STARTUP_STATE: dict[str, Any] = {"ready": False, "error": ""}
 app.include_router(skill_review_router)
 from .load_queue import get_load_queue as _get_load_queue  # noqa: E402
 from .pattern_api import router as pattern_router  # noqa: E402
+from .gci_api import router as gci_router  # noqa: E402
 
 app.include_router(pattern_router)
+app.include_router(gci_router)
 from .learning_index import router as learning_router  # noqa: E402
 
 app.include_router(learning_router)
@@ -350,6 +352,9 @@ from .library_router import persona_status, sentinari_library_path
 from .search_api import router as search_library_router  # noqa: E402
 
 app.include_router(search_library_router)
+from .surgeon_recall import router as surgeon_recall_router  # noqa: E402
+
+app.include_router(surgeon_recall_router)
 _auto_ingest_service = AutoIngestService()
 
 
@@ -684,9 +689,12 @@ def startup_event() -> None:
             ensure_continuous_discovery_daemon()
         except Exception:
             pass
-        # Owner directive: the 1/2-page background self-exam loop in
-        # learning_index is stopped (Gemma does not benefit from self-written
-        # document questions; HLE is the only exam that matters).
+        try:
+            from .learning_index import start_learning_worker
+
+            start_learning_worker()
+        except Exception:
+            pass
         _warmup_llm_async(settings)
         _STARTUP_STATE.update({"ready": True, "error": ""})
     except Exception as _startup_ex:
@@ -718,9 +726,9 @@ def ui_portal_landing() -> HTMLResponse:
     page = get_project_root() / "templates" / "portal_landing.html"
     if page.exists():
         html_text = page.read_text(encoding="utf-8")
-        patterns_count = 25
-        docs_count = 15041
-        analyzed_count = 0
+        patterns_count = 1735
+        docs_count = 17061
+        analyzed_count = 7287
         try:
             from .pattern_store import _connect as _pconn, ensure_pattern_store
             from .db import library_connection
@@ -754,10 +762,58 @@ def serve_oncology_html() -> HTMLResponse:
     return HTMLResponse(p.read_text(encoding="utf-8"))
 
 
+# Showcase HTML route aliases
+@app.get("/qualia.html", include_in_schema=False)
+def serve_qualia_html(request: Request) -> HTMLResponse:
+    p = get_project_root() / "docs" / "qualia.html"
+    if p.exists():
+        return HTMLResponse(p.read_text(encoding="utf-8"))
+    return ui_qualia(request)
+
+@app.get("/library.html", include_in_schema=False)
+@app.get("/ui/library", include_in_schema=False)
+def serve_library_html(request: Request) -> HTMLResponse:
+    p = get_project_root() / "docs" / "library.html"
+    if p.exists():
+        return HTMLResponse(p.read_text(encoding="utf-8"))
+    return ui_search_library(request)
+
+@app.get("/video.html", include_in_schema=False)
+def serve_video_html(request: Request) -> HTMLResponse:
+    p = get_project_root() / "docs" / "video.html"
+    if p.exists():
+        return HTMLResponse(p.read_text(encoding="utf-8"))
+    return ui_playground_wan(request)
+
+@app.get("/music.html", include_in_schema=False)
+@app.get("/ace-step.html", include_in_schema=False)
+def serve_music_html(request: Request) -> HTMLResponse:
+    p = get_project_root() / "docs" / "music.html"
+    if p.exists():
+        return HTMLResponse(p.read_text(encoding="utf-8"))
+    return ui_ace_step(request)
+
+@app.get("/wan21.html", include_in_schema=False)
+def serve_wan21_html(request: Request) -> HTMLResponse:
+    p = get_project_root() / "docs" / "wan21.html"
+    if p.exists():
+        return HTMLResponse(p.read_text(encoding="utf-8"))
+    return ui_wan21(request)
+
+@app.get("/playground.html", include_in_schema=False)
+def serve_playground_html(request: Request) -> HTMLResponse:
+    p = get_project_root() / "docs" / "playground.html"
+    if p.exists():
+        return HTMLResponse(p.read_text(encoding="utf-8"))
+    return ui_playground(request)
+
+
 @app.get("/threats.html", include_in_schema=False)
 @app.get("/showcase/threats", include_in_schema=False)
 def serve_threats_html() -> HTMLResponse:
-    p = get_project_root() / "showcase_portal" / "threats.html"
+    p = get_project_root() / "docs" / "threats.html"
+    if not p.exists():
+        p = get_project_root() / "showcase_portal" / "threats.html"
     if not p.exists():
         p = get_project_root() / "threats.html"
     return HTMLResponse(p.read_text(encoding="utf-8"))
@@ -1291,6 +1347,7 @@ _SIDE_NAV_ITEMS = [
     ("/ui/vision", "Vision Lab & TDA", "Giving Sentinari Eyes • Simplicial complexes & visual topology."),
 
     ("/ui/patterns", "New Patterns", "7-D Gaussian impact matrix."),
+    ("/ui/gci", "Global Competitiveness 2026", "IMD country dimensions and reports."),
     ("/ui/threats", "Planetary Threat Matrix", "Exogenous Early-Warning • 14 Open APIs and TDA voids."),
     ("/ui/oncology", "Oncology Precision", "Hypothesis testing, TDA & clinical decision-support."),
     ("/ui/video", "Video Studio", "Autonomous tours & neural narration."),
@@ -1989,6 +2046,20 @@ def ui_playground(request: Request) -> HTMLResponse:
     return HTMLResponse(page.read_text(encoding="utf-8"))
 
 
+@app.get("/ui/gci", response_class=HTMLResponse)
+def ui_gci(request: Request) -> HTMLResponse:
+    """Local country search and dimension workspace for the IMD 2026 booklet."""
+    auth = get_admin_auth_settings(get_settings())
+    if auth["enabled"] and not _is_admin_authenticated(request):
+        return HTMLResponse("", status_code=302, headers={"Location": "/ui/login?next=/ui/gci"})
+
+    page = get_project_root() / "templates" / "gci_workspace.html"
+    if not page.exists():
+        raise HTTPException(status_code=500, detail="gci_workspace.html template not found.")
+    html = _inject_left_rail(page.read_text(encoding="utf-8"), active="/ui/gci")
+    return HTMLResponse(html)
+
+
 @app.get("/ui/search", response_class=HTMLResponse)
 def ui_search(request: Request) -> HTMLResponse:
     """Search workspace: the ingested library grouped by scientific area."""
@@ -2010,6 +2081,8 @@ def ui_search(request: Request) -> HTMLResponse:
 
 
 @app.get("/ui/vision", response_class=HTMLResponse)
+@app.get("/ui/vision.html", response_class=HTMLResponse, include_in_schema=False)
+@app.get("/vision", response_class=HTMLResponse, include_in_schema=False)
 def ui_vision(request: Request) -> HTMLResponse:
     """Giving Sentinari Eyes: Sovereign Topological Visual Diagnostics Workspace."""
     auth = get_admin_auth_settings(get_settings())
@@ -2092,6 +2165,10 @@ async def api_vision_gemma_cross_examine(request: Request) -> dict:
 
 
 @app.get("/ui/threats", response_class=HTMLResponse)
+@app.get("/ui/threats.html", response_class=HTMLResponse, include_in_schema=False)
+@app.get("/ui/threats-workspace", response_class=HTMLResponse, include_in_schema=False)
+@app.get("/ui/planetary-risk", response_class=HTMLResponse, include_in_schema=False)
+@app.get("/threats", response_class=HTMLResponse, include_in_schema=False)
 def ui_threats(request: Request) -> HTMLResponse:
     """Exogenous Threat Detection System & Planetary Early-Warning Architecture."""
     auth = get_admin_auth_settings(get_settings())
@@ -2129,6 +2206,32 @@ async def api_threats_tda(payload: dict) -> dict:
     return {"ok": True, "category_id": cat_id, "tda": tda_res}
 
 
+
+@app.get("/api/threats/sovereign-matrix")
+def api_threats_sovereign_matrix() -> dict:
+    from app.exogenous_threats import SOVEREIGN_FRICTION_PROFILES, recalculate_sovereign_cascade
+    cascade = recalculate_sovereign_cascade()
+    return {"ok": True, "profiles": SOVEREIGN_FRICTION_PROFILES, "cascade": cascade}
+
+
+@app.post("/api/threats/sovereign-recalculate")
+def api_threats_sovereign_recalculate(payload: dict) -> dict:
+    from app.exogenous_threats import recalculate_sovereign_cascade
+    ukr = float(payload.get("ukr", 0.89))
+    isr = float(payload.get("isr", 0.85))
+    sud = float(payload.get("sud", 0.81))
+    twn = float(payload.get("twn", 0.78))
+    zaf_minerals = float(payload.get("zaf_minerals", 0.45))
+    zaf_grid_freeze = bool(payload.get("zaf_grid_freeze", False))
+    zaf_disinfo = float(payload.get("zaf_disinfo", 0.42))
+    
+    cascade = recalculate_sovereign_cascade(
+        ukr=ukr, isr=isr, sud=sud, twn=twn,
+        zaf_minerals=zaf_minerals, zaf_grid_freeze=zaf_grid_freeze,
+        zaf_disinfo=zaf_disinfo
+    )
+    return {"ok": True, "cascade": cascade}
+
 @app.post("/api/threats/gemma-countermeasure")
 async def api_threats_gemma(payload: dict) -> dict:
     from app.exogenous_threats import (
@@ -2145,18 +2248,22 @@ async def api_threats_gemma(payload: dict) -> dict:
     curve = compute_gaussian_density_curve(cat["default_mu"], cat["default_sigma"], scaler)
     tda = execute_exogenous_tda()
 
+    country_matrix = payload.get("country_matrix")
     directive = await query_gemma_threat_intervention(
         threat_category=cat["category"],
         priority=cat["priority"],
         observed_risk_score=round(cat["default_mu"] * scaler, 2),
         tda_summary=tda,
         gaussian_projection=curve,
-        clinician_notes=notes
+        clinician_notes=notes,
+        country_matrix=country_matrix
     )
     return {"ok": True, "category_id": cat_id, "directive": directive}
 
 
 @app.get("/ui/oncology", response_class=HTMLResponse)
+@app.get("/ui/oncology.html", response_class=HTMLResponse, include_in_schema=False)
+@app.get("/oncology", response_class=HTMLResponse, include_in_schema=False)
 def ui_oncology(request: Request) -> HTMLResponse:
     auth = get_admin_auth_settings(get_settings())
     if auth["enabled"] and not _is_admin_authenticated(request):
