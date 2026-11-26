@@ -2155,13 +2155,6 @@ def render_rd_report_html(report: dict[str, Any], is_admin: bool = False) -> str
         )
         appendices_btn_html = f'<a class="top-btn" href="{patreon_url}" target="_blank" rel="noopener noreferrer" style="background:#ff424d;color:#fff;border-color:#ff424d;font-weight:700;padding:8px 16px;box-shadow:0 2px 8px rgba(255,66,77,0.3);">&#128150; Sponsor on Patreon to Download Appendices (.zip) &rarr;</a>'
 
-    competitiveness_html = ""
-    competitiveness_context = report.get("competitiveness_context")
-    if isinstance(competitiveness_context, dict):
-        from .gci_index import render_competitiveness_html
-
-        competitiveness_html = render_competitiveness_html(competitiveness_context)
-
     return f"""<!doctype html>
 <html lang="en"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -2895,7 +2888,6 @@ document.addEventListener('DOMContentLoaded', () => {{
 
 
 
-{competitiveness_html}
 def generate_visual_pdf_from_html(report: dict[str, Any]) -> bytes | None:
     """Generate high-resolution full visual PDF using local headless Chromium browser (Edge or Chrome).
     Preserves all colors, KaTeX formulas, 7-Dimension Rubric table, Section 5.2c Invariant,
@@ -3123,34 +3115,6 @@ def rd_report_pdf_bytes(report: dict[str, Any]) -> bytes:
         f"REFERENCES — COMPREHENSIVE BIBLIOGRAPHY (APA 7th ed., {len(bib)} sources cited):",
         "-" * 60,
     ])
-    competitiveness_context = report.get("competitiveness_context")
-    if isinstance(competitiveness_context, dict):
-        lines.extend([
-            "8. IMD WORLD COMPETITIVENESS 2026 COUNTRY CONTEXT",
-            "-" * 60,
-        ])
-        if competitiveness_context.get("status") == "matched":
-            lines.extend([
-                f"Economy: {competitiveness_context.get('country')}",
-                f"Overall rank: {competitiveness_context.get('overall_rank')} of 70; score {float(competitiveness_context.get('overall_score') or 0):.2f}/100.",
-                "Four factor scores:",
-            ])
-            lines.extend(
-                f"  {item['name']}: rank {item['rank']} of 70; score {float(item['score']):.2f}/100."
-                for item in competitiveness_context.get("factors") or []
-            )
-            lines.append("Twenty sub-factor ranks (rank 1 is strongest):")
-            lines.extend(
-                f"  {item['name']}: rank {item['rank']} of 70."
-                for item in competitiveness_context.get("subfactors") or []
-            )
-            lines.extend(_w(str(competitiveness_context.get("recommendation_context") or "")))
-            lines.append(str(competitiveness_context.get("source_citation") or ""))
-            lines.append("These comparative results are descriptive context, not causal evidence.")
-        else:
-            lines.append(str(competitiveness_context.get("message") or "No unique country context was available."))
-        lines.append("")
-
     for idx, b in enumerate(bib, start=1):
         lines.extend(_w(f"  {idx}. {b.get('full_reference', '')}"))
         lines.append("")

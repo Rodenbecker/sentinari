@@ -548,11 +548,6 @@
       ${benefitsBlock}
       <div class="report-actions">
         <a class="btn-link" href="/api/patterns/rd-paper/${encodeURIComponent(p.id)}/report" target="_blank" rel="noopener">&#128196; Open Unified R&amp;D Paper (${indDone}/${indTotal})</a>
-        <a class="btn-link secondary" href="/ui/gci">Global Competitiveness 2026 country index</a>
-        <label style="display:inline-flex;align-items:center;gap:6px;font-size:12px;">IMD country context (optional)
-          <input type="text" data-gci-country maxlength="100" placeholder="e.g. South Africa" style="max-width:180px;padding:5px 7px;">
-        </label>
-        <button type="button" data-role="rd-country-report" data-id="${p.id}" data-format="html">Open report with country context</button>
         ${window.__IS_ARCHITECT__ ? `
           <a class="btn-link secondary" href="/api/patterns/${encodeURIComponent(p.id)}/rd-paper.pdf">&#11015; R&amp;D Paper PDF</a>
           <a class="btn-link secondary" href="/api/patterns/${encodeURIComponent(p.id)}/appendices.zip" style="background:#f1f5f9;color:#0f172a;border-color:#cbd5e1;">&#128230; Appendices (.zip)</a>
@@ -884,14 +879,6 @@
         showAlert(error.message, false);
       }
     } else if (btn.dataset.role === 'pattern-report' || btn.dataset.role === 'container-report') {
-    } else if (btn.dataset.role === 'rd-country-report') {
-      const country = btn.closest('.report-actions')?.querySelector('[data-gci-country]')?.value.trim() || '';
-      const countryQuery = country ? `?country=${encodeURIComponent(country)}` : '';
-      const isPdf = btn.dataset.format === 'pdf';
-      const suffix = isPdf ? '/report.pdf' : '/report';
-      const url = `/api/patterns/rd-paper/${encodeURIComponent(id)}${suffix}${countryQuery}`;
-      if (isPdf) window.location.href = url;
-      else window.open(url, '_blank', 'noopener');
       const key = btn.dataset.key ? encodeURIComponent(btn.dataset.key) : '';
       const fmt = btn.dataset.format === 'pdf' ? 'pdf' : 'html';
       if (fmt === 'pdf' && !window.__IS_ARCHITECT__) {

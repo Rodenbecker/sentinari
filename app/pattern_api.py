@@ -2066,19 +2066,13 @@ def ml_hardening_run(
 
 
 @router.get("/rd-paper/{pattern_id}/report")
-def rd_paper_report_endpoint(
-    request: Request,
-    pattern_id: int,
-    regenerate: int = Query(default=0),
-    country: str | None = Query(default=None, max_length=100),
-) -> Response:
+def rd_paper_report_endpoint(request: Request, pattern_id: int, regenerate: int = Query(default=0)) -> Response:
     """Generate (once, cached in the pattern store) and render the unified R&D
     validation paper for a pattern."""
     try:
         report = get_or_generate_rd_report(int(pattern_id), force=bool(regenerate))
     except ValueError as ex:
         raise HTTPException(status_code=404, detail=str(ex))
-    report = _with_competitiveness_context(report, country=country)
     is_admin = is_architect_authorized(request)
     return Response(
         content=render_rd_report_html(report, is_admin=is_admin),
@@ -2089,12 +2083,7 @@ def rd_paper_report_endpoint(
 
 @router.get("/{pattern_id}/rd-paper.pdf")
 @router.get("/rd-paper/{pattern_id}/report.pdf")
-def rd_paper_pdf_endpoint(
-    request: Request,
-    pattern_id: int,
-    regenerate: int = Query(default=0),
-    country: str | None = Query(default=None, max_length=100),
-) -> Response:
+def rd_paper_pdf_endpoint(request: Request, pattern_id: int, regenerate: int = Query(default=0)) -> Response:
     """Download the unified 5-Section R&D Validation Paper as a PDF."""
     if not is_architect_authorized(request):
         raise HTTPException(
@@ -2105,7 +2094,6 @@ def rd_paper_pdf_endpoint(
         report = get_or_generate_rd_report(int(pattern_id), force=bool(regenerate))
     except ValueError as ex:
         raise HTTPException(status_code=404, detail=str(ex))
-    report = _with_competitiveness_context(report, country=country)
     pdf_bytes = rd_report_pdf_bytes(report)
     fname = f"rd-paper-pattern-{int(pattern_id)}.pdf"
     return Response(
@@ -2139,35 +2127,13 @@ def rd_paper_appendices_zip_endpoint(request: Request, pattern_id: int, regenera
 
 
 @router.get("/rd-paper/{pattern_id}/data")
-def rd_paper_data_endpoint(
-    pattern_id: int,
-    regenerate: int = Query(default=0),
-    country: str | None = Query(default=None, max_length=100),
-) -> dict[str, Any]:
+def rd_paper_data_endpoint(pattern_id: int, regenerate: int = Query(default=0)) -> dict[str, Any]:
     """The raw reportData object (the schema from corrections/R&DPaper.md)."""
     try:
         report = get_or_generate_rd_report(int(pattern_id), force=bool(regenerate))
     except ValueError as ex:
         raise HTTPException(status_code=404, detail=str(ex))
-    return {"ok": True, "report": _with_competitiveness_context(report, country=country)}
-
-
-def _with_competitiveness_context(
-    report: dict[str, Any],
-    *,
-    country: str | None = None,
-) -> dict[str, Any]:
-    from .gci_index import build_competitiveness_context
-
-    enriched = dict(report)
-    pattern_id = int(report.get("pattern_id") or 0)
-    pattern = get_pattern(pattern_id) if pattern_id > 0 else None
-    enriched["competitiveness_context"] = build_competitiveness_context(
-        report,
-        country=country,
-        pattern=pattern,
-    )
-    return enriched
+    return {"ok": True, "report": report}
 
 
 # ---------------------------------------------------------------------------

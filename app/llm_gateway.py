@@ -401,6 +401,9 @@ class OpenAICompatibleProvider:
     def __init__(self, config: dict[str, Any]) -> None:
         compatible = dict(config.get("openai_compatible") or config.get("http_json_provider") or {})
         self.base_url = str(compatible.get("base_url") or "").rstrip("/")
+        self.embedding_base_url = str(
+            compatible.get("embedding_base_url") or self.base_url
+        ).rstrip("/")
         self.api_key = _env_key(str(compatible.get("api_key_env") or "OPENAI_API_KEY"))
         self.chat_model = str(compatible.get("chat_model") or config.get("chat_model") or "")
         self.embedding_model = str(compatible.get("embedding_model") or "")
@@ -435,11 +438,11 @@ class OpenAICompatibleProvider:
         return str((choices[0].get("message") or {}).get("content") or "").strip()
 
     def embed(self, text: str) -> list[float] | None:
-        if not self.base_url or not self.embedding_model:
+        if not self.embedding_base_url or not self.embedding_model:
             return None
         try:
             resp = requests.post(
-                f"{self.base_url}/embeddings",
+                f"{self.embedding_base_url}/embeddings",
                 headers=self._headers(),
                 json={"model": self.embedding_model, "input": str(text or "")[:8000]},
                 timeout=30,

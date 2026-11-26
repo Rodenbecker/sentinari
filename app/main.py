@@ -338,13 +338,12 @@ app.add_middleware(
 )
 _STARTUP_STATE: dict[str, Any] = {"ready": False, "error": ""}
 app.include_router(skill_review_router)
-from .gci_api import router as gci_router  # noqa: E402
-
-app.include_router(gci_router)
 from .load_queue import get_load_queue as _get_load_queue  # noqa: E402
 from .pattern_api import router as pattern_router  # noqa: E402
+from .gci_api import router as gci_router  # noqa: E402
 
 app.include_router(pattern_router)
+app.include_router(gci_router)
 from .learning_index import router as learning_router  # noqa: E402
 
 app.include_router(learning_router)
@@ -1348,6 +1347,7 @@ _SIDE_NAV_ITEMS = [
     ("/ui/vision", "Vision Lab & TDA", "Giving Sentinari Eyes • Simplicial complexes & visual topology."),
 
     ("/ui/patterns", "New Patterns", "7-D Gaussian impact matrix."),
+    ("/ui/gci", "Global Competitiveness 2026", "IMD country dimensions and reports."),
     ("/ui/threats", "Planetary Threat Matrix", "Exogenous Early-Warning • 14 Open APIs and TDA voids."),
     ("/ui/oncology", "Oncology Precision", "Hypothesis testing, TDA & clinical decision-support."),
     ("/ui/video", "Video Studio", "Autonomous tours & neural narration."),
@@ -1361,7 +1361,6 @@ _SIDE_NAV_ITEMS = [
 ]
 
 _LEFT_RAIL_CSS = """
-    ("/ui/gci", "Global Competitiveness 2026", "IMD country dimensions and reports."),
     .shell { display: grid; grid-template-columns: 240px minmax(0, 1fr); min-height: 100vh; }
     .sidebar { background: linear-gradient(180deg, #13263b 0%, #0e1c2c 100%); color: #d9e8f6; padding: 18px 16px; }
     .sidebar .brand { font-size: 24px; font-weight: 800; margin-bottom: 8px; }
@@ -2047,6 +2046,20 @@ def ui_playground(request: Request) -> HTMLResponse:
     return HTMLResponse(page.read_text(encoding="utf-8"))
 
 
+@app.get("/ui/gci", response_class=HTMLResponse)
+def ui_gci(request: Request) -> HTMLResponse:
+    """Local country search and dimension workspace for the IMD 2026 booklet."""
+    auth = get_admin_auth_settings(get_settings())
+    if auth["enabled"] and not _is_admin_authenticated(request):
+        return HTMLResponse("", status_code=302, headers={"Location": "/ui/login?next=/ui/gci"})
+
+    page = get_project_root() / "templates" / "gci_workspace.html"
+    if not page.exists():
+        raise HTTPException(status_code=500, detail="gci_workspace.html template not found.")
+    html = _inject_left_rail(page.read_text(encoding="utf-8"), active="/ui/gci")
+    return HTMLResponse(html)
+
+
 @app.get("/ui/search", response_class=HTMLResponse)
 def ui_search(request: Request) -> HTMLResponse:
     """Search workspace: the ingested library grouped by scientific area."""
@@ -2059,19 +2072,6 @@ def ui_search(request: Request) -> HTMLResponse:
         raise HTTPException(status_code=500, detail="search_workspace.html template not found.")
     authed = is_architect_authorized(request)
     html = page.read_text(encoding="utf-8")
-@app.get("/ui/gci", response_class=HTMLResponse)
-def ui_gci(request: Request) -> HTMLResponse:
-    """Local country search and dimension workspace for the IMD 2026 booklet."""
-    auth = get_admin_auth_settings(get_settings())
-    if auth["enabled"] and not _is_admin_authenticated(request):
-        return HTMLResponse("", status_code=302, headers={"Location": "/ui/login?next=/ui/gci"})
-
-    page = get_project_root() / "templates" / "gci_workspace.html"
-    if not page.exists():
-        raise HTTPException(status_code=500, detail="gci_workspace.html template not found.")
-    return HTMLResponse(page.read_text(encoding="utf-8"))
-
-
     arch_js = f"<script>window.__IS_ARCHITECT__ = {'true' if authed else 'false'};</script>"
     if "/*__ARCHITECT_INJECT__*/" in html:
         html = html.replace("/*__ARCHITECT_INJECT__*/", f"window.__IS_ARCHITECT__ = {'true' if authed else 'false'};")
